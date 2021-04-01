@@ -30,6 +30,8 @@ class LannisterContext extends Logging{
   configureSupportedApplicationTypes
 
 
+  def getApplicationTypeForName(typeName: String) = _nameToType(typeName)
+
   private def loadAggregators={
     val aggregatorConfiguration = Utils.loadYmlDoc(Configs.AGGREGATORS_CONF.getValue)(classOf[AggregatorConfiguration])
 
@@ -87,12 +89,12 @@ class LannisterContext extends Logging{
     _typeToHeuristics.retain((t,_)=>{supportedTypes.contains(t)})
     _appTypeToJobTypes.retain((t,_)=>{supportedTypes.contains(t)})
     _typeToAggregator.retain((t,_)=>{supportedTypes.contains(t)})
-    supportedTypes.foldLeft(_nameToType)( (m,v)=>{m.put(v.name,v); m} )
+    supportedTypes.foldLeft(_nameToType)( (m,v)=>{m.put(v.upperName,v); m} )
 
     info("Configuring LannisterContext ... ")
     supportedTypes.foreach(tpe=>{
       info(
-        s"""Supports ${tpe.name} application type, using ${_typeToFetcher(tpe).getClass} fetcher class with
+        s"""Supports ${tpe.upperName} application type, using ${_typeToFetcher(tpe).getClass} fetcher class with
            | Heuristics [ ${_typeToHeuristics(tpe).map(_.getClass).mkString(",")} ]  and following JobTypes
            | [ ${_appTypeToJobTypes(tpe).map(_.getClass).mkString(",")} ]
            |""".stripMargin )

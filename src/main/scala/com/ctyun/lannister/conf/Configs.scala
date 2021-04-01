@@ -11,7 +11,7 @@ object Configs {
 
   val EXECUTOR_NUM = CommonVars("lannister.executor.num", 5)
   val RETRY_INTERVAL = CommonVars("lannister.analysis.retry.interval", 60 * 1000)
-  val FETCH_INTERVAL = CommonVars("lannister.analysis.fetch.interval", 60 * 1000)
+  val FETCH_INTERVAL = CommonVars("lannister.analysis.fetch.interval", 10 * 1000)
 
 
 

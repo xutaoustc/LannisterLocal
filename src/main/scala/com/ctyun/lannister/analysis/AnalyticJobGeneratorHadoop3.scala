@@ -1,21 +1,23 @@
 package com.ctyun.lannister.analysis
 import com.ctyun.lannister.LannisterContext
 import com.ctyun.lannister.util.Logging
-import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.conf.Configuration
 import org.codehaus.jackson.map.ObjectMapper
-
 import java.net.URL
 import java.util
 import java.util.concurrent.ConcurrentLinkedQueue
 import scala.collection.mutable.ListBuffer
 
+
+/*
+* Generate Job waiting for analyze
+* */
 class AnalyticJobGeneratorHadoop3 extends AnalyticJobGenerator with Logging {
-  private var _configuration:Configuration = LannisterContext().getConfiguration
+  private val _configuration:Configuration = LannisterContext().getConfiguration
   private var _resourceManagerAddress:String = null
   private val _objectMapper = new ObjectMapper
   private var _lastTime = 0L
-  private var _fetchStartTime = 0L
+  private val _fetchStartTime = 0L
   private var _currentTime = 0L
   private val FETCH_DELAY = 60000
   private val _firstRetryQueue:util.Queue[AnalyticJob] = new ConcurrentLinkedQueue[AnalyticJob]()
@@ -26,13 +28,42 @@ class AnalyticJobGeneratorHadoop3 extends AnalyticJobGenerator with Logging {
   private val RM_NODE_STATE_URL = "http://%s/ws/v1/cluster/info"
 
 
-  override def updateResourceManagerAddresses: Unit = {
-    if(_configuration.get(IS_RM_HA_ENABLED).toBoolean){
-      val resourceManagers =  _configuration.get(RESOURCE_MANAGER_IDS)
-      if(StringUtils.isBlank(resourceManagers))
-        throw new IllegalArgumentException("yarn.resourcemanager.ha.rm-ids is empty while ha enabled")
 
-      resourceManagers.split(",").foreach(id=>{
+  override def fetchAnalyticJobs: List[AnalyticJob] = {
+    updateResourceManagerAddresses
+
+    val appList = ListBuffer[AnalyticJob]()
+    _currentTime = System.currentTimeMillis - FETCH_DELAY
+    val start = _lastTime + 1
+    val end = _currentTime
+
+    info(s"Fetching recent finished application runs between last time: ${start}, and current time: ${end}")
+    val succeededAppsURL = new URL(new URL("http://" + _resourceManagerAddress), s"/ws/v1/cluster/apps?finalStatus=SUCCEEDED&finishedTimeBegin=${start}&finishedTimeEnd=${end}")
+    info(s"The succeeded apps URL is ${succeededAppsURL}")
+    val succeededApps = readApps(succeededAppsURL)
+    appList ++= succeededApps
+    info(s"${succeededApps.size} succeeded items fetched")
+
+    val failedAppsURL = new URL(new URL("http://" + _resourceManagerAddress), s"/ws/v1/cluster/apps?finalStatus=FAILED&state=FINISHED&finishedTimeBegin=${start}&finishedTimeEnd=${end}")
+    info(s"The failed apps URL is ${failedAppsURL}")
+    val failedApps = readApps(failedAppsURL)
+    appList ++= failedApps
+    info(s"${failedApps.size} failed items fetched")
+
+    while (!_firstRetryQueue.isEmpty()) {
+      appList += _firstRetryQueue.poll()
+    }
+
+//    fetchJobsFromSecondRetryQueue(appList)
+
+    _lastTime = _currentTime
+    appList.toList
+  }
+
+
+  private def updateResourceManagerAddresses: Unit = {
+    if(_configuration.get(IS_RM_HA_ENABLED).toBoolean){
+      _configuration.get(RESOURCE_MANAGER_IDS).split(",").foreach(id=>{
         val resourceManager = _configuration.get(RESOURCE_MANAGER_ADDRESS + "." + id)
         val resourceManagerURL = String.format(RM_NODE_STATE_URL, resourceManager)
         val rootNode = readJsonNode(new URL(resourceManagerURL))
@@ -46,41 +77,13 @@ class AnalyticJobGeneratorHadoop3 extends AnalyticJobGenerator with Logging {
     }
   }
 
-
-  override def fetchAnalyticJobs: List[AnalyticJob] = {
-    val appList = ListBuffer[AnalyticJob]()
-
-    _currentTime = System.currentTimeMillis - FETCH_DELAY
-
-    info("Fetching recent finished application runs between last time: " + (_lastTime + 1) + ", and current time: " + _currentTime)
-    val succeededAppsURL = new URL(new URL("http://" + _resourceManagerAddress), String.format("/ws/v1/cluster/apps?finalStatus=SUCCEEDED&finishedTimeBegin=%s&finishedTimeEnd=%s", String.valueOf(_lastTime + 1), String.valueOf(_currentTime)))
-    info("The succeeded apps URL is " + succeededAppsURL)
-    val succeededApps = readApps(succeededAppsURL)
-    appList ++= succeededApps
-
-    val failedAppsURL = new URL(new URL("http://" + _resourceManagerAddress), String.format("/ws/v1/cluster/apps?finalStatus=FAILED&state=FINISHED&finishedTimeBegin=%s&finishedTimeEnd=%s", String.valueOf(_lastTime + 1), String.valueOf(_currentTime)))
-    val failedApps = readApps(failedAppsURL)
-    appList ++= failedApps
-
-    while (!_firstRetryQueue.isEmpty()) {
-      appList += _firstRetryQueue.poll()
-    }
-
-    _lastTime = _currentTime
-    appList.toList
-  }
-
-
   private def readJsonNode(url: URL) = _objectMapper.readTree(url.openStream)
 
   private def readApps(url: URL)={
     val appList = ListBuffer[AnalyticJob]()
+    val apps = readJsonNode(url).path("apps").path("app")
 
-    val rootNode = readJsonNode(url)
-    val apps = rootNode.path("apps").path("app")
-
-    apps.forEach(
-      app=> {
+    apps.forEach(app=> {
         val appId = app.get("id").asText()
 
         if (_lastTime > _fetchStartTime || (_lastTime == _fetchStartTime)) { //TODO  && AppResult.find.byId(appId) == null)
@@ -91,9 +94,12 @@ class AnalyticJobGeneratorHadoop3 extends AnalyticJobGenerator with Logging {
           val startTime = app.get("startedTime").asLong()
           val finishTime = app.get("finishedTime").asLong()
 
-
+          val applicationType = LannisterContext().getApplicationTypeForName(app.get("applicationType").asText())
+          if(applicationType != null){
+            appList += AnalyticJob(appId,applicationType, user, name, queueName, trackingUrl, startTime, finishTime)
+          }
         }
-      })
+    })
 
     appList
   }
