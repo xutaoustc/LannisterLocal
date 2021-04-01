@@ -1,0 +1,11 @@
+heuristics:
+  -
+    name: Spark Configuration
+    applicationtype: spark
+    classname: com.ctyun.lannister.spark.heuristics.ConfigurationHeuristic
+    viewname:
+  -
+    name: Spark Executor Metrics
+    applicationtype: spark
+    classname: com.ctyun.lannister.spark.heuristics.ExecutorsHeuristic
+    viewname:

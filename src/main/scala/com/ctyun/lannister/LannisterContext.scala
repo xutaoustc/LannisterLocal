@@ -1,0 +1,111 @@
+package com.ctyun.lannister
+
+import com.ctyun.lannister.analysis.{ApplicationData, ApplicationType, Fetcher, Heuristic, JobType, MetricsAggregator}
+import com.ctyun.lannister.conf.Configs
+import com.ctyun.lannister.conf.aggregator.{AggregatorConfiguration, AggregatorConfigurationData}
+import com.ctyun.lannister.conf.fetcher.{FetcherConfiguration, FetcherConfigurationData}
+import com.ctyun.lannister.conf.heuristic.{HeuristicConfiguration, HeuristicConfigurationData}
+import com.ctyun.lannister.conf.jobtype.JobTypeConfiguration
+import com.ctyun.lannister.util.{Logging, Utils}
+import org.apache.hadoop.conf.Configuration
+
+import scala.collection.convert.ImplicitConversions.`collection AsScalaIterable`
+import scala.collection.mutable
+
+class LannisterContext extends Logging{
+  private var hadoopConf:Configuration = _
+
+  private val _nameToType = mutable.Map[String,ApplicationType]()
+  private val _typeToAggregator = mutable.Map[ApplicationType, MetricsAggregator]()
+  private val _typeToFetcher = mutable.Map[ApplicationType, Fetcher]()
+  private val _typeToHeuristics = mutable.Map[ApplicationType, List[Heuristic[_ <: ApplicationData]]]()
+  private val _appTypeToJobTypes = mutable.Map[ApplicationType, List[JobType]]()
+
+  loadAggregators
+  loadFetchers
+  loadHeuristics
+  loadJobTypes
+  loadGeneralConf
+// TODO loadAutoTuningConf();
+  configureSupportedApplicationTypes
+
+
+  private def loadAggregators={
+    val aggregatorConfiguration = Utils.loadYmlDoc(Configs.AGGREGATORS_CONF.getValue)(classOf[AggregatorConfiguration])
+
+    aggregatorConfiguration.getAggregators.forEach(data=>{
+      val instance = Class.forName(data.classname)
+                          .getConstructor(classOf[AggregatorConfigurationData]).newInstance(data).asInstanceOf[MetricsAggregator]
+      _typeToAggregator += (data.getAppType -> instance)
+      info(s"Load aggregator ${data.classname}")
+    })
+  }
+
+  private def loadFetchers={
+    val fetcherConfiguration = Utils.loadYmlDoc(Configs.FETCHERS_CONF.getValue)(classOf[FetcherConfiguration])
+
+    fetcherConfiguration.getFetchers.forEach(data=>{
+      val instance = Class.forName(data.classname)
+                          .getConstructor(classOf[FetcherConfigurationData]).newInstance(data).asInstanceOf[Fetcher]
+      _typeToFetcher += (data.getAppType -> instance)
+      info(s"Load fetcher ${data.classname}")
+    })
+  }
+
+  private def loadHeuristics={
+    val heuristicsConfiguration = Utils.loadYmlDoc(Configs.HEURISTICS_CONF.getValue)(classOf[HeuristicConfiguration])
+
+    heuristicsConfiguration.getHeuristics.forEach(data=>{
+      val instance = Class.forName(data.classname)
+                          .getConstructor(classOf[HeuristicConfigurationData]).newInstance(data).asInstanceOf[Heuristic[_ <: ApplicationData]]
+      val value = _typeToHeuristics.getOrElseUpdate(data.getAppType, Nil)
+      _typeToHeuristics.put(data.getAppType, value :+ instance)
+      info(s"Load heuristic ${data.classname}")
+    })
+  }
+
+  private def loadJobTypes={
+    Utils.loadYmlDoc(Configs.JOBTYPES_CONF.getValue)(classOf[JobTypeConfiguration]).jobTypes
+      .foldLeft( _appTypeToJobTypes )((m, jobTy)=>{
+      if(m.contains(jobTy.getAppType))
+        m(jobTy.getAppType) = m(jobTy.getAppType) :+ jobTy
+      else
+        m += (jobTy.getAppType -> List(jobTy))
+
+      m
+    })
+  }
+
+  private def loadGeneralConf={
+    hadoopConf = new Configuration()
+  }
+
+  private def configureSupportedApplicationTypes(): Unit ={
+    val supportedTypes = _typeToFetcher.keySet & _typeToHeuristics.keySet & _appTypeToJobTypes.keySet & _typeToAggregator.keySet
+
+    _typeToFetcher.retain((t,_)=>{supportedTypes.contains(t)})
+    _typeToHeuristics.retain((t,_)=>{supportedTypes.contains(t)})
+    _appTypeToJobTypes.retain((t,_)=>{supportedTypes.contains(t)})
+    _typeToAggregator.retain((t,_)=>{supportedTypes.contains(t)})
+    supportedTypes.foldLeft(_nameToType)( (m,v)=>{m.put(v.name,v); m} )
+
+    info("Configuring LannisterContext ... ")
+    supportedTypes.foreach(tpe=>{
+      info(
+        s"""Supports ${tpe.name} application type, using ${_typeToFetcher(tpe).getClass} fetcher class with
+           | Heuristics [ ${_typeToHeuristics(tpe).map(_.getClass).mkString(",")} ]  and following JobTypes
+           | [ ${_appTypeToJobTypes(tpe).map(_.getClass).mkString(",")} ]
+           |""".stripMargin )
+    })
+  }
+
+  def getConfiguration = hadoopConf
+}
+
+object LannisterContext{
+  private val INSTANCE = new LannisterContext
+
+  def apply():LannisterContext={
+    INSTANCE
+  }
+}
