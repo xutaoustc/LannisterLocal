@@ -7,7 +7,7 @@ import org.springframework.core.task.TaskExecutor
 
 
 @Configuration
-class BackgroundJobBoot {
+class Booter {
 
   @Bean def taskExecutor = new SimpleAsyncTaskExecutor
 

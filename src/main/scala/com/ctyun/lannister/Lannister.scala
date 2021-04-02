@@ -3,17 +3,18 @@ package com.ctyun.lannister
 class Lannister private() extends Runnable{
   // TODO    println(Configs.AUTO_TUNING_ENABLED.getValue)
 
-  private val lannisterRunner = new LannisterRunner
+  private val lannister = new LannisterRunner
 
   override def run(): Unit = {
-    lannisterRunner.run()
+    // hear me roar!
+    lannister.run()
   }
 }
 
 object Lannister{
-  private val INSTANCE:Lannister = new Lannister
+  private val INSTANCE = new Lannister
 
-  def apply():Lannister={
+  def apply()={
     INSTANCE
   }
 }
