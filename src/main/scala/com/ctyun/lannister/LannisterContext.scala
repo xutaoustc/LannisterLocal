@@ -17,7 +17,7 @@ class LannisterContext extends Logging{
 
   private val _nameToType = mutable.Map[String,ApplicationType]()
   private val _typeToAggregator = mutable.Map[ApplicationType, MetricsAggregator]()
-  private val _typeToFetcher = mutable.Map[ApplicationType, Fetcher]()
+  private val _typeToFetcher = mutable.Map[ApplicationType, Fetcher[_<:ApplicationData]]()
   private val _typeToHeuristics = mutable.Map[ApplicationType, List[Heuristic[_ <: ApplicationData]]]()
   private val _appTypeToJobTypes = mutable.Map[ApplicationType, List[JobType]]()
 
@@ -31,6 +31,20 @@ class LannisterContext extends Logging{
 
 
   def getApplicationTypeForName(typeName: String) = _nameToType(typeName)
+
+  def getConfiguration = hadoopConf
+
+  def getAggregatorForApplicationType(applicationType: ApplicationType)={
+    _typeToAggregator(applicationType)
+  }
+
+  def getFetcherForApplicationType(applicationType: ApplicationType)={
+    _typeToFetcher(applicationType)
+  }
+
+  def getHeuristicsForApplicationType(applicationType: ApplicationType)={
+    _typeToHeuristics(applicationType)
+  }
 
   private def loadAggregators={
     val aggregatorConfiguration = Utils.loadYmlDoc(Configs.AGGREGATORS_CONF.getValue)(classOf[AggregatorConfiguration])
@@ -48,7 +62,7 @@ class LannisterContext extends Logging{
 
     fetcherConfiguration.getFetchers.forEach(data=>{
       val instance = Class.forName(data.classname)
-                          .getConstructor(classOf[FetcherConfigurationData]).newInstance(data).asInstanceOf[Fetcher]
+                          .getConstructor(classOf[FetcherConfigurationData]).newInstance(data).asInstanceOf[Fetcher[_<:ApplicationData]]
       _typeToFetcher += (data.getAppType -> instance)
       info(s"Load fetcher ${data.classname}")
     })
@@ -101,7 +115,6 @@ class LannisterContext extends Logging{
     })
   }
 
-  def getConfiguration = hadoopConf
 }
 
 object LannisterContext{

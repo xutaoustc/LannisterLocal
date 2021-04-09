@@ -16,18 +16,10 @@ import scala.collection.mutable.ListBuffer
 import scala.reflect.ClassTag
 
 object Test {
-  private val _typeToAggregator = mutable.Map[ApplicationType, MetricsAggregator]()
-  private val _typeToFetcher = mutable.Map[ApplicationType, Fetcher]()
-  private val _typeToHeuristics = mutable.Map[ApplicationType, List[Heuristic[_ <: ApplicationData]]]()
+
 
   def main(args: Array[String]): Unit = {
 
-    val map = mutable.Map[String,String]()
-    map += ("1"->"2")
-    map += ("2"->"3")
 
-
-    val cc = map.retain((x,y)=>{x=="1"})
-    println("ss")
   }
 }

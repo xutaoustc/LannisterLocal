@@ -8,10 +8,10 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder
 
 import java.security.PrivilegedAction
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.{Executors, LinkedBlockingQueue, ThreadPoolExecutor, TimeUnit}
+import java.util.concurrent.{LinkedBlockingQueue, ThreadPoolExecutor, TimeUnit, TimeoutException}
 
 class LannisterRunner  extends Runnable with Logging{
-  // initialize context first
+  // initialize context first for readability
   LannisterContext()
 
   private val _analyticJobGenerator = new AnalyticJobGeneratorHadoop3
@@ -32,15 +32,16 @@ class LannisterRunner  extends Runnable with Logging{
   private def core()={
     info(s"executor num is ${Configs.EXECUTOR_NUM.getValue}")
     while(running.get()) {
-      oneRound
+      fetchAndRun
     }
     error("LannisterRunner stopped")
 
 
 
-    def oneRound(): Unit ={
+    def fetchAndRun(): Unit ={
       thisRoundTs = System.currentTimeMillis()
 
+      // 1. Fetch
       var todos:List[AnalyticJob] = Nil
       try{
         todos = _analyticJobGenerator.fetchAnalyticJobs
@@ -50,12 +51,13 @@ class LannisterRunner  extends Runnable with Logging{
           return
       }
 
+      // 2. Submit
       todos.foreach(job=>{
         val future = threadPoolExecutor.submit( new ExecutorJob(job) )
         job.setJobFuture(future)
       })
 
-      info(s"Job queue size is ${threadPoolExecutor.getQueue.size}");
+      info(s"After submitting fetching jobs, Job queue size is ${threadPoolExecutor.getQueue.size}");
       waitInterval(Configs.FETCH_INTERVAL.getValue)
     }
   }
@@ -85,9 +87,36 @@ class LannisterRunner  extends Runnable with Logging{
 
 
 
-  class ExecutorJob(analyticJob: AnalyticJob) extends Runnable{
+  class ExecutorJob(analyticJob: AnalyticJob) extends Runnable with Logging {
     override def run(): Unit = {
+      info(s"[Analyzing] Analyzing ${analyticJob.applicationType.upperName} ${analyticJob.appId}")
 
+      try{
+        val analysisStartTimeMillis = System.currentTimeMillis
+        val result = analyticJob.getAnalysis
+        //TODO result.save
+        val processingTime = System.currentTimeMillis() - analysisStartTimeMillis
+        info(s"[Analyzing] Analysis of ${analyticJob.applicationType.upperName} ${analyticJob.appId} took ${processingTime}ms")
+      }catch{
+        case e: InterruptedException=> //TODO
+        case e: TimeoutException=> warn(s"[Analyzing][Fate] Time out while fetching data. Exception message is ${e.getMessage}")
+          jobFate()
+        case e: Exception=>
+          error(s"[Analyzing][Fate] Failed to analyze ${analyticJob.applicationType.upperName} ${analyticJob.appId}")
+          jobFate()
+      }
+    }
+
+    def jobFate(): Unit ={
+      if(analyticJob.retry){
+        warn(s"[Analyzing][Fate] Add analytic job id [${analyticJob.appId}] into the retry list.")
+        _analyticJobGenerator.addIntoRetries(analyticJob)
+      }else if(analyticJob.isSecondPhaseRetry){
+        warn(s"[Analyzing][Fate] Add analytic job id [${analyticJob.appId}] into the second retry list}")
+        _analyticJobGenerator.addIntoSecondRetryQueue(analyticJob)
+      }else{
+        error(s"[Analyzing][Fate] Drop the analytic job")
+      }
     }
   }
 }

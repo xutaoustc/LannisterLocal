@@ -3,9 +3,11 @@ import com.ctyun.lannister.LannisterContext
 import com.ctyun.lannister.util.Logging
 import org.apache.hadoop.conf.Configuration
 import org.codehaus.jackson.map.ObjectMapper
+
 import java.net.URL
 import java.util
 import java.util.concurrent.ConcurrentLinkedQueue
+import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 
@@ -21,6 +23,8 @@ class AnalyticJobGeneratorHadoop3 extends AnalyticJobGenerator with Logging {
   private var _currentTime = 0L
   private val FETCH_DELAY = 60000
   private val _firstRetryQueue:util.Queue[AnalyticJob] = new ConcurrentLinkedQueue[AnalyticJob]()
+  private val _secondRetryQueue = new util.LinkedList[AnalyticJob]()
+
 
   private val IS_RM_HA_ENABLED = "yarn.resourcemanager.ha.enabled"
   private val RESOURCE_MANAGER_ADDRESS = "yarn.resourcemanager.webapp.address"
@@ -37,29 +41,55 @@ class AnalyticJobGeneratorHadoop3 extends AnalyticJobGenerator with Logging {
     val start = _lastTime + 1
     val end = _currentTime
 
-    info(s"Fetching recent finished application runs between last time: ${start}, and current time: ${end}")
+    info(s"[Fetching] Fetching recent finished application runs between last time: ${start}, and current time: ${end}")
     val succeededAppsURL = new URL(new URL("http://" + _resourceManagerAddress), s"/ws/v1/cluster/apps?finalStatus=SUCCEEDED&finishedTimeBegin=${start}&finishedTimeEnd=${end}")
-    info(s"The succeeded apps URL is ${succeededAppsURL}")
+    info(s"[Fetching] The succeeded apps URL is ${succeededAppsURL}")
     val succeededApps = readApps(succeededAppsURL)
     appList ++= succeededApps
-    info(s"${succeededApps.size} succeeded items fetched")
 
     val failedAppsURL = new URL(new URL("http://" + _resourceManagerAddress), s"/ws/v1/cluster/apps?finalStatus=FAILED&state=FINISHED&finishedTimeBegin=${start}&finishedTimeEnd=${end}")
-    info(s"The failed apps URL is ${failedAppsURL}")
+    info(s"[Fetching] The failed apps URL is ${failedAppsURL}")
     val failedApps = readApps(failedAppsURL)
     appList ++= failedApps
-    info(s"${failedApps.size} failed items fetched")
 
+    var firstRetryQueueFetchCount = 0
     while (!_firstRetryQueue.isEmpty()) {
-      appList += _firstRetryQueue.poll()
+      val job = _firstRetryQueue.poll()
+      info(s"[Fetching] ${job.appId} polled from first retry queue")
+      firstRetryQueueFetchCount = firstRetryQueueFetchCount + 1
+      appList += job
     }
 
-//    fetchJobsFromSecondRetryQueue(appList)
+    var secondRetryQueueFetchCount = 0
+    _secondRetryQueue.synchronized{
+      val iteratorSecondRetry = _secondRetryQueue.iterator
+      while(iteratorSecondRetry.hasNext){
+        val job = iteratorSecondRetry.next()
+        if (job.readyForSecondRetry) {
+          info(s"[Fetching] ${job.appId} polled from second retry queue")
+          secondRetryQueueFetchCount = secondRetryQueueFetchCount + 1
+          appList += job
+          iteratorSecondRetry.remove();
+        }
+      }
+    }
 
     _lastTime = _currentTime
+    info(s"[Fetching] Total ${appList.size} items fetched --- ${succeededApps.size} succeed, ${failedApps.size} failed, ${firstRetryQueueFetchCount} first retry, $secondRetryQueueFetchCount second retry")
     appList.toList
   }
 
+  override def addIntoRetries(job: AnalyticJob): Unit = {
+    _firstRetryQueue.add(job)
+    info(s"[Analyzing][Fate] Retry queue size is ${_firstRetryQueue.size}")
+  }
+
+  override def addIntoSecondRetryQueue(job: AnalyticJob) = {
+    _secondRetryQueue.synchronized {
+      _secondRetryQueue.add(job.setTimeToSecondRetry)
+      info(s"[Analyzing][Fate] Second retry queue size is ${_secondRetryQueue.size}")
+    }
+  }
 
   private def updateResourceManagerAddresses: Unit = {
     if(_configuration.get(IS_RM_HA_ENABLED).toBoolean){
@@ -103,5 +133,7 @@ class AnalyticJobGeneratorHadoop3 extends AnalyticJobGenerator with Logging {
 
     appList
   }
+
+
 }
 

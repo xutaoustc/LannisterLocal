@@ -7,5 +7,5 @@ import com.ctyun.lannister.spark.data.SparkApplicationData
 class ExecutorsHeuristic(private val heuristicConfigurationData: HeuristicConfigurationData) extends Heuristic[SparkApplicationData]{
   override def apply(data: SparkApplicationData): HeuristicResult = ???
 
-  override def getHeuristicConfdata: HeuristicConfigurationData = ???
+  override def getHeuristicConfData: HeuristicConfigurationData = ???
 }
