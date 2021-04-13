@@ -102,7 +102,7 @@ class LannisterRunner  extends Runnable with Logging{
         case e: TimeoutException=> warn(s"[Analyzing][Fate] Time out while fetching data. Exception message is ${e.getMessage}")
           jobFate()
         case e: Exception=>
-          error(s"[Analyzing][Fate] Failed to analyze ${analyticJob.applicationType.upperName} ${analyticJob.appId}")
+          error(s"[Analyzing][Fate] Failed to analyze ${analyticJob.applicationType.upperName} ${analyticJob.appId}", e)
           jobFate()
       }
     }

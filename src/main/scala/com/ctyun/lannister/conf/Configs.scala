@@ -1,6 +1,7 @@
 package com.ctyun.lannister.conf
 
 object Configs {
+  val hadoopConfDir = CommonVars("hadoop.config.dir", CommonVars("HADOOP_CONF_DIR", "").getValue)
 
   val AUTO_TUNING_ENABLED = CommonVars("lannister.autotuning.enabled", "true")
 
