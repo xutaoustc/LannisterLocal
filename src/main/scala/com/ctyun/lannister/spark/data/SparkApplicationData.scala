@@ -1,7 +1,8 @@
 package com.ctyun.lannister.spark.data
 
 import com.ctyun.lannister.analysis.ApplicationData
+import org.apache.spark.deploy.history.{HistoryAppStatusStoreWrapper}
 
-class SparkApplicationData extends ApplicationData{
-  override def isEmpty: Boolean = ???
+class SparkApplicationData(val store:HistoryAppStatusStoreWrapper) extends ApplicationData{
+  override def isEmpty: Boolean = false
 }

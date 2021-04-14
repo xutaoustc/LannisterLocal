@@ -1,6 +1,6 @@
 package com.ctyun.lannister
 
-import com.ctyun.lannister.analysis.{AnalyticJob, AnalyticJobGeneratorHadoop3}
+import com.ctyun.lannister.analysis.{AnalyticJob, AnalyticJobGeneratorHadoop3, ApplicationType}
 import com.ctyun.lannister.conf.Configs
 import com.ctyun.lannister.security.HadoopSecurity
 import com.ctyun.lannister.util.Logging

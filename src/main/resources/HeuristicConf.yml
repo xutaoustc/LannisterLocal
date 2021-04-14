@@ -9,3 +9,11 @@ heuristics:
     applicationtype: spark
     classname: com.ctyun.lannister.spark.heuristics.ExecutorsHeuristic
     viewname:
+  -
+    name: Spark Executor Gc
+    applicationtype: spark
+    classname: com.ctyun.lannister.spark.heuristics.ExecutorGcHeuristic
+    viewname:
+    params:
+      gc_severity_A_threshold: 0.08, 0.10, 0.15, 0.20
+      gc_severity_D_threshold: 0.05, 0.04, 0.03, 0.01

@@ -18,7 +18,7 @@ class LannisterContext extends Logging{
   private val _nameToType = mutable.Map[String,ApplicationType]()
   private val _typeToAggregator = mutable.Map[ApplicationType, MetricsAggregator]()
   private val _typeToFetcher = mutable.Map[ApplicationType, Fetcher[_<:ApplicationData]]()
-  private val _typeToHeuristics = mutable.Map[ApplicationType, List[Heuristic[_ <: ApplicationData]]]()
+  private val _typeToHeuristics = mutable.Map[ApplicationType, List[Heuristic]]()
   private val _appTypeToJobTypes = mutable.Map[ApplicationType, List[JobType]]()
 
   loadAggregators
@@ -73,8 +73,9 @@ class LannisterContext extends Logging{
 
     heuristicsConfiguration.getHeuristics.forEach(data=>{
       val instance = Class.forName(data.classname)
-                          .getConstructor(classOf[HeuristicConfigurationData]).newInstance(data).asInstanceOf[Heuristic[_ <: ApplicationData]]
+                          .getConstructor(classOf[HeuristicConfigurationData]).newInstance(data).asInstanceOf[Heuristic]
       val value = _typeToHeuristics.getOrElseUpdate(data.getAppType, Nil)
+
       _typeToHeuristics.put(data.getAppType, value :+ instance)
       info(s"Load heuristic ${data.classname}")
     })

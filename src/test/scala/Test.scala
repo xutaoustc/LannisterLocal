@@ -19,7 +19,10 @@ object Test {
 
 
   def main(args: Array[String]): Unit = {
-
+    for{x<-None
+        y<-Option(3)}{
+      print(s"${x} ss ${y}")
+    }
 
   }
 }

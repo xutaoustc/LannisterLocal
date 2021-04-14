@@ -6,7 +6,7 @@ import com.ctyun.lannister.conf.fetcher.FetcherConfigurationData
 import com.ctyun.lannister.spark.data.SparkApplicationData
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path, PathFilter}
-import org.apache.spark.deploy.history.{EventLogFileReader, ReplayListenerBusWrapper}
+import org.apache.spark.deploy.history.{EventLogFileReader, HistoryAppStatusStoreWrapper, ReplayListenerBusWrapper}
 import org.apache.spark.scheduler.ReplayListenerBus
 
 import java.nio.file.Paths
@@ -29,9 +29,6 @@ class SparkFSFetcher(fetcherConfigurationData: FetcherConfigurationData) extends
 
 
     val replayBus = new ReplayListenerBusWrapper(fs, finalAttempt)
-    replayBus.parse()
-
-    null
-
+    new SparkApplicationData( HistoryAppStatusStoreWrapper(replayBus.parse()) )
   }
 }

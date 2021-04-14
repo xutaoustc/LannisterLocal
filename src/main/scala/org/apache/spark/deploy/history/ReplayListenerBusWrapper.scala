@@ -23,9 +23,10 @@ class ReplayListenerBusWrapper(fs:FileSystem, finalAttempt:FileStatus) extends L
   }
 
 
-  def parse(): Unit ={
+  def parse() ={
     val replayConf = new SparkConf().set(ASYNC_TRACKING_ENABLED, false)
-    val trackingStore = new ElementTrackingStore(new InMemoryStore, replayConf)
+    val kvStore = new InMemoryStore
+    val trackingStore = new ElementTrackingStore(kvStore, replayConf)
 
     try {
       // first parse to get the basic info
@@ -41,6 +42,7 @@ class ReplayListenerBusWrapper(fs:FileSystem, finalAttempt:FileStatus) extends L
       parseAppEventLogs(eventLogFiles, replayBus, !reader.completed)
       trackingStore.close(false)
       info(s"Finished parsing ${reader.rootPath}")
+      new HistoryAppStatusStore(new SparkConf(),kvStore)
     } catch {
       case e: Exception =>
         Utils.tryLogNonFatalError {

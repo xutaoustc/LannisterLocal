@@ -11,5 +11,6 @@ object Utils {
     val yaml = new Yaml(new Constructor(clazz))
     yaml.load(stream).asInstanceOf[T]
   }
+
 }
 
