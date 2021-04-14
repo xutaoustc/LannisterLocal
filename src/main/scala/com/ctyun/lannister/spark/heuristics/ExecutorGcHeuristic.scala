@@ -6,8 +6,13 @@ import com.ctyun.lannister.conf.heuristic.HeuristicConfigurationData
 import com.ctyun.lannister.spark.data.SparkApplicationData
 import com.ctyun.lannister.spark.heuristics.ExecutorGcHeuristic.{Evaluator, GC_SEVERITY_A_THRESHOLDS_KEY, GC_SEVERITY_D_THRESHOLDS_KEY}
 import org.apache.spark.status.api.v1.ExecutorSummary
+import scala.collection.JavaConverters
 
 class ExecutorGcHeuristic(private val heuristicConfigurationData: HeuristicConfigurationData) extends Heuristic{
+
+
+  import ExecutorGcHeuristic._
+  import JavaConverters._
 
   val gcSeverityAThresholds: SeverityThresholds =
     SeverityThresholds.parse(heuristicConfigurationData.params.get(GC_SEVERITY_A_THRESHOLDS_KEY), ascending = true)
@@ -36,7 +41,7 @@ class ExecutorGcHeuristic(private val heuristicConfigurationData: HeuristicConfi
       heuristicConfigurationData.name,
       evaluator.severityTimeA,
       0,
-      resultDetails.toList
+      resultDetails.asJava
     )
   }
 }
