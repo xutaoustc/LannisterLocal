@@ -3,7 +3,8 @@ package com.ctyun.lannister.model
 import com.ctyun.lannister.analysis.Severity.Severity
 
 class AppResult {
-  var id:String = _
+  var id:Long = _
+  var appId:String = _
   var trackingUrl:String = _
   var queueName:String = _
   var username:String = _
@@ -16,5 +17,4 @@ class AppResult {
   var resourceWasted:Long = _
   var severity:Severity = _
   var score:Int = _
-
 }

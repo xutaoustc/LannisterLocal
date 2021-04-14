@@ -43,7 +43,7 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
     val aggregatedData = metricsAggregator.getResult
 
     val result = new AppResult()
-    result.id = appId
+    result.appId = appId
     result.trackingUrl = trackingUrl
     result.queueName = queueName
     result.username = user
@@ -51,9 +51,10 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
     result.finishTime = finishTime
     result.name = name
     result.jobType = applicationType.upperName
-    result.resourceUsed = aggregatedData.resourceUsed
-    result.totalDelay = aggregatedData.totalDelay
-    result.resourceWasted = aggregatedData.resourceWasted
+    result.resourceUsed = 0 //TODO
+    result.totalDelay = 0 //TODO
+    result.resourceWasted = 0  //TODO
+    //TODO  save result
 
     var jobScore = 0
     var worstSeverity = Severity.NONE
@@ -63,19 +64,22 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
       heuForSave.heuristicName = heu.heuristicName
       heuForSave.severity = heu.severity
       heuForSave.score = heu.score
+      // TODO save
+//      heuForSave.appId = _
 
       heu.heuristicResultDetails.foreach(heuDtl=>{
         val heuDetailForSave = new AppHeuristicResultDetails
-        heuDetailForSave.appHeuristicResult = heuForSave
         heuDetailForSave.name = heuDtl.name
         heuDetailForSave.value = heuDtl.value
         heuDetailForSave.details = heuDtl.details
-//    TODO    detail.
+        heuDetailForSave.heuristicId = heuForSave.id
+        //TODO save
       })
-      // TODO add
       worstSeverity = Severity.max(worstSeverity, heuForSave.severity)
       jobScore = jobScore + heuForSave.score
     })
+
+    //TODO Update
     result.severity = worstSeverity
     result.score = jobScore
 
