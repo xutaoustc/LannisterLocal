@@ -1,20 +1,17 @@
 package com.ctyun.lannister
 
-class Lannister private() extends Runnable{
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
+
+@Component
+class Lannister extends Runnable{
   // TODO    println(Configs.AUTO_TUNING_ENABLED.getValue)
 
-  private val lannister = new LannisterRunner
+  @Autowired
+  private var lannisterRunner:LannisterRunner = _
 
   override def run(): Unit = {
     // hear me roar!
-    lannister.run()
-  }
-}
-
-object Lannister{
-  private val INSTANCE = new Lannister
-
-  def apply()={
-    INSTANCE
+    lannisterRunner.run()
   }
 }

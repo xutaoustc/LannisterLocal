@@ -5,11 +5,13 @@ import com.ctyun.lannister.conf.Configs
 import com.ctyun.lannister.security.HadoopSecurity
 import com.ctyun.lannister.util.Logging
 import com.google.common.util.concurrent.ThreadFactoryBuilder
+import org.springframework.stereotype.Component
 
 import java.security.PrivilegedAction
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.{LinkedBlockingQueue, ThreadPoolExecutor, TimeUnit, TimeoutException}
 
+@Component
 class LannisterRunner  extends Runnable with Logging{
   // initialize context first for readability
   LannisterContext()

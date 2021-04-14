@@ -11,9 +11,9 @@ class Booter {
 
   @Bean def taskExecutor = new SimpleAsyncTaskExecutor
 
-  @Bean def schedulingRunner(taskExecutor: TaskExecutor): CommandLineRunner = new CommandLineRunner() {
+  @Bean def schedulingRunner(executor: TaskExecutor, lannister: Lannister): CommandLineRunner = new CommandLineRunner() {
     override def run(args: String*): Unit = {
-      taskExecutor.execute(Lannister())
+      executor.execute(lannister)
     }
   }
 }
