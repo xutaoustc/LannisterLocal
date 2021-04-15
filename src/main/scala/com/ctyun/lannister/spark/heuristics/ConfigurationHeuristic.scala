@@ -1,9 +1,7 @@
 package com.ctyun.lannister.spark.heuristics
 
-import java.util.ArrayList
-
 import com.ctyun.lannister.analysis.Severity.Severity
-import com.ctyun.lannister.analysis.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetails, Severity, SeverityThresholds}
+import com.ctyun.lannister.analysis._
 import com.ctyun.lannister.conf.heuristic.HeuristicConfigurationData
 import com.ctyun.lannister.math.Statistics
 import com.ctyun.lannister.spark.data.SparkApplicationData
@@ -15,7 +13,6 @@ class ConfigurationHeuristic (private val heuristicConfigurationData: HeuristicC
 
 
   import ConfigurationHeuristic._
-  import scala.collection.JavaConverters._
 
 
   val sparkOverheadMemoryThreshold: SeverityThresholds = SeverityThresholds.parse(heuristicConfigurationData.getParams.get(SPARK_OVERHEAD_MEMORY_THRESHOLD_KEY), ascending = true)
@@ -28,82 +25,83 @@ class ConfigurationHeuristic (private val heuristicConfigurationData: HeuristicC
   override def getHeuristicConfData(): HeuristicConfigurationData = heuristicConfigurationData
 
   override def apply(data: ApplicationData): HeuristicResult = {
-    val evaluator = new Evaluator(this, data.asInstanceOf[SparkApplicationData])
-
-    def formatProperty(property: Option[String]): String =
-      property.getOrElse("Not presented. Using default.")
-
-    val resultDetails = Seq(
-      new HeuristicResultDetails(
-        SPARK_DRIVER_MEMORY_KEY,
-        formatProperty(evaluator.driverMemoryBytes.map(MemoryFormatUtils.bytesToString))
-      ),
-      new HeuristicResultDetails(
-        SPARK_EXECUTOR_MEMORY_KEY,
-        formatProperty(evaluator.executorMemoryBytes.map(MemoryFormatUtils.bytesToString))
-      ),
-      new HeuristicResultDetails(
-        SPARK_EXECUTOR_INSTANCES_KEY,
-        formatProperty(evaluator.executorInstances.map(_.toString))
-      ),
-      new HeuristicResultDetails(
-        SPARK_EXECUTOR_CORES_KEY,
-        formatProperty(evaluator.executorCores.map(_.toString))
-      ),
-      new HeuristicResultDetails(
-        SPARK_APPLICATION_DURATION,
-        evaluator.applicationDuration.toString + " Seconds"
-      ),
-      new HeuristicResultDetails(
-        SPARK_DYNAMIC_ALLOCATION_ENABLED,
-        formatProperty(evaluator.isDynamicAllocationEnabled.map(_.toString))
-      ),
-      new HeuristicResultDetails(
-        SPARK_DRIVER_CORES_KEY,
-        formatProperty(evaluator.driverCores.map(_.toString))
-      ),
-      new HeuristicResultDetails(
-        SPARK_YARN_DRIVER_MEMORY_OVERHEAD,
-        evaluator.sparkYarnDriverMemoryOverhead
-      ),
-      new HeuristicResultDetails(
-        SPARK_YARN_EXECUTOR_MEMORY_OVERHEAD,
-        evaluator.sparkYarnExecutorMemoryOverhead
-      )
-    )
-    // Constructing a mutable ArrayList for resultDetails, otherwise addResultDetail method HeuristicResult cannot be used.
-    val mutableResultDetailsArrayList = new ArrayList[HeuristicResultDetails](resultDetails.asJava)
-    val result = new HeuristicResult(
-      heuristicConfigurationData.getClassname,
-      heuristicConfigurationData.getName,
-      evaluator.severity,
-      0,
-      mutableResultDetailsArrayList
-    )
-    if (evaluator.serializerSeverity != Severity.NONE) {
-      result.addResultDetail(SPARK_SERIALIZER_KEY, formatProperty(evaluator.serializer),
-        "KyroSerializer is Not Enabled.")
-    }
-    if (evaluator.shuffleAndDynamicAllocationSeverity != Severity.NONE) {
-      result.addResultDetail(SPARK_SHUFFLE_SERVICE_ENABLED, formatProperty(evaluator.isShuffleServiceEnabled.map(_.toString)),
-        "Spark shuffle service is not enabled.")
-    }
-    if (evaluator.severityMinExecutors == Severity.CRITICAL) {
-      result.addResultDetail("Minimum Executors", "The minimum executors for Dynamic Allocation should be <=1. Please change it in the " + SPARK_DYNAMIC_ALLOCATION_MIN_EXECUTORS + " field.")
-    }
-    if (evaluator.severityMaxExecutors == Severity.CRITICAL) {
-      result.addResultDetail("Maximum Executors", "The maximum executors for Dynamic Allocation should be <=900. Please change it in the " + SPARK_DYNAMIC_ALLOCATION_MAX_EXECUTORS + " field.")
-    }
-    if (evaluator.jarsSeverity == Severity.CRITICAL) {
-      result.addResultDetail("Jars notation", "It is recommended to not use * notation while specifying jars in the field " + SPARK_YARN_JARS)
-    }
-    if(evaluator.severityDriverMemoryOverhead.id >= Severity.SEVERE.id) {
-      result.addResultDetail("Driver Overhead Memory", "Please do not specify excessive amount of overhead memory for Driver. Change it in the field " + SPARK_YARN_DRIVER_MEMORY_OVERHEAD)
-    }
-    if(evaluator.severityExecutorMemoryOverhead.id >= Severity.SEVERE.id) {
-      result.addResultDetail("Executor Overhead Memory", "Please do not specify excessive amount of overhead memory for Executors. Change it in the field " + SPARK_YARN_EXECUTOR_MEMORY_OVERHEAD)
-    }
-    result
+    null
+//    val evaluator = new Evaluator(this, data.asInstanceOf[SparkApplicationData])
+//
+//    def formatProperty(property: Option[String]): String =
+//      property.getOrElse("Not presented. Using default.")
+//
+//    val resultDetails = Seq(
+//      new HeuristicResultDetails(
+//        SPARK_DRIVER_MEMORY_KEY,
+//        formatProperty(evaluator.driverMemoryBytes.map(MemoryFormatUtils.bytesToString))
+//      ),
+//      new HeuristicResultDetails(
+//        SPARK_EXECUTOR_MEMORY_KEY,
+//        formatProperty(evaluator.executorMemoryBytes.map(MemoryFormatUtils.bytesToString))
+//      ),
+//      new HeuristicResultDetails(
+//        SPARK_EXECUTOR_INSTANCES_KEY,
+//        formatProperty(evaluator.executorInstances.map(_.toString))
+//      ),
+//      new HeuristicResultDetails(
+//        SPARK_EXECUTOR_CORES_KEY,
+//        formatProperty(evaluator.executorCores.map(_.toString))
+//      ),
+//      new HeuristicResultDetails(
+//        SPARK_APPLICATION_DURATION,
+//        evaluator.applicationDuration.toString + " Seconds"
+//      ),
+//      new HeuristicResultDetails(
+//        SPARK_DYNAMIC_ALLOCATION_ENABLED,
+//        formatProperty(evaluator.isDynamicAllocationEnabled.map(_.toString))
+//      ),
+//      new HeuristicResultDetails(
+//        SPARK_DRIVER_CORES_KEY,
+//        formatProperty(evaluator.driverCores.map(_.toString))
+//      ),
+//      new HeuristicResultDetails(
+//        SPARK_YARN_DRIVER_MEMORY_OVERHEAD,
+//        evaluator.sparkYarnDriverMemoryOverhead
+//      ),
+//      new HeuristicResultDetails(
+//        SPARK_YARN_EXECUTOR_MEMORY_OVERHEAD,
+//        evaluator.sparkYarnExecutorMemoryOverhead
+//      )
+//    )
+//    // Constructing a mutable ArrayList for resultDetails, otherwise addResultDetail method HeuristicResult cannot be used.
+//    val mutableResultDetailsArrayList = new ArrayList[HeuristicResultDetails](resultDetails.asJava)
+//    val result = new HeuristicResult(
+//      heuristicConfigurationData.getClassname,
+//      heuristicConfigurationData.getName,
+//      evaluator.severity,
+//      0,
+//      mutableResultDetailsArrayList
+//    )
+//    if (evaluator.serializerSeverity != Severity.NONE) {
+//      result.addResultDetail(SPARK_SERIALIZER_KEY, formatProperty(evaluator.serializer),
+//        "KyroSerializer is Not Enabled.")
+//    }
+//    if (evaluator.shuffleAndDynamicAllocationSeverity != Severity.NONE) {
+//      result.addResultDetail(SPARK_SHUFFLE_SERVICE_ENABLED, formatProperty(evaluator.isShuffleServiceEnabled.map(_.toString)),
+//        "Spark shuffle service is not enabled.")
+//    }
+//    if (evaluator.severityMinExecutors == Severity.CRITICAL) {
+//      result.addResultDetail("Minimum Executors", "The minimum executors for Dynamic Allocation should be <=1. Please change it in the " + SPARK_DYNAMIC_ALLOCATION_MIN_EXECUTORS + " field.")
+//    }
+//    if (evaluator.severityMaxExecutors == Severity.CRITICAL) {
+//      result.addResultDetail("Maximum Executors", "The maximum executors for Dynamic Allocation should be <=900. Please change it in the " + SPARK_DYNAMIC_ALLOCATION_MAX_EXECUTORS + " field.")
+//    }
+//    if (evaluator.jarsSeverity == Severity.CRITICAL) {
+//      result.addResultDetail("Jars notation", "It is recommended to not use * notation while specifying jars in the field " + SPARK_YARN_JARS)
+//    }
+//    if(evaluator.severityDriverMemoryOverhead.id >= Severity.SEVERE.id) {
+//      result.addResultDetail("Driver Overhead Memory", "Please do not specify excessive amount of overhead memory for Driver. Change it in the field " + SPARK_YARN_DRIVER_MEMORY_OVERHEAD)
+//    }
+//    if(evaluator.severityExecutorMemoryOverhead.id >= Severity.SEVERE.id) {
+//      result.addResultDetail("Executor Overhead Memory", "Please do not specify excessive amount of overhead memory for Executors. Change it in the field " + SPARK_YARN_EXECUTOR_MEMORY_OVERHEAD)
+//    }
+//    result
   }
 }
 
