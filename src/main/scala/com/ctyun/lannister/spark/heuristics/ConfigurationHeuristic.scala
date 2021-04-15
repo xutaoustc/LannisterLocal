@@ -5,6 +5,7 @@ import java.util.ArrayList
 import com.ctyun.lannister.analysis.Severity.Severity
 import com.ctyun.lannister.analysis.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetails, Severity, SeverityThresholds}
 import com.ctyun.lannister.conf.heuristic.HeuristicConfigurationData
+import com.ctyun.lannister.math.Statistics
 import com.ctyun.lannister.spark.data.SparkApplicationData
 import com.ctyun.lannister.util.MemoryFormatUtils
 
@@ -49,10 +50,10 @@ class ConfigurationHeuristic (private val heuristicConfigurationData: HeuristicC
         SPARK_EXECUTOR_CORES_KEY,
         formatProperty(evaluator.executorCores.map(_.toString))
       ),
-/*      new HeuristicResultDetails(
+      new HeuristicResultDetails(
         SPARK_APPLICATION_DURATION,
         evaluator.applicationDuration.toString + " Seconds"
-      ),*/
+      ),
       new HeuristicResultDetails(
         SPARK_DYNAMIC_ALLOCATION_ENABLED,
         formatProperty(evaluator.isDynamicAllocationEnabled.map(_.toString))
@@ -134,8 +135,7 @@ object ConfigurationHeuristic {
       severe = MemoryFormatUtils.stringToBytes("6G"), critical = MemoryFormatUtils.stringToBytes("8G"), ascending = true)
 
   class Evaluator(configurationHeuristic: ConfigurationHeuristic, data: SparkApplicationData) {
-    lazy val appConfigurationProperties: Map[String, String] = ???
-      //data.store.store.
+    lazy val appConfigurationProperties: Map[String, String] = data.store.store.environmentInfo().sparkProperties.toMap
 
     lazy val driverMemoryBytes: Option[Long] =
       Try(getProperty(SPARK_DRIVER_MEMORY_KEY).map(MemoryFormatUtils.stringToBytes)).getOrElse(None)
@@ -158,11 +158,11 @@ object ConfigurationHeuristic {
     lazy val dynamicMaxExecutors: Option[Int] =
       Try(getProperty(SPARK_DYNAMIC_ALLOCATION_MAX_EXECUTORS).map(_.toInt)).getOrElse(None)
 
-/*    lazy val applicationDuration: Long = {
-      require(data.applicationInfo.attempts.nonEmpty)
-      val lastApplicationAttemptInfo = data.applicationInfo.attempts.last
+    lazy val applicationDuration: Long = {
+      require(data.store.store.applicationInfo.attempts.nonEmpty)
+      val lastApplicationAttemptInfo = data.store.store.applicationInfo.attempts.last
       (lastApplicationAttemptInfo.endTime.getTime - lastApplicationAttemptInfo.startTime.getTime) / Statistics.SECOND_IN_MS
-    }*/
+    }
 
     lazy val sparkYarnJars: String = getProperty(SPARK_YARN_JARS).getOrElse("")
 
