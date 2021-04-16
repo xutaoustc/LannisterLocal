@@ -1,8 +1,11 @@
 package com.ctyun.lannister.model
 
+import com.baomidou.mybatisplus.annotation.{IdType, TableField, TableId, TableName}
 import com.ctyun.lannister.analysis.Severity.Severity
 
+@TableName("app_result")
 class AppResult {
+  @TableId(`type` = IdType.AUTO)
   var id:Long = _
   var appId:String = _
   var trackingUrl:String = _
@@ -15,6 +18,8 @@ class AppResult {
   var resourceUsed:Long = _
   var totalDelay:Long = _
   var resourceWasted:Long = _
+  @TableField(`exist` = false)
   var severity:Severity = _
+  var severityId:Int = _
   var score:Int = _
 }

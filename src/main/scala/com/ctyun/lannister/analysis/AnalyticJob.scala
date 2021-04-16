@@ -3,11 +3,10 @@ package com.ctyun.lannister.analysis
 import com.ctyun.lannister.LannisterContext
 import com.ctyun.lannister.conf.Configs
 import com.ctyun.lannister.model.{AppHeuristicResult, AppHeuristicResultDetails, AppResult}
-import com.ctyun.lannister.spark.data.SparkApplicationData
-import com.ctyun.lannister.spark.heuristics.ConfigurationHeuristic
 import com.ctyun.lannister.util.Logging
-
 import java.util.concurrent.Future
+import com.ctyun.lannister.dao.{AppHeuristicResultDao, AppHeuristicResultDetailsDao, AppResultDao}
+
 import scala.collection.mutable
 
 case class AnalyticJob(appId:String, applicationType:ApplicationType, user:String, name:String, queueName:String,
@@ -17,12 +16,13 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
   private var _secondRetries = 0
   private var _timeLeftToRetry = 0
 
+
   def setJobFuture(future:Future[_])={
     this._jobFuture = future
     this
   }
 
-  def getAnalysis: AppResult = {
+  def getAnalysis(appResultDao:AppResultDao,appHeuResultDao:AppHeuristicResultDao,appHeuResDetailsDao:AppHeuristicResultDetailsDao): AppResult = {
     // Fetch
     val fetcher = LannisterContext().getFetcherForApplicationType(applicationType)
     val data:ApplicationData = fetcher.fetchData(this)
@@ -55,6 +55,8 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
     result.totalDelay = 0 //TODO
     result.resourceWasted = 0  //TODO
     //TODO  save result
+    appResultDao.insert(result)
+
 
     var jobScore = 0
     var worstSeverity = Severity.NONE
@@ -65,6 +67,7 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
       heuForSave.severity = heu.severity
       heuForSave.score = heu.score
       // TODO save
+      appHeuResultDao.insert(heuForSave)
 //      heuForSave.appId = _
 
       heu.heuristicResultDetails.foreach(heuDtl=>{
@@ -74,6 +77,7 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
         heuDetailForSave.details = heuDtl.details
         heuDetailForSave.heuristicId = heuForSave.id
         //TODO save
+        appHeuResDetailsDao.insert(heuDetailForSave)
       })
       worstSeverity = Severity.max(worstSeverity, heuForSave.severity)
       jobScore = jobScore + heuForSave.score
@@ -81,8 +85,8 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
 
     //TODO Update
     result.severity = worstSeverity
+    result.severityId = worstSeverity.id
     result.score = jobScore
-
     result
   }
 

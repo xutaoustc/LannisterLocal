@@ -7,7 +7,6 @@ import org.codehaus.jackson.map.ObjectMapper
 import java.net.URL
 import java.util
 import java.util.concurrent.ConcurrentLinkedQueue
-import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 

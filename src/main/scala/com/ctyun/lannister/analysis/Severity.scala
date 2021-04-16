@@ -1,7 +1,5 @@
 package com.ctyun.lannister.analysis
 
-import com.ctyun.lannister.analysis
-
 object Severity extends Enumeration {
   type Severity = Value
   val NONE = Value(0, "None")
@@ -17,36 +15,45 @@ object Severity extends Enumeration {
       b
   }
 
-
-  def getSeverityAscending(value:Number, low:Number, moderate:Number, severe:Number, critical:Number): Severity ={
-    if(value.doubleValue() >= critical.doubleValue())
-      return CRITICAL
-
-    if(value.doubleValue() >= severe.doubleValue())
-      return SEVERE
-
-    if(value.doubleValue() >= moderate.doubleValue())
-      return MODERATE
-
-    if(value.doubleValue() >= low.doubleValue())
-      return LOW
-
-    NONE
+  def max(severities: Severity*): Severity = {
+    var currentSeverity = NONE
+    for (severity <- severities) {
+      currentSeverity = max(currentSeverity, severity)
+    }
+    currentSeverity
   }
 
-  def getSeverityDescending(value:Number, low:Number, moderate:Number, severe:Number, critical:Number): Severity ={
-    if (value.doubleValue() <= critical.doubleValue())
-      return CRITICAL
+  def  getSeverityAscending(value: Number,low: Number,  moderate: Number,  severe: Number,
+    critical: Number):Severity= {
+    if (value.doubleValue() >= critical.doubleValue()) {
+      return CRITICAL;
+    }
+    if (value.doubleValue() >= severe.doubleValue()) {
+      return SEVERE;
+    }
+    if (value.doubleValue() >= moderate.doubleValue()) {
+      return MODERATE;
+    }
+    if (value.doubleValue() >= low.doubleValue()) {
+      return LOW;
+    }
+    return NONE;
+  }
 
-    if (value.doubleValue() <= severe.doubleValue())
-      return SEVERE
-
-    if (value.doubleValue() <= moderate.doubleValue())
-      return MODERATE
-
-    if (value.doubleValue() <= low.doubleValue())
-      return LOW
-
-    NONE
+  def  getSeverityDescending(value: Number,low: Number,  moderate: Number,  severe: Number,
+                            critical: Number):Severity= {
+    if (value.doubleValue() <= critical.doubleValue()) {
+      return CRITICAL;
+    }
+    if (value.doubleValue() <= severe.doubleValue()) {
+      return SEVERE;
+    }
+    if (value.doubleValue() <= moderate.doubleValue()) {
+      return MODERATE;
+    }
+    if (value.doubleValue() <= low.doubleValue()) {
+      return LOW;
+    }
+    return NONE;
   }
 }
