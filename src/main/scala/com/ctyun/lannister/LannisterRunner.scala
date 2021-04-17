@@ -6,13 +6,15 @@ import com.ctyun.lannister.security.HadoopSecurity
 import com.ctyun.lannister.util.Logging
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import org.springframework.stereotype.Component
-
 import java.security.PrivilegedAction
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.{LinkedBlockingQueue, ThreadPoolExecutor, TimeUnit, TimeoutException}
 
+import com.ctyun.lannister.dao._
+import org.springframework.beans.factory.annotation.{Autowired, Lookup}
+
 @Component
-class LannisterRunner  extends Runnable with Logging{
+class LannisterRunner extends Runnable with Logging{
   // initialize context first for readability
   LannisterContext()
 
@@ -24,6 +26,12 @@ class LannisterRunner  extends Runnable with Logging{
   private val threadPoolExecutor = new ThreadPoolExecutor(Configs.EXECUTOR_NUM.getValue, Configs.EXECUTOR_NUM.getValue,
     0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue[Runnable](), factory)
 
+  @Autowired
+   var appResultDao: AppResultDao = _
+  @Autowired
+   var appHeuristicResultDao: AppHeuristicResultDao = _
+  @Autowired
+   var appHeuristicResultDetailsDao: AppHeuristicResultDetailsDao = _
 
   override def run(): Unit = {
     info("LannisterRunner has started")
@@ -39,7 +47,7 @@ class LannisterRunner  extends Runnable with Logging{
     error("LannisterRunner stopped")
 
 
-
+    @Lookup
     def fetchAndRun(): Unit ={
       thisRoundTs = System.currentTimeMillis()
 
@@ -95,7 +103,7 @@ class LannisterRunner  extends Runnable with Logging{
 
       try{
         val analysisStartTimeMillis = System.currentTimeMillis
-        val result = analyticJob.getAnalysis
+        val result = analyticJob.getAnalysis(appResultDao,appHeuristicResultDao,appHeuristicResultDetailsDao)
         //TODO result.save
         val processingTime = System.currentTimeMillis() - analysisStartTimeMillis
         info(s"[Analyzing] Analysis of ${analyticJob.applicationType.upperName} ${analyticJob.appId} took ${processingTime}ms")
@@ -121,5 +129,7 @@ class LannisterRunner  extends Runnable with Logging{
       }
     }
   }
+
 }
+
 
