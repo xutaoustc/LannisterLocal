@@ -3,6 +3,8 @@ import com.ctyun.lannister.LannisterContext
 import com.ctyun.lannister.util.Logging
 import org.apache.hadoop.conf.Configuration
 import org.codehaus.jackson.map.ObjectMapper
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 
 import java.net.URL
 import java.util
@@ -13,8 +15,11 @@ import scala.collection.mutable.ListBuffer
 /*
 * Generate Job waiting for analyze
 * */
+@Component
 class AnalyticJobGeneratorHadoop3 extends AnalyticJobGenerator with Logging {
-  private val _configuration:Configuration = LannisterContext().getConfiguration
+  @Autowired
+  var context: LannisterContext = _
+  private val _configuration:Configuration = context.getConfiguration
   private var _resourceManagerAddress:String = null
   private val _objectMapper = new ObjectMapper
   private var _lastTime = 0L
@@ -123,7 +128,7 @@ class AnalyticJobGeneratorHadoop3 extends AnalyticJobGenerator with Logging {
           val startTime = app.get("startedTime").asLong()
           val finishTime = app.get("finishedTime").asLong()
 
-          val applicationType = LannisterContext().getApplicationTypeForName(app.get("applicationType").asText())
+          val applicationType = context.getApplicationTypeForName(app.get("applicationType").asText())
           if(applicationType != null){
             appList += AnalyticJob(appId,applicationType, user, name, queueName, trackingUrl, startTime, finishTime)
           }

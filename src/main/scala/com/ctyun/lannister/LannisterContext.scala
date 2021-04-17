@@ -6,13 +6,24 @@ import com.ctyun.lannister.conf.aggregator.{AggregatorConfiguration, AggregatorC
 import com.ctyun.lannister.conf.fetcher.{FetcherConfiguration, FetcherConfigurationData}
 import com.ctyun.lannister.conf.heuristic.{HeuristicConfiguration, HeuristicConfigurationData}
 import com.ctyun.lannister.conf.jobtype.JobTypeConfiguration
+import com.ctyun.lannister.dao.{AppHeuristicResultDao, AppHeuristicResultDetailsDao, AppResultDao}
 import com.ctyun.lannister.util.{Logging, Utils}
 import org.apache.hadoop.conf.Configuration
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 
 import scala.collection.convert.ImplicitConversions.`collection AsScalaIterable`
 import scala.collection.mutable
 
+@Component
 class LannisterContext extends Logging{
+  @Autowired
+  var appResultDao: AppResultDao = _
+  @Autowired
+  var appHeuristicResultDao: AppHeuristicResultDao = _
+  @Autowired
+  var appHeuristicResultDetailsDao: AppHeuristicResultDetailsDao = _
+
   private var hadoopConf:Configuration = _
 
   private val _nameToType = mutable.Map[String,ApplicationType]()
@@ -118,10 +129,3 @@ class LannisterContext extends Logging{
 
 }
 
-object LannisterContext{
-  private val INSTANCE = new LannisterContext
-
-  def apply():LannisterContext={
-    INSTANCE
-  }
-}

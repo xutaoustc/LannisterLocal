@@ -95,8 +95,8 @@ object ExecutorsHeuristic{
     lazy val storageMemoryUsedDistribution: Distribution = Distribution(executorSummaries.map { _.memoryUsed })
     lazy val storageMemoryUsedSeverity: Severity = severityOfDistribution(storageMemoryUsedDistribution, executorsHeuristic.ignoreMaxBytesLessThanThreshold)
 
-    lazy val taskTimeDistribution: Distribution = Distribution(executorSummaries.map { _.totalDuration })
     lazy val totalTaskTime : Long = executorSummaries.map(_.totalDuration).sum
+    lazy val taskTimeDistribution: Distribution = Distribution(executorSummaries.map { _.totalDuration })
     lazy val taskTimeSeverity: Severity = severityOfDistribution(taskTimeDistribution, executorsHeuristic.ignoreMaxMillisLessThanThreshold)
 
     lazy val inputBytesDistribution: Distribution = Distribution(executorSummaries.map { _.totalInputBytes })

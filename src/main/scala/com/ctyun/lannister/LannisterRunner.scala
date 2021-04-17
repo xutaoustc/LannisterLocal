@@ -1,24 +1,23 @@
 package com.ctyun.lannister
 
-import com.ctyun.lannister.analysis.{AnalyticJob, AnalyticJobGeneratorHadoop3, ApplicationType}
+import com.ctyun.lannister.analysis.{AnalyticJob, AnalyticJobGeneratorHadoop3}
 import com.ctyun.lannister.conf.Configs
 import com.ctyun.lannister.security.HadoopSecurity
 import com.ctyun.lannister.util.Logging
 import com.google.common.util.concurrent.ThreadFactoryBuilder
+import org.springframework.beans.factory.annotation.{Autowired, Lookup}
 import org.springframework.stereotype.Component
+
 import java.security.PrivilegedAction
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.{LinkedBlockingQueue, ThreadPoolExecutor, TimeUnit, TimeoutException}
 
-import com.ctyun.lannister.dao._
-import org.springframework.beans.factory.annotation.{Autowired, Lookup}
-
 @Component
 class LannisterRunner extends Runnable with Logging{
-  // initialize context first for readability
-  LannisterContext()
-
-  private val _analyticJobGenerator = new AnalyticJobGeneratorHadoop3
+  @Autowired
+  var context: LannisterContext = _
+  @Autowired
+  var _analyticJobGenerator:AnalyticJobGeneratorHadoop3 = _
   private val running = new AtomicBoolean(true)
   private var thisRoundTs = 0L
 
@@ -26,12 +25,7 @@ class LannisterRunner extends Runnable with Logging{
   private val threadPoolExecutor = new ThreadPoolExecutor(Configs.EXECUTOR_NUM.getValue, Configs.EXECUTOR_NUM.getValue,
     0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue[Runnable](), factory)
 
-  @Autowired
-   var appResultDao: AppResultDao = _
-  @Autowired
-   var appHeuristicResultDao: AppHeuristicResultDao = _
-  @Autowired
-   var appHeuristicResultDetailsDao: AppHeuristicResultDetailsDao = _
+
 
   override def run(): Unit = {
     info("LannisterRunner has started")
@@ -103,7 +97,7 @@ class LannisterRunner extends Runnable with Logging{
 
       try{
         val analysisStartTimeMillis = System.currentTimeMillis
-        val result = analyticJob.getAnalysis(appResultDao,appHeuristicResultDao,appHeuristicResultDetailsDao)
+        val result = analyticJob.getAnalysis(context)
         //TODO result.save
         val processingTime = System.currentTimeMillis() - analysisStartTimeMillis
         info(s"[Analyzing] Analysis of ${analyticJob.applicationType.upperName} ${analyticJob.appId} took ${processingTime}ms")

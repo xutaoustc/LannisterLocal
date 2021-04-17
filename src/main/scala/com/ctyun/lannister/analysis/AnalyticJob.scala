@@ -4,9 +4,8 @@ import com.ctyun.lannister.LannisterContext
 import com.ctyun.lannister.conf.Configs
 import com.ctyun.lannister.model.{AppHeuristicResult, AppHeuristicResultDetails, AppResult}
 import com.ctyun.lannister.util.Logging
-import java.util.concurrent.Future
-import com.ctyun.lannister.dao.{AppHeuristicResultDao, AppHeuristicResultDetailsDao, AppResultDao}
 
+import java.util.concurrent.Future
 import scala.collection.mutable
 
 case class AnalyticJob(appId:String, applicationType:ApplicationType, user:String, name:String, queueName:String,
@@ -22,9 +21,9 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
     this
   }
 
-  def getAnalysis(appResultDao:AppResultDao,appHeuResultDao:AppHeuristicResultDao,appHeuResDetailsDao:AppHeuristicResultDetailsDao): AppResult = {
+  def getAnalysis(context:LannisterContext): AppResult = {
     // Fetch
-    val fetcher = LannisterContext().getFetcherForApplicationType(applicationType)
+    val fetcher = context.getFetcherForApplicationType(applicationType)
     val data:ApplicationData = fetcher.fetchData(this)
 
     // Heuristic
@@ -33,12 +32,12 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
       heuristicResults += HeuristicResult.NO_DATA
       info(s"No Data Received for analytic job: ${appId}")
     }else{
-      val heuristics = LannisterContext().getHeuristicsForApplicationType(applicationType)
+      val heuristics = context.getHeuristicsForApplicationType(applicationType)
       heuristicResults ++= heuristics.map(h=> h.apply(data))
     }
 
     // Aggregator
-    val metricsAggregator = LannisterContext().getAggregatorForApplicationType(applicationType)
+    val metricsAggregator = context.getAggregatorForApplicationType(applicationType)
     metricsAggregator.aggregate(data)
     val aggregatedData = metricsAggregator.getResult
 
@@ -55,7 +54,7 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
     result.totalDelay = 0 //TODO
     result.resourceWasted = 0  //TODO
     //TODO  save result
-    appResultDao.insert(result)
+    context.appResultDao.insert(result)
 
 
     var jobScore = 0
@@ -67,7 +66,7 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
       heuForSave.severity = heu.severity
       heuForSave.score = heu.score
       // TODO save
-      appHeuResultDao.insert(heuForSave)
+      context.appHeuristicResultDao.insert(heuForSave)
 //      heuForSave.appId = _
 
       heu.heuristicResultDetails.foreach(heuDtl=>{
@@ -77,7 +76,7 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
         heuDetailForSave.details = heuDtl.details
         heuDetailForSave.heuristicId = heuForSave.id
         //TODO save
-        appHeuResDetailsDao.insert(heuDetailForSave)
+        context.appHeuristicResultDetailsDao.insert(heuDetailForSave)
       })
       worstSeverity = Severity.max(worstSeverity, heuForSave.severity)
       jobScore = jobScore + heuForSave.score
