@@ -13,5 +13,5 @@ class AppHeuristicResult {
   var severity:Severity = _
   var severityId:Int = _
   var score:Int = _
-  var appId:Long = _
+  var resultId:Long = _
 }

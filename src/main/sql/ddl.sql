@@ -10,7 +10,7 @@ CREATE TABLE `app_heuristic_result` (
                                         `heuristic_name` varchar(100) DEFAULT NULL,
                                         `severity_id` int(11) DEFAULT NULL,
                                         `score` int(11) DEFAULT NULL,
-                                        `app_id` bigint(20) DEFAULT NULL,
+                                        `result_id` bigint(20) DEFAULT NULL,
                                         PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
