@@ -3,6 +3,7 @@ package com.ctyun.lannister
 import com.ctyun.lannister.analysis.{AnalyticJob, AnalyticJobGeneratorHadoop3}
 import com.ctyun.lannister.conf.Configs
 import com.ctyun.lannister.security.HadoopSecurity
+import com.ctyun.lannister.service.SaveService
 import com.ctyun.lannister.util.Logging
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import org.springframework.beans.factory.annotation.{Autowired, Lookup}
@@ -18,6 +19,9 @@ class LannisterRunner extends Runnable with Logging{
   var context: LannisterContext = _
   @Autowired
   var _analyticJobGenerator:AnalyticJobGeneratorHadoop3 = _
+  @Autowired
+  var saveService:SaveService = _
+
   private val running = new AtomicBoolean(true)
   private var thisRoundTs = 0L
 
@@ -98,7 +102,7 @@ class LannisterRunner extends Runnable with Logging{
       try{
         val analysisStartTimeMillis = System.currentTimeMillis
         val result = analyticJob.getAnalysis(context)
-        //TODO result.save
+        saveService.save(result)
         val processingTime = System.currentTimeMillis() - analysisStartTimeMillis
         info(s"[Analyzing] Analysis of ${analyticJob.applicationType.upperName} ${analyticJob.appId} took ${processingTime}ms")
       }catch{

@@ -53,7 +53,6 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
     result.resourceUsed = 0 //TODO
     result.totalDelay = 0 //TODO
     result.resourceWasted = 0  //TODO
-    context.appResultDao.insert(result)
 
     var jobScore = 0
     var worstSeverity = Severity.NONE
@@ -64,7 +63,7 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
       heuForSave.severityId = heu.severity.id
       heuForSave.score = heu.score
       heuForSave.resultId = result.id
-      context.appHeuristicResultDao.insert(heuForSave)
+      result.heuristicResults += heuForSave
 
       heu.heuristicResultDetails.foreach(heuDtl=>{
         val heuDetailForSave = new AppHeuristicResultDetails
@@ -72,7 +71,7 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
         heuDetailForSave.value = heuDtl.value
         heuDetailForSave.details = heuDtl.details
         heuDetailForSave.heuristicId = heuForSave.id
-        context.appHeuristicResultDetailsDao.insert(heuDetailForSave)
+        heuForSave.heuristicResultDetails += heuDetailForSave
       })
       worstSeverity = Severity.max(worstSeverity, heuForSave.severity)
       jobScore = jobScore + heuForSave.score
@@ -80,7 +79,6 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
 
     result.severityId = worstSeverity.id
     result.score = jobScore
-    context.appResultDao.updateById(result)
 
     result
   }
