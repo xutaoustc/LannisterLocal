@@ -6,9 +6,7 @@ import com.ctyun.lannister.analysis.Severity.Severity
 import scala.collection.mutable
 
 @TableName("app_heuristic_result")
-class AppHeuristicResult {
-  @TableId(`type` = IdType.AUTO)
-  var id:Long = _
+class AppHeuristicResult extends AppBase{
   var heuristicClass:String = _
   var heuristicName:String = _
   var severityId:Int = _

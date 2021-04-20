@@ -1,7 +1,9 @@
 package com.ctyun.lannister.service
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper
+import com.baomidou.mybatisplus.core.mapper.BaseMapper
 import com.ctyun.lannister.dao.{AppHeuristicResultDao, AppHeuristicResultDetailsDao, AppResultDao}
-import com.ctyun.lannister.model.AppResult
+import com.ctyun.lannister.model.{AppBase, AppHeuristicResult, AppResult}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -17,10 +19,24 @@ class SaveService {
 
   @Transactional
   def save(result:AppResult)={
-    appResultDao.insert(result)
+    appResultDao.upsert(result)
+    val appResultId = readId[AppResult](appResultDao,result, "app_id",result.appId)
     result.heuristicResults.foreach(heuResult=>{
-      appHeuristicResultDao.insert(heuResult)
-      heuResult.heuristicResultDetails.foreach(appHeuristicResultDetailsDao.insert(_))
+      heuResult.resultId = appResultId
+      appHeuristicResultDao.upsert(heuResult)
+      val heuResultId = readId[AppHeuristicResult](appHeuristicResultDao,heuResult, "result_id",heuResult.resultId)
+      heuResult.heuristicResultDetails.foreach{ heuResultDetail =>{
+        heuResultDetail.heuristicId = heuResultId
+        appHeuristicResultDetailsDao.upsert(heuResultDetail)
+      }}
     })
   }
+
+  def readId[T <: AppBase](dao:BaseMapper[T],entity:T, column:String,value:Any):Long = {
+    if(entity.id != 0)
+      entity.id
+    else
+      dao.selectOne(new QueryWrapper[T]().eq(column,value)).id
+  }
+
 }

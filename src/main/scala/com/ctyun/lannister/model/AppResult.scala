@@ -6,9 +6,7 @@ import com.ctyun.lannister.analysis.Severity.Severity
 import scala.collection.mutable
 
 @TableName("app_result")
-class AppResult {
-  @TableId(`type` = IdType.AUTO)
-  var id:Long = _
+class AppResult extends AppBase {
   var appId:String = _
   var trackingUrl:String = _
   var queueName:String = _

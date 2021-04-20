@@ -4,7 +4,6 @@ import com.ctyun.lannister.LannisterContext
 import com.ctyun.lannister.conf.Configs
 import com.ctyun.lannister.model.{AppHeuristicResult, AppHeuristicResultDetails, AppResult}
 import com.ctyun.lannister.util.Logging
-
 import java.util.concurrent.Future
 import scala.collection.mutable
 
