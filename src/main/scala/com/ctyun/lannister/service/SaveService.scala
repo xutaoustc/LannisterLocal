@@ -26,10 +26,10 @@ class SaveService {
 
     result.heuristicResults.foreach(heuResult=>{
       heuResult.resultId = resultId
-      val heuResultId = appHeuristicResultDao.insert(heuResult)
+      appHeuristicResultDao.insert(heuResult)
       heuResult.heuristicResultDetails.foreach{ heuResultDetail =>{
         heuResultDetail.resultId = resultId
-        heuResultDetail.heuristicId = heuResultId
+        heuResultDetail.heuristicId = heuResult.id
         appHeuristicResultDetailsDao.insert(heuResultDetail)
       }}
     })
