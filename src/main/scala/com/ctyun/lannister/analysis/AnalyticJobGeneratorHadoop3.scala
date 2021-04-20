@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component
 import java.net.URL
 import java.util
 import java.util.concurrent.ConcurrentLinkedQueue
+import javax.annotation.PostConstruct
 import scala.collection.mutable.ListBuffer
 
 
@@ -19,7 +20,13 @@ import scala.collection.mutable.ListBuffer
 class AnalyticJobGeneratorHadoop3 extends AnalyticJobGenerator with Logging {
   @Autowired
   var context: LannisterContext = _
-  private val _configuration:Configuration = context.getConfiguration
+
+  private var _configuration:Configuration = _
+  @PostConstruct
+  def init(): Unit ={
+    _configuration = context.getConfiguration
+  }
+
   private var _resourceManagerAddress:String = null
   private val _objectMapper = new ObjectMapper
   private var _lastTime = 0L

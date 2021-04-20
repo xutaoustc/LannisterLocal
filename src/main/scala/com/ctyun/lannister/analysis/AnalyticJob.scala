@@ -59,9 +59,9 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
       val heuForSave = new AppHeuristicResult
       heuForSave.heuristicClass = heu.heuristicClass
       heuForSave.heuristicName = heu.heuristicName
+      heuForSave.severity = heu.severity
       heuForSave.severityId = heu.severity.id
       heuForSave.score = heu.score
-      heuForSave.resultId = result.id
       result.heuristicResults += heuForSave
 
       heu.heuristicResultDetails.foreach(heuDtl=>{
@@ -69,7 +69,6 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
         heuDetailForSave.name = heuDtl.name
         heuDetailForSave.value = heuDtl.value
         heuDetailForSave.details = heuDtl.details
-        heuDetailForSave.heuristicId = heuForSave.id
         heuForSave.heuristicResultDetails += heuDetailForSave
       })
       worstSeverity = Severity.max(worstSeverity, heuForSave.severity)

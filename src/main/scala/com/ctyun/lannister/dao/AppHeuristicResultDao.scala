@@ -9,6 +9,4 @@ import org.springframework.stereotype.Repository
   * @date 2021/4/14
   */
 @Repository
-trait AppHeuristicResultDao extends BaseMapper[AppHeuristicResult]{
-     def upsert(appHeuristicResult:AppHeuristicResult):Int
-}
+trait AppHeuristicResultDao extends BaseMapper[AppHeuristicResult]
