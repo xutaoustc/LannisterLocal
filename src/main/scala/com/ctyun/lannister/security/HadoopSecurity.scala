@@ -1,18 +1,17 @@
 package com.ctyun.lannister.security
 
 import com.ctyun.lannister.conf.Configs
+import com.ctyun.lannister.hadoop.HadoopConf
 import com.ctyun.lannister.util.{Logging, Utils}
 import org.apache.commons.lang3.StringUtils
-import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.security.UserGroupInformation
 
 import java.io.File
 
 class HadoopSecurity extends Logging{
-  private val conf = new Configuration()
   private var loginUser:UserGroupInformation = _
 
-  UserGroupInformation.setConfiguration(conf)
+  UserGroupInformation.setConfiguration(HadoopConf.conf)
   if(UserGroupInformation.isSecurityEnabled){
     info("This cluster is kerberos enabled")
     check()

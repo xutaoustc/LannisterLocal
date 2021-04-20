@@ -1,5 +1,6 @@
 package com.ctyun.lannister.analysis
 import com.ctyun.lannister.LannisterContext
+import com.ctyun.lannister.hadoop.HadoopConf
 import com.ctyun.lannister.util.Logging
 import org.apache.hadoop.conf.Configuration
 import org.codehaus.jackson.map.ObjectMapper
@@ -9,7 +10,6 @@ import org.springframework.stereotype.Component
 import java.net.URL
 import java.util
 import java.util.concurrent.ConcurrentLinkedQueue
-import javax.annotation.PostConstruct
 import scala.collection.mutable.ListBuffer
 
 
@@ -21,11 +21,7 @@ class AnalyticJobGeneratorHadoop3 extends AnalyticJobGenerator with Logging {
   @Autowired
   var context: LannisterContext = _
 
-  private var _configuration:Configuration = _
-  @PostConstruct
-  def init(): Unit ={
-    _configuration = context.getConfiguration
-  }
+  private val _configuration:Configuration = HadoopConf.conf
 
   private var _resourceManagerAddress:String = null
   private val _objectMapper = new ObjectMapper

@@ -6,14 +6,12 @@ import com.ctyun.lannister.conf.aggregator.{AggregatorConfiguration, AggregatorC
 import com.ctyun.lannister.conf.fetcher.{FetcherConfiguration, FetcherConfigurationData}
 import com.ctyun.lannister.conf.heuristic.{HeuristicConfiguration, HeuristicConfigurationData}
 import com.ctyun.lannister.util.{Logging, Utils}
-import org.apache.hadoop.conf.Configuration
 import org.springframework.stereotype.Component
 
 import scala.collection.mutable
 
 @Component
 class LannisterContext extends Logging{
-  private var hadoopConf:Configuration = _
 
   private val _nameToType = mutable.Map[String,ApplicationType]()
   private val _typeToAggregator = mutable.Map[ApplicationType, MetricsAggregator]()
@@ -23,14 +21,11 @@ class LannisterContext extends Logging{
   loadAggregators
   loadFetchers
   loadHeuristics
-  loadGeneralConf
 // TODO loadAutoTuningConf();
   configureSupportedApplicationTypes
 
 
   def getApplicationTypeForName(typeName: String) = _nameToType(typeName)
-
-  def getConfiguration = hadoopConf
 
   def getAggregatorForApplicationType(applicationType: ApplicationType)={
     _typeToAggregator(applicationType)
@@ -79,10 +74,6 @@ class LannisterContext extends Logging{
     })
   }
 
-
-  private def loadGeneralConf={
-    hadoopConf = new Configuration()
-  }
 
   private def configureSupportedApplicationTypes(): Unit ={
     val supportedTypes = _typeToFetcher.keySet & _typeToHeuristics.keySet  & _typeToAggregator.keySet
