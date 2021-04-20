@@ -3,7 +3,7 @@ package com.ctyun.lannister.service
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper
 import com.baomidou.mybatisplus.core.mapper.BaseMapper
 import com.ctyun.lannister.dao.{AppHeuristicResultDao, AppHeuristicResultDetailsDao, AppResultDao}
-import com.ctyun.lannister.model.{AppBase, AppHeuristicResult, AppHeuristicResultDetails, AppResult}
+import com.ctyun.lannister.model.{AppBase, AppHeuristicResult, AppResult}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
