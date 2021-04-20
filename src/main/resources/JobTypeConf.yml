@@ -1,6 +1,0 @@
-jobTypes:
-  -
-    name: Spark
-    applicationtype: spark
-    conf: spark.app.id
-    value: .*
