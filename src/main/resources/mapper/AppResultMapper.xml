@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ctyun.lannister.dao.AppResultDao">
+
+    <insert id="upsert" parameterType="com.ctyun.lannister.model.AppResult" useGeneratedKeys="true" keyProperty="id">
+        insert into
+           app_result(app_id, tracking_url, queue_name, username,
+                      start_time,finish_time, name, job_type, resource_used, total_delay, resource_wasted, severity_Id, score)
+        values(#{appId},#{trackingUrl},#{queueName},#{username},
+               #{startTime},#{finishTime},#{name},#{jobType},#{resourceUsed},#{totalDelay},#{resourceWasted},#{severityId},#{score})
+        on duplicate key update
+            app_id=#{appId},
+            tracking_url=#{trackingUrl},
+            queue_name=#{queueName},
+            username=#{username},
+            start_time=#{startTime},
+            finish_time=#{finishTime},
+            name=#{name},
+            job_type=#{jobType},
+            resource_used=#{resourceUsed},
+            total_delay=#{totalDelay},
+            resource_wasted=#{resourceWasted},
+            severity_Id=#{severityId},
+            score=#{score}
+    </insert>
+
+
+</mapper>

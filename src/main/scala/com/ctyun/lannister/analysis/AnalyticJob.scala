@@ -2,10 +2,14 @@ package com.ctyun.lannister.analysis
 
 import com.ctyun.lannister.LannisterContext
 import com.ctyun.lannister.conf.Configs
-import com.ctyun.lannister.model.{AppHeuristicResult, AppHeuristicResultDetails, AppResult}
+import com.ctyun.lannister.model.{AppBase, AppHeuristicResult, AppHeuristicResultDetails, AppResult}
 import com.ctyun.lannister.util.Logging
-
 import java.util.concurrent.Future
+
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper
+import com.baomidou.mybatisplus.core.mapper.BaseMapper
+import com.ctyun.lannister.dao.{AppHeuristicResultDao, AppHeuristicResultDetailsDao, AppResultDao}
+
 import scala.collection.mutable
 
 case class AnalyticJob(appId:String, applicationType:ApplicationType, user:String, name:String, queueName:String,
@@ -53,7 +57,6 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
     result.resourceUsed = 0 //TODO
     result.totalDelay = 0 //TODO
     result.resourceWasted = 0  //TODO
-    context.appResultDao.insert(result)
 
     var jobScore = 0
     var worstSeverity = Severity.NONE
@@ -64,7 +67,7 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
       heuForSave.severityId = heu.severity.id
       heuForSave.score = heu.score
       heuForSave.resultId = result.id
-      context.appHeuristicResultDao.insert(heuForSave)
+      result.heuristicResults += heuForSave
 
       heu.heuristicResultDetails.foreach(heuDtl=>{
         val heuDetailForSave = new AppHeuristicResultDetails
@@ -72,7 +75,6 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
         heuDetailForSave.value = heuDtl.value
         heuDetailForSave.details = heuDtl.details
         heuDetailForSave.heuristicId = heuForSave.id
-        context.appHeuristicResultDetailsDao.insert(heuDetailForSave)
       })
       worstSeverity = Severity.max(worstSeverity, heuForSave.severity)
       jobScore = jobScore + heuForSave.score
@@ -80,8 +82,6 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
 
     result.severityId = worstSeverity.id
     result.score = jobScore
-    context.appResultDao.updateById(result)
-
     result
   }
 
@@ -106,4 +106,12 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
     _secondRetries = _secondRetries + 1
     b
   }
+
+  def readId[T <: AppBase](dao:BaseMapper[T],entity:T, column:String,value:Any):Long = {
+       if(entity.id != 0)
+         entity.id
+       else
+         dao.selectOne(new QueryWrapper[T]().eq(column,value)).id
+  }
+
 }

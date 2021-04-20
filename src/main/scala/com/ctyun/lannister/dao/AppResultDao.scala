@@ -9,5 +9,5 @@ import org.springframework.stereotype.Repository
   */
 @Repository
 trait AppResultDao extends BaseMapper[AppResult]{
-
+    def upsert(appResult:AppResult):Int
 }

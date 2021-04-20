@@ -21,7 +21,7 @@ DROP TABLE IF EXISTS `app_heuristic_result_details`;
 CREATE TABLE `app_heuristic_result_details` (
                                                 `id` bigint(20) NOT NULL AUTO_INCREMENT,
                                                 `name` varchar(100) DEFAULT NULL,
-                                                `value` varchar(100) DEFAULT NULL,
+                                                `value` varchar(1000) DEFAULT NULL,
                                                 `details` varchar(255) DEFAULT NULL,
                                                 `heuristic_id` bigint(20) DEFAULT NULL,
                                                 PRIMARY KEY (`id`)

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ctyun.lannister.dao.AppHeuristicResultDetailsDao">
+
+    <insert id="upsert" parameterType="com.ctyun.lannister.model.AppHeuristicResultDetails" useGeneratedKeys="true" keyProperty="id">
+        insert into
+           app_heuristic_result_details(name, value, details, heuristic_id)
+        values(#{heuristicClass},#{heuristicName},#{severityId},#{score},#{appId})
+        on duplicate key update
+            name=#{name},
+            value=#{value},
+            details=#{details},
+            heuristic_id=#{heuristicId}
+    </insert>
+
+</mapper>
