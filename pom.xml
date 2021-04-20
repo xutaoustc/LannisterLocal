@@ -80,28 +80,20 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <scope>runtime</scope>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-
+            <!-- Just Compile Scala, Do not care about spring or not -->
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
                 <version>3.2.2</version>
+                <configuration>
+                    <scalaVersion>2.12</scalaVersion>
+                </configuration>
                 <executions>
-                    <execution>
-                        <id>eclipse-add-source</id>
-                        <goals>
-                            <goal>add-source</goal>
-                        </goals>
-                    </execution>
                     <execution>
                         <id>scala-compile-first</id>
                         <phase>process-resources</phase>
@@ -109,26 +101,92 @@
                             <goal>compile</goal>
                         </goals>
                     </execution>
+
                     <execution>
-                        <id>scala-test-compile-first</id>
+                        <id>scala-test-compile</id>
                         <phase>process-test-resources</phase>
                         <goals>
                             <goal>testCompile</goal>
                         </goals>
                     </execution>
+                </executions>
+            </plugin>
+
+            <!-- Copy the dependency to the target/lib -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
                     <execution>
-                        <id>attach-scaladocs</id>
-                        <phase>verify</phase>
+                        <phase>prepare-package</phase>
                         <goals>
-                            <goal>doc-jar</goal>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>target/lib</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                            <includeScope>compile</includeScope>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Set classpath and main class to the current jar -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.ctyun.lannister.Application</mainClass>
+                            <classpathPrefix>../lib</classpathPrefix>
+                            <addClasspath>true</addClasspath>
+                        </manifest>
+                        <manifestEntries>
+                            <Class-Path>../conf/</Class-Path>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <!-- Import Spring, Change the jar Boot structure to Spring Boot Structure
+             Remove the conf and dependency from SpringBoot boot jar, do not make it a fat jar-->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <layout>ZIP</layout>
+                    <includes>
+                        <include>
+                            <groupId>non-exists</groupId>
+                            <artifactId>non-exists</artifactId>
+                        </include>
+                    </includes>
+                </configuration>
+            </plugin>
+
+            <!-- Assembly together to a packed object -->
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/main/assembly/assembly.xml</descriptor>
+                    </descriptors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <scalaVersion>2.12</scalaVersion>
-                    <recompileMode>incremental</recompileMode>
-                    <useZincServer>false</useZincServer>
-                </configuration>
             </plugin>
         </plugins>
     </build>

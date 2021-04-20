@@ -104,7 +104,7 @@ class LannisterRunner extends Runnable with Logging{
         val result = analyticJob.getAnalysis(context)
         saveService.save(result)
         val processingTime = System.currentTimeMillis() - analysisStartTimeMillis
-        info(s"[Analyzing] Analysis of ${analyticJob.applicationType.upperName} ${analyticJob.appId} took ${processingTime}ms")
+        info(s"[Analyzing] ^o^ TOOK ${processingTime}ms to analyze ${analyticJob.applicationType.upperName} ${analyticJob.appId} ")
       }catch{
         case e: InterruptedException=> //TODO
         case e: TimeoutException=> warn(s"[Analyzing][Fate] Time out while fetching data. Exception message is ${e.getMessage}")
