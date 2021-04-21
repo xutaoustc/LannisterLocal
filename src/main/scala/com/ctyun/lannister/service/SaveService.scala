@@ -6,7 +6,7 @@ import com.ctyun.lannister.dao.{AppHeuristicResultDao, AppHeuristicResultDetails
 import com.ctyun.lannister.model.{AppBase, AppHeuristicResult, AppHeuristicResultDetails, AppResult}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.annotation.{Isolation, Transactional}
 
 @Component
 class SaveService {
@@ -17,7 +17,7 @@ class SaveService {
   @Autowired
   var appHeuristicResultDetailsDao: AppHeuristicResultDetailsDao = _
 
-  @Transactional
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   def save(result:AppResult)={
     appResultDao.upsert(result)
     val resultId = readId[AppResult](appResultDao, result, "app_id", result.appId)
