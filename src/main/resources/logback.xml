@@ -13,9 +13,9 @@
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%-40t] %c{1.} (%L) [%M] - %msg%xEx%n</pattern>
             <charset>utf-8</charset>
         </encoder>
-        <file>log/output.log</file>
+        <file>logs/output.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>log/$${date:yyyy-MM}/output.log.%i</fileNamePattern>
+            <fileNamePattern>logs/$${date:yyyy-MM}/output.log.%i</fileNamePattern>
         </rollingPolicy>
         <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
             <MaxFileSize>100MB</MaxFileSize>
