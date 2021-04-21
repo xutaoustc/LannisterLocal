@@ -50,6 +50,7 @@ CREATE TABLE `app_heuristic_result_details` (
                                                 `result_id` bigint(100) DEFAULT NULL,
                                                 `heuristic_id` bigint(20) DEFAULT NULL,
                                                 PRIMARY KEY (`id`),
-                                                INDEX result_id(result_id)
+                                                INDEX result_id(result_id),
+                                                INDEX heuristic_id(heuristic_id)
                                             ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 

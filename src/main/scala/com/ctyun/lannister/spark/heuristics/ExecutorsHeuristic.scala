@@ -116,6 +116,7 @@ object ExecutorsHeuristic{
       shuffleWriteBytesSeverity
     )
 
+
     private[heuristics] def severityOfDistribution(
       distribution: Distribution,
       ignoreMaxLessThanThreshold: Long,
@@ -130,6 +131,7 @@ object ExecutorsHeuristic{
       }
     }
   }
+
 
   case class Distribution(min: Long, p25: Long, median: Long, p75: Long, max: Long)
   object Distribution {
