@@ -6,7 +6,8 @@ case class HeuristicResult(heuristicClass:String,
                            heuristicName:String,
                            severity: Severity,
                            score:Int,
-                           heuristicResultDetails:List[HeuristicResultDetails])
+                           heuristicResultDetails:List[HeuristicResultDetails]) {
+}
 
 object HeuristicResult{
   val NO_DATA = new HeuristicResult(
