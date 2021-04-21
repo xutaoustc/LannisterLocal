@@ -4,8 +4,8 @@ import com.ctyun.lannister.LannisterContext
 import com.ctyun.lannister.conf.Configs
 import com.ctyun.lannister.model.{AppHeuristicResult, AppHeuristicResultDetails, AppResult}
 import com.ctyun.lannister.util.Logging
+
 import java.util.concurrent.Future
-import scala.collection.mutable
 
 case class AnalyticJob(appId:String, applicationType:ApplicationType, user:String, name:String, queueName:String,
                        trackingUrl:String, startTime:Long, finishTime:Long) extends Logging{
@@ -21,34 +21,22 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
   }
 
   def getAnalysis(context:LannisterContext): AppResult = {
-    // Fetch
-    val fetcher = context.getFetcherForApplicationType(applicationType)
-    val dataOption = fetcher.fetchData(this)
-
-    // Heuristic
-    val heuristicResults = mutable.ListBuffer[HeuristicResult]()
-    dataOption match {
+    // Fetch & Heuristic & Aggregator
+    val (heuristicResults, aggregatedData) =
+    context.getFetcherForApplicationType(applicationType).fetchData(this) match {
       case Some(data) => {
         val heuristics = context.getHeuristicsForApplicationType(applicationType)
-        heuristicResults ++= heuristics.map(h=> h.apply(data))
-      }
-      case None => {
-        heuristicResults += HeuristicResult.NO_DATA
-        warn(s"No Data Received for analytic job: $appId")
-      }
-    }
-
-
-    // Aggregator
-    val metricsAggregator = context.getAggregatorForApplicationType(applicationType)
-    dataOption match {
-      case Some(data) => {
+        val metricsAggregator = context.getAggregatorForApplicationType(applicationType)
         metricsAggregator.aggregate(data)
+
+        (heuristics.map(h=> h.apply(data)), metricsAggregator.getResult)
       }
       case None => {
+        warn(s"No Data Received for analytic job: $appId")
+        (HeuristicResult.NO_DATA :: Nil, None)
       }
     }
-    val aggregatedData = metricsAggregator.getResult
+
 
     val result = new AppResult()
     result.appId = appId

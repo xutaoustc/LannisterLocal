@@ -1,11 +1,11 @@
 package com.ctyun.lannister.spark.heuristics
 
 import com.ctyun.lannister.analysis.Severity.Severity
-import com.ctyun.lannister.analysis.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetails, Severity, SeverityThresholds}
+import com.ctyun.lannister.analysis._
 import com.ctyun.lannister.conf.heuristic.HeuristicConfigurationData
 import com.ctyun.lannister.math.Statistics
 import com.ctyun.lannister.spark.data.SparkApplicationData
-import com.ctyun.lannister.spark.heuristics.ExecutorsHeuristic.{Distribution, Evaluator}
+import com.ctyun.lannister.spark.heuristics.ExecutorsHeuristic.Evaluator
 import com.ctyun.lannister.util.MemoryFormatUtils
 import org.apache.spark.status.api.v1.ExecutorSummary
 
@@ -19,23 +19,6 @@ class ExecutorsHeuristic(private val heuristicConfigurationData: HeuristicConfig
 
   override def apply(data: ApplicationData): HeuristicResult = {
     val evaluator = new Evaluator(this, data.asInstanceOf[SparkApplicationData])
-
-    def formatDistribution(distribution: Distribution, longFormatter: Long => String, separator: String = ", "): String = {
-      val labels = Seq(
-        s"min: ${longFormatter(distribution.min)}",
-        s"p25: ${longFormatter(distribution.p25)}",
-        s"median: ${longFormatter(distribution.median)}",
-        s"p75: ${longFormatter(distribution.p75)}",
-        s"max: ${longFormatter(distribution.max)}"
-      )
-      labels.mkString(separator)
-    }
-
-    def formatDistributionBytes(distribution: Distribution): String =
-      formatDistribution(distribution, MemoryFormatUtils.bytesToString)
-
-    def formatDistributionDuration(distribution: Distribution): String =
-      formatDistribution(distribution, Statistics.readableTimespan)
 
     val resultDetails = Seq(
       new HeuristicResultDetails(
@@ -52,11 +35,11 @@ class ExecutorsHeuristic(private val heuristicConfigurationData: HeuristicConfig
       ),
       new HeuristicResultDetails(
         "Executor storage memory used distribution",
-        formatDistributionBytes(evaluator.storageMemoryUsedDistribution)
+        evaluator.storageMemoryUsedDistribution.formatDistribution(MemoryFormatUtils.bytesToString)
       ),
       new HeuristicResultDetails(
         "Executor task time distribution",
-        formatDistributionDuration(evaluator.taskTimeDistribution)
+        evaluator.taskTimeDistribution.formatDistribution(Statistics.readableTimespan)
       ),
       new HeuristicResultDetails(
         "Executor task time sum",
@@ -64,15 +47,15 @@ class ExecutorsHeuristic(private val heuristicConfigurationData: HeuristicConfig
       ),
       new HeuristicResultDetails(
         "Executor input bytes distribution",
-        formatDistributionBytes(evaluator.inputBytesDistribution)
+        evaluator.inputBytesDistribution.formatDistribution(MemoryFormatUtils.bytesToString)
       ),
       new HeuristicResultDetails(
         "Executor shuffle read bytes distribution",
-        formatDistributionBytes(evaluator.shuffleReadBytesDistribution)
+        evaluator.shuffleReadBytesDistribution.formatDistribution(MemoryFormatUtils.bytesToString)
       ),
       new HeuristicResultDetails(
         "Executor shuffle write bytes distribution",
-        formatDistributionBytes(evaluator.shuffleWriteBytesDistribution)
+        evaluator.shuffleWriteBytesDistribution.formatDistribution(MemoryFormatUtils.bytesToString)
       )
     )
     new HeuristicResult(
@@ -133,7 +116,19 @@ object ExecutorsHeuristic{
   }
 
 
-  case class Distribution(min: Long, p25: Long, median: Long, p75: Long, max: Long)
+  case class Distribution(min: Long, p25: Long, median: Long, p75: Long, max: Long){
+    def formatDistribution(longFormatter: Long => String, separator: String = ", "): String = {
+      val labels = Seq(
+        s"min: ${longFormatter(min)}",
+        s"p25: ${longFormatter(p25)}",
+        s"median: ${longFormatter(median)}",
+        s"p75: ${longFormatter(p75)}",
+        s"max: ${longFormatter(max)}"
+      )
+      labels.mkString(separator)
+    }
+  }
+
   object Distribution {
     def apply(values: Seq[Long]): Distribution = {
       val sortedValues = values.sorted
