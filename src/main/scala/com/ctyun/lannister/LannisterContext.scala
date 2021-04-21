@@ -25,7 +25,7 @@ class LannisterContext extends Logging{
   configureSupportedApplicationTypes
 
 
-  def getApplicationTypeForName(typeName: String) = _nameToType(typeName)
+  def getApplicationTypeForName(typeName: String) = _nameToType.get(typeName)
 
   def getAggregatorForApplicationType(applicationType: ApplicationType)={
     _typeToAggregator(applicationType)
