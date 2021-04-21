@@ -23,7 +23,7 @@ class HadoopSecurity extends Logging{
   }
 
   private def checkLogin()={
-    if(!UserGroupInformation.isSecurityEnabled) {
+    if(UserGroupInformation.isSecurityEnabled) {
       if(loginUser == null){
         UserGroupInformation.loginUserFromKeytab(Configs.KEYTAB_USER.getValue, Configs.KEYTAB_LOCATION.getValue)
         loginUser = UserGroupInformation.getLoginUser
