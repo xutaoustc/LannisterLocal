@@ -12,7 +12,6 @@ import java.security.PrivilegedAction
 import scala.collection.JavaConverters._
 
 class SparkFSFetcher(fetcherConfigurationData: FetcherConfigurationData) extends Fetcher[SparkApplicationData]{
-  private val fs = FileSystem.get(HadoopConf.conf)
   private val rootPath:String= fetcherConfigurationData.params.asScala("rootPath")
 
   override def fetchData(job: AnalyticJob): SparkApplicationData = {
@@ -20,13 +19,17 @@ class SparkFSFetcher(fetcherConfigurationData: FetcherConfigurationData) extends
       new PrivilegedAction[SparkApplicationData](){
         override def run()={
 
+          val fs = FileSystem.get(HadoopConf.conf)
+
           val attemptsList = fs.listStatus(new Path(rootPath), new PathFilter {
             override def accept(path: Path): Boolean = path.getName.contains(job.appId)
           })
           val finalAttempt = attemptsList.sortWith((x,y)=>x.getPath.getName > y.getPath.getName).head
 
           val replayBus = new ReplayListenerBusWrapper(fs, finalAttempt)
-          new SparkApplicationData( HistoryAppStatusStoreWrapper(replayBus.parse()) )
+          val data = new SparkApplicationData( HistoryAppStatusStoreWrapper(replayBus.parse()) )
+          fs.close()
+          data
         }
       }
     )
