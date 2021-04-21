@@ -4,7 +4,7 @@ cd `dirname $0`
 cd ..
 HOME=`pwd`
 
-export SERVER_PID=$HOME/bin/linkis.pid
+export SERVER_PID=$HOME/bin/lannister.pid
 
 if [[ ! -f "${SERVER_PID}" ]]; then
     echo "No Lannister to stop"
