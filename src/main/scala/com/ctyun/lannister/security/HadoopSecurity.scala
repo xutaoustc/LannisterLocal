@@ -42,7 +42,7 @@ class HadoopSecurity extends Logging{
 
     if(StringUtils.isBlank(Configs.KEYTAB_LOCATION.getValue)){
       throw new IllegalArgumentException("kerberos location not set")
-    }else if( new File(Configs.KEYTAB_LOCATION.getValue).exists() ){
+    }else if(! new File(Configs.KEYTAB_LOCATION.getValue).exists() ){
       throw new IllegalArgumentException(s"The keytab location ${Configs.KEYTAB_LOCATION.getValue} does not exist")
     }
   }
