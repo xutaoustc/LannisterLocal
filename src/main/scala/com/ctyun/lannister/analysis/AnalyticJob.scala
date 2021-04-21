@@ -23,21 +23,31 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
   def getAnalysis(context:LannisterContext): AppResult = {
     // Fetch
     val fetcher = context.getFetcherForApplicationType(applicationType)
-    val data:ApplicationData = fetcher.fetchData(this)
+    val dataOption = fetcher.fetchData(this)
 
     // Heuristic
     val heuristicResults = mutable.ListBuffer[HeuristicResult]()
-    if(data == null || data.isEmpty){
-      heuristicResults += HeuristicResult.NO_DATA
-      info(s"No Data Received for analytic job: ${appId}")
-    }else{
-      val heuristics = context.getHeuristicsForApplicationType(applicationType)
-      heuristicResults ++= heuristics.map(h=> h.apply(data))
+    dataOption match {
+      case Some(data) => {
+        val heuristics = context.getHeuristicsForApplicationType(applicationType)
+        heuristicResults ++= heuristics.map(h=> h.apply(data))
+      }
+      case None => {
+        heuristicResults += HeuristicResult.NO_DATA
+        warn(s"No Data Received for analytic job: $appId")
+      }
     }
+
 
     // Aggregator
     val metricsAggregator = context.getAggregatorForApplicationType(applicationType)
-    metricsAggregator.aggregate(data)
+    dataOption match {
+      case Some(data) => {
+        metricsAggregator.aggregate(data)
+      }
+      case None => {
+      }
+    }
     val aggregatedData = metricsAggregator.getResult
 
     val result = new AppResult()
