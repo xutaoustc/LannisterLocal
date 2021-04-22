@@ -4,6 +4,9 @@ cd `dirname $0`
 cd ..
 HOME=`pwd`
 
+# load lannister-env
+. $HOME/conf/lannister-env.sh
+
 if [ ! -d $HOME/logs  ];then
   mkdir $HOME/logs
 fi
