@@ -52,7 +52,7 @@ class LannisterRunner extends Runnable with Logging{
       // 1. Fetch
       var todos:List[AnalyticJob] = Nil
       try{
-        todos = _analyticJobGenerator.fetchAnalyticJobs
+        todos = _analyticJobGenerator.fetchAnalyticJobs.map(_.setComponent(context))
       } catch{
         case e:Exception=> error("Error fetching job list. Try again later ...",e)
           waitInterval(Configs.RETRY_INTERVAL.getValue)
@@ -101,7 +101,7 @@ class LannisterRunner extends Runnable with Logging{
 
       try{
         val analysisStartTimeMillis = System.currentTimeMillis
-        val result = analyticJob.getAnalysis(context)
+        val result = analyticJob.getAnalysis
         saveService.save(result)
         val processingTime = System.currentTimeMillis() - analysisStartTimeMillis
         info(s"[Analyzing] ^o^ TOOK ${processingTime}ms to analyze ${analyticJob.applicationType.upperName} ${analyticJob.appId} ")

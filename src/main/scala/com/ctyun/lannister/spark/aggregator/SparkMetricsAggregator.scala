@@ -2,7 +2,6 @@ package com.ctyun.lannister.spark.aggregator
 
 import com.ctyun.lannister.analysis.{AggregatedData, ApplicationData, MetricsAggregator}
 import com.ctyun.lannister.conf.aggregator.AggregatorConfigurationData
-import com.ctyun.lannister.spark.data.SparkApplicationData
 import com.ctyun.lannister.util.Logging
 
 class SparkMetricsAggregator(private val aggregatorConfigurationData: AggregatorConfigurationData) extends MetricsAggregator with Logging{
@@ -11,6 +10,6 @@ class SparkMetricsAggregator(private val aggregatorConfigurationData: Aggregator
 
   override def getResult: AggregatedData = { null }
 
-  override def aggregate(data: ApplicationData): Unit = {}
+  override def aggregate(data: ApplicationData): MetricsAggregator = {this}
 
 }

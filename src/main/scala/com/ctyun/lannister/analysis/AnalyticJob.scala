@@ -13,23 +13,27 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
   private var _retries = 0
   private var _secondRetries = 0
   private var _timeLeftToRetry = 0
-
+  private var _fetcher:Fetcher[_ <: ApplicationData] = _
+  private var _heuristics:List[Heuristic] = _
+  private var _metricsAggregator:MetricsAggregator = _
 
   def setJobFuture(future:Future[_])={
     this._jobFuture = future
     this
   }
 
-  def getAnalysis(context:LannisterContext): AppResult = {
-    // Fetch & Heuristic & Aggregator
-    val (heuristicResults, aggregatedData) =
-    context.getFetcherForApplicationType(applicationType).fetchData(this) match {
-      case Some(data) => {
-        val heuristics = context.getHeuristicsForApplicationType(applicationType)
-        val metricsAggregator = context.getAggregatorForApplicationType(applicationType)
-        metricsAggregator.aggregate(data)
+  def setComponent(context:LannisterContext)={
+    _fetcher = context.getFetcherForApplicationType(applicationType)
+    _heuristics = context.getHeuristicsForApplicationType(applicationType)
+    _metricsAggregator = context.getAggregatorForApplicationType(applicationType)
+    this
+  }
 
-        (heuristics.map(h=> h.apply(data)), metricsAggregator.getResult)
+  def getAnalysis: AppResult = {
+    // Fetch & Heuristic & Aggregator
+    val (heuristicResults, aggregatedData) = _fetcher.fetchData(this) match {
+      case Some(data) => {
+        ( _heuristics.map(h=> h.apply(data)), _metricsAggregator.aggregate(data).getResult )
       }
       case None => {
         warn(s"No Data Received for analytic job: $appId")
