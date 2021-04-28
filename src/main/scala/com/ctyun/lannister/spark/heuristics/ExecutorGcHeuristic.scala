@@ -8,7 +8,6 @@ import org.apache.spark.status.api.v1.ExecutorSummary
 
 class ExecutorGcHeuristic(private val heuristicConfigurationData: HeuristicConfigurationData) extends Heuristic{
 
-
   import ExecutorGcHeuristic._
 
   val gcSeverityAThresholds: SeverityThresholds =
@@ -44,29 +43,15 @@ class ExecutorGcHeuristic(private val heuristicConfigurationData: HeuristicConfi
 }
 
 object ExecutorGcHeuristic {
-  val SPARK_EXECUTOR_MEMORY = "spark.executor.memory"
-  val SPARK_EXECUTOR_CORES = "spark.executor.cores"
-
   val GC_SEVERITY_A_THRESHOLDS_KEY: String = "gc_severity_A_threshold"
   val GC_SEVERITY_D_THRESHOLDS_KEY: String = "gc_severity_D_threshold"
 
-
   class Evaluator(executorGcHeuristic: ExecutorGcHeuristic, data: SparkApplicationData) {
-    lazy val executorAndDriverSummaries: Seq[ExecutorSummary] = data.store.store.executorList(false)
+    private lazy val executorAndDriverSummaries: Seq[ExecutorSummary] = data.store.store.executorList(false)
     lazy val executorSummaries: Seq[ExecutorSummary] = executorAndDriverSummaries.filterNot(_.id.equals("driver"))
-    var (gcTime, executorRunTimeTotal) = getTimeValues(executorSummaries)
+    var (gcTime, executorRunTimeTotal) = executorSummaries.foldLeft((0l,0l))( (v,n)=> (v._1 + n.totalGCTime, v._2 + n.totalDuration) )
     var ratio: Double = gcTime.toDouble / executorRunTimeTotal.toDouble
     lazy val severityTimeA: Severity = executorGcHeuristic.gcSeverityAThresholds.severityOf(ratio)
     lazy val severityTimeD: Severity = executorGcHeuristic.gcSeverityDThresholds.severityOf(ratio)
-
-    private def getTimeValues(executorSummaries: Seq[ExecutorSummary]): (Long, Long) = {
-      var jvmGcTimeTotal: Long = 0
-      var executorRunTimeTotal: Long = 0
-      executorSummaries.foreach(executorSummary => {
-        jvmGcTimeTotal+=executorSummary.totalGCTime
-        executorRunTimeTotal+=executorSummary.totalDuration
-      })
-      (jvmGcTimeTotal, executorRunTimeTotal)
-    }
   }
 }
