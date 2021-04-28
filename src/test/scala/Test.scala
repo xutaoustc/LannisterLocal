@@ -1,17 +1,23 @@
-import scala.concurrent.duration.{Duration, MINUTES}
+
 
 object Test {
 
 
   def main(args: Array[String]): Unit = {
+    for{i <- 1 to 3
+      a=3} {
+      println(" i =" + i )
+//      println(" i =" + i + " j = " + j)
 
-    val cc = Duration(5, MINUTES).toMillis
-
-
-    for{x<-None
-        y<-Option(3)}{
-      print(s"${x} ss ${y}")
     }
 
+
+
+    for{i <- 1 to 3
+        j <- 1 to 3} {
+
+      println(" i =" + i + " j = " + j)
+
+    }
   }
 }
