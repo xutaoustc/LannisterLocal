@@ -24,7 +24,7 @@ heuristics:
     params:
       spark_overheadMemory_thresholds_key: 2, 4, 6, 8
   -
-    name: Spark Configuration
+    name: Spark Job
     applicationtype: spark
     classname: com.ctyun.lannister.spark.heuristics.JobsHeuristic
     viewname:
