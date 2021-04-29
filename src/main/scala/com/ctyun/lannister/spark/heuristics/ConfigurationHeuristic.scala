@@ -36,7 +36,7 @@ class ConfigurationHeuristic (private val heuristicConfigurationData: HeuristicC
       new HeuristicResultDetails(SPARK_APPLICATION_DURATION, evaluator.applicationDuration.toString + " Seconds"),
       new HeuristicResultDetails(SPARK_YARN_EXECUTOR_MEMORY_OVERHEAD, evaluator.sparkYarnExecutorMemoryOverhead),
       new HeuristicResultDetails(SPARK_YARN_DRIVER_MEMORY_OVERHEAD, evaluator.sparkYarnDriverMemoryOverhead),
-      new HeuristicResultDetails(SPARK_DYNAMIC_ALLOCATION_ENABLED, formatProperty(evaluator.isDynamicAllocationEnabled.map(_.toString))),
+      new HeuristicResultDetails(SPARK_DYNAMIC_ALLOCATION_ENABLED, formatProperty(evaluator.isDynamicAllocationEnabled.map(_.toString)))
     )
 
     if (evaluator.serializerSeverity != Severity.NONE) {
