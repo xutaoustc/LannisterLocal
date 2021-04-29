@@ -1,5 +1,23 @@
 heuristics:
   -
+    name: Spark Configuration
+    applicationtype: spark
+    classname: com.ctyun.lannister.spark.heuristics.ConfigurationHeuristic
+    viewname:
+    params:
+      spark_overheadMemory_thresholds_key: 2, 4, 6, 8
+      spark_memory_thresholds_key: 10G, 15G, 20G, 25G
+      spark_core_thresholds_key: 4, 6, 8, 10
+      serializer_if_non_null_recommendation: org.apache.spark.serializer.KryoSerializer
+  -
+    name: Spark Job
+    applicationtype: spark
+    classname: com.ctyun.lannister.spark.heuristics.JobsHeuristic
+    viewname:
+    params:
+      job_failure_rate_severity_thresholds: 0.1, 0.3, 0.5, 0.5
+      job_task_failure_rate_severity_thresholds: 0.1, 0.3, 0.5, 0.5
+  -
     name: Spark Executor Gc
     applicationtype: spark
     classname: com.ctyun.lannister.spark.heuristics.ExecutorGcHeuristic
@@ -16,18 +34,3 @@ heuristics:
       max_to_median_ratio_severity_thresholds: 1.334, 1.778, 3.162, 10
       ignore_max_bytes_less_than_threshold: 100 MB
       ignore_max_millis_less_than_threshold: 300000
-  -
-    name: Spark Configuration
-    applicationtype: spark
-    classname: com.ctyun.lannister.spark.heuristics.ConfigurationHeuristic
-    viewname:
-    params:
-      spark_overheadMemory_thresholds_key: 2, 4, 6, 8
-  -
-    name: Spark Job
-    applicationtype: spark
-    classname: com.ctyun.lannister.spark.heuristics.JobsHeuristic
-    viewname:
-    params:
-      job_failure_rate_severity_thresholds: 0.1, 0.3, 0.5, 0.5
-      job_task_failure_rate_severity_thresholds: 0.1, 0.3, 0.5, 0.5

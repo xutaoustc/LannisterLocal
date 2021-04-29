@@ -13,9 +13,10 @@ case class SeverityThresholds(low: Number, moderate: Number, severe: Number, cri
 object SeverityThresholds {
   def parse(
              rawString: String,
-             ascending: Boolean
+             ascending: Boolean,
+             transformer: String=>Double = _.toDouble
            ): SeverityThresholds = {
-    val nums = rawString.split(",").map(_.trim.toDouble)
+    val nums = rawString.split(",").map(str => transformer( str.trim))
     SeverityThresholds(low = nums(0), moderate = nums(1), severe = nums(2), critical = nums(3), ascending)
   }
 }
