@@ -34,3 +34,13 @@ heuristics:
       max_to_median_ratio_severity_thresholds: 1.334, 1.778, 3.162, 10
       ignore_max_bytes_less_than_threshold: 100 MB
       ignore_max_millis_less_than_threshold: 300000
+  -
+    name: Spark Stages
+    applicationtype: spark
+    classname: com.ctyun.lannister.spark.heuristics.StagesHeuristic
+    viewname:
+    params:
+      stage_failure_rate_severity_thresholds: 0.2, 0.4, 0.6, 0.8
+      stage_task_failure_rate_severity_thresholds: 0.2, 0.4, 0.6, 0.8
+      stage_runtime_minutes_severity_thresholds: 15, 30, 45, 60
+
