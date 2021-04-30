@@ -109,7 +109,7 @@ class LannisterRunner extends Runnable with Logging{
         saveService.save(result)
         val processingTime = System.currentTimeMillis() - analysisStartTimeMillis
 
-        if(result.heuristicResults.head == HeuristicResult.NO_DATA){
+        if(result.heuristicResults.head.heuristicClass == HeuristicResult.NO_DATA.heuristicClass){
           _metricsController.markSkippedJobs()
         }
         _metricsController.markProcessedJobs()
