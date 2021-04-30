@@ -44,13 +44,13 @@ class LannisterRunner extends Runnable with Logging{
     _metricsController.init()
 
     while(running.get()) {
-      fetchAndRun
+      fetchAndRunEachRound
     }
 
     error("LannisterRunner stopped")
 
 
-    def fetchAndRun(): Unit ={
+    def fetchAndRunEachRound(): Unit ={
       thisRoundTs = System.currentTimeMillis()
 
       // 1. Fetch
@@ -69,6 +69,7 @@ class LannisterRunner extends Runnable with Logging{
         job.setJobFuture(future)
       })
 
+      _metricsController.setActiveProcessingThread(threadPoolExecutor.getActiveCount)
       _metricsController.setQueueSize(threadPoolExecutor.getQueue.size)
       waitInterval(Configs.FETCH_INTERVAL.getValue)
     }

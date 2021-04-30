@@ -15,6 +15,7 @@ class MetricsController {
   private var _processedJobs:Meter = _
   private var _jobProcessingTime:Histogram = _
 
+  private var _activeProcessingThread:Int = 0
   private var _queueSize:Int = 0
   private var _retryQueueSize:Int = 0
   private var _secondRetryQueueSize:Int = 0
@@ -29,6 +30,9 @@ class MetricsController {
     _processedJobs = _metricRegistry.meter(name(className, "processedJobs", "count"))
     _jobProcessingTime = _metricRegistry.histogram(name(className, "jobProcessingTime", "ms"))
 
+    _metricRegistry.register(name(className, "activeProcessingThread", "size"), new Gauge[Int] {
+      override def getValue: Int = _activeProcessingThread
+    })
     _metricRegistry.register(name(className, "jobQueue", "size"), new Gauge[Int] {
       override def getValue: Int = _queueSize
     })
@@ -43,6 +47,10 @@ class MetricsController {
 //    })
 
     JmxReporter.forRegistry(_metricRegistry).build.start
+  }
+
+  def setActiveProcessingThread(size:Int): Unit ={
+    _activeProcessingThread = size
   }
 
   def setQueueSize(size:Int): Unit ={
