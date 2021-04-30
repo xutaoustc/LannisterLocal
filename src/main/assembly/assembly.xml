@@ -30,6 +30,12 @@
         </fileSet>
 
         <fileSet>
+            <directory>src/main/assembly/sql</directory>
+            <outputDirectory>/sql</outputDirectory>
+            <fileMode>0755</fileMode>
+        </fileSet>
+
+        <fileSet>
             <directory>${basedir}/target/lib</directory>
             <outputDirectory>lib</outputDirectory>
             <fileMode>0755</fileMode>
