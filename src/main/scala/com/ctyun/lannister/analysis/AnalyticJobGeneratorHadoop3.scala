@@ -1,6 +1,7 @@
 package com.ctyun.lannister.analysis
 import com.ctyun.lannister.LannisterContext
 import com.ctyun.lannister.hadoop.HadoopConf
+import com.ctyun.lannister.metric.MetricsController
 import com.ctyun.lannister.util.Logging
 import org.apache.hadoop.conf.Configuration
 import org.codehaus.jackson.map.ObjectMapper
@@ -20,6 +21,8 @@ import scala.collection.mutable.ListBuffer
 class AnalyticJobGeneratorHadoop3 extends AnalyticJobGenerator with Logging {
   @Autowired
   var context: LannisterContext = _
+  @Autowired
+  var _metricsController:MetricsController = _
 
   private val _configuration:Configuration = HadoopConf.conf
 
@@ -88,14 +91,14 @@ class AnalyticJobGeneratorHadoop3 extends AnalyticJobGenerator with Logging {
 
   override def addIntoRetries(job: AnalyticJob): Unit = {
     _firstRetryQueue.add(job)
-    info(s"[Analyzing][Fate] Retry queue size is ${_firstRetryQueue.size}")
+    _metricsController.setRetryQueueSize(_firstRetryQueue.size())
   }
 
   override def addIntoSecondRetryQueue(job: AnalyticJob) = {
     _secondRetryQueue.synchronized {
       _secondRetryQueue.add(job.setTimeToSecondRetry)
-      info(s"[Analyzing][Fate] Second retry queue size is ${_secondRetryQueue.size}")
     }
+    _metricsController.setSecondRetryQueueSize(_secondRetryQueue.size)
   }
 
   private def updateResourceManagerAddresses: Unit = {

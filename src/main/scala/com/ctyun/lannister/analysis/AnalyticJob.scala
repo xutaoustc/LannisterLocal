@@ -22,7 +22,7 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
     this
   }
 
-  def setComponent(context:LannisterContext)={
+  def setLannisterComponent(context:LannisterContext)={
     _fetcher = context.getFetcherForApplicationType(applicationType)
     _heuristics = context.getHeuristicsForApplicationType(applicationType)
     _metricsAggregator = context.getAggregatorForApplicationType(applicationType)
@@ -33,7 +33,7 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
     // Fetch & Heuristic & Aggregator
     val (heuristicResults, aggregatedData) = _fetcher.fetchData(this) match {
       case Some(data) => {
-        ( _heuristics.map(h=> h.apply(data)), _metricsAggregator.aggregate(data).getResult )
+        ( _heuristics.map(_.apply(data)), _metricsAggregator.aggregate(data).getResult )
       }
       case None => {
         warn(s"No Data Received for analytic job: $appId")

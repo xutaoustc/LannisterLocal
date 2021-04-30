@@ -1,5 +1,5 @@
 server:
-  port: 18086
+  port: 39898
 
 mybatis-plus:
   mapper-locations: classpath:/mapper/**.xml

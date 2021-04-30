@@ -1,12 +1,13 @@
 package com.ctyun.lannister
 
-import com.ctyun.lannister.analysis.{AnalyticJob, AnalyticJobGeneratorHadoop3}
+import com.ctyun.lannister.analysis.{AnalyticJob, AnalyticJobGeneratorHadoop3, HeuristicResult}
 import com.ctyun.lannister.conf.Configs
+import com.ctyun.lannister.metric.MetricsController
 import com.ctyun.lannister.security.HadoopSecurity
 import com.ctyun.lannister.service.SaveService
 import com.ctyun.lannister.util.Logging
 import com.google.common.util.concurrent.ThreadFactoryBuilder
-import org.springframework.beans.factory.annotation.{Autowired, Lookup}
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 import java.security.PrivilegedAction
@@ -21,6 +22,8 @@ class LannisterRunner extends Runnable with Logging{
   var _analyticJobGenerator:AnalyticJobGeneratorHadoop3 = _
   @Autowired
   var saveService:SaveService = _
+  @Autowired
+  private var _metricsController:MetricsController = _
 
   private val running = new AtomicBoolean(true)
   private var thisRoundTs = 0L
@@ -45,14 +48,13 @@ class LannisterRunner extends Runnable with Logging{
     error("LannisterRunner stopped")
 
 
-    @Lookup
     def fetchAndRun(): Unit ={
       thisRoundTs = System.currentTimeMillis()
 
       // 1. Fetch
       var todos:List[AnalyticJob] = Nil
       try{
-        todos = _analyticJobGenerator.fetchAnalyticJobs.map(_.setComponent(context))
+        todos = _analyticJobGenerator.fetchAnalyticJobs.map(_.setLannisterComponent(context))
       } catch{
         case e:Exception=> error("Error fetching job list. Try again later ...",e)
           waitInterval(Configs.RETRY_INTERVAL.getValue)
@@ -65,7 +67,7 @@ class LannisterRunner extends Runnable with Logging{
         job.setJobFuture(future)
       })
 
-      info(s"After submitting fetching jobs, Job queue size is ${threadPoolExecutor.getQueue.size}");
+      _metricsController.setQueueSize(threadPoolExecutor.getQueue.size)
       waitInterval(Configs.FETCH_INTERVAL.getValue)
     }
   }
@@ -104,6 +106,12 @@ class LannisterRunner extends Runnable with Logging{
         val result = analyticJob.getAnalysis
         saveService.save(result)
         val processingTime = System.currentTimeMillis() - analysisStartTimeMillis
+
+        if(result.heuristicResults.head == HeuristicResult.NO_DATA){
+          _metricsController.markSkippedJobs()
+        }
+        _metricsController.markProcessedJobs()
+        _metricsController.setJobProcessingTime(processingTime)
         info(s"[Analyzing] ^o^ TOOK ${processingTime}ms to analyze ${analyticJob.applicationType.upperName} ${analyticJob.appId} ")
       }catch{
         case e: InterruptedException=> //TODO
@@ -123,6 +131,7 @@ class LannisterRunner extends Runnable with Logging{
         warn(s"[Analyzing][Fate] Add analytic job id [${analyticJob.appId}] into the second retry list}")
         _analyticJobGenerator.addIntoSecondRetryQueue(analyticJob)
       }else{
+        _metricsController.markDroppedJobs
         error(s"[Analyzing][Fate] Drop the analytic job")
       }
     }

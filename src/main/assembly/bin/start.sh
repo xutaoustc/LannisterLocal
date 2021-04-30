@@ -21,7 +21,7 @@ fi
 
 if test -z "$SERVER_JAVA_OPTS"
 then
-  export SERVER_JAVA_OPTS=" -Xmx$SERVER_HEAP_SIZE -XX:+UseG1GC -Xloggc:$HOME/logs/lannister-gc.log"
+  export SERVER_JAVA_OPTS="-Xmx$SERVER_HEAP_SIZE -XX:+UseG1GC -Xloggc:$HOME/logs/lannister-gc.log -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=39899 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
 fi
 
 if [[ -f "${SERVER_PID}" ]]; then
