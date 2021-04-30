@@ -42,5 +42,5 @@ heuristics:
     params:
       stage_failure_rate_severity_thresholds: 0.2, 0.4, 0.6, 0.8
       stage_task_failure_rate_severity_thresholds: 0.2, 0.4, 0.6, 0.8
-      stage_runtime_minutes_severity_thresholds: 15, 30, 45, 60
+      stage_runtime_minutes_severity_thresholds: 15min, 30min, 45min, 60min
 
