@@ -31,20 +31,22 @@ class LannisterRunner extends Runnable with Logging{
   private val factory = new ThreadFactoryBuilder().setNameFormat("executor-thread-%d").build()
   private val threadPoolExecutor = new ThreadPoolExecutor(Configs.EXECUTOR_NUM.getValue, Configs.EXECUTOR_NUM.getValue,
     0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue[Runnable](), factory)
-
+  info(s"executor num is ${Configs.EXECUTOR_NUM.getValue}")
 
 
   override def run(): Unit = {
     info("LannisterRunner has started")
-    runWithSecurity(core)
+    runWithSecurity(loopCore)
   }
 
 
-  private def core()={
-    info(s"executor num is ${Configs.EXECUTOR_NUM.getValue}")
+  private def loopCore()={
+    _metricsController.init()
+
     while(running.get()) {
       fetchAndRun
     }
+
     error("LannisterRunner stopped")
 
 
