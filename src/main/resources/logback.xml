@@ -14,12 +14,12 @@
             <charset>utf-8</charset>
         </encoder>
         <file>logs/output.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>logs/$${date:yyyy-MM}/output.log.%i</fileNamePattern>
-        </rollingPolicy>
-        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <MaxFileSize>100MB</MaxFileSize>
-        </triggeringPolicy>
+            <fileNamePattern>logs/%d{yyyy-MM-dd}/output.log.%i</fileNamePattern>
+            <maxHistory>60</maxHistory>
+            <totalSizeCap>20GB</totalSizeCap>
+        </rollingPolicy>
     </appender>
 
     <root level="INFO">
