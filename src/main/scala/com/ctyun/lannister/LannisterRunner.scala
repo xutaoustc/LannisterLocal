@@ -41,38 +41,39 @@ class LannisterRunner extends Runnable with Logging{
 
 
   private def loopCore()={
+    // configure
+    _analyticJobGenerator.configure
     _metricsController.init()
 
+    // Core logic
     while(running.get()) {
       fetchAndRunEachRound
     }
-
     error("LannisterRunner stopped")
+  }
 
+  def fetchAndRunEachRound(): Unit ={
+    thisRoundTs = System.currentTimeMillis()
 
-    def fetchAndRunEachRound(): Unit ={
-      thisRoundTs = System.currentTimeMillis()
-
-      // 1. Fetch
-      var todos:List[AnalyticJob] = Nil
-      try{
-        todos = _analyticJobGenerator.fetchAnalyticJobs.map(_.setLannisterComponent(context))
-      } catch{
-        case e:Exception=> error("Error fetching job list. Try again later ...",e)
-          waitInterval(Configs.RETRY_INTERVAL.getValue)
-          return
-      }
-
-      // 2. Submit
-      todos.foreach(job=>{
-        val future = threadPoolExecutor.submit( new ExecutorJob(job) )
-        job.setJobFuture(future)
-      })
-
-      _metricsController.setActiveProcessingThread(threadPoolExecutor.getActiveCount)
-      _metricsController.setQueueSize(threadPoolExecutor.getQueue.size)
-      waitInterval(Configs.FETCH_INTERVAL.getValue)
+    // 1. Fetch
+    var todos:List[AnalyticJob] = Nil
+    try{
+      todos = _analyticJobGenerator.fetchAnalyticJobs.map(_.setLannisterComponent(context))
+    } catch{
+      case e:Exception=> error("Error fetching job list. Try again later ...",e)
+        waitInterval(Configs.RETRY_INTERVAL.getValue)
+        return
     }
+
+    // 2. Submit
+    todos.foreach(job=>{
+      val future = threadPoolExecutor.submit( new ExecutorJob(job) )
+      job.setJobFuture(future)
+    })
+
+    _metricsController.setActiveProcessingThread(threadPoolExecutor.getActiveCount)
+    _metricsController.setQueueSize(threadPoolExecutor.getQueue.size)
+    waitInterval(Configs.FETCH_INTERVAL.getValue)
   }
 
 

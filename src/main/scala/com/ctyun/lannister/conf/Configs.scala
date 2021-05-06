@@ -16,10 +16,10 @@ object Configs {
   val HEURISTICS_CONF  = CommonVars("lannister.heuristic.conf", "HeuristicConf.yml")
   val JOBTYPES_CONF  = CommonVars("lannister.jobtype.conf", "JobTypeConf.yml")
 
+  val INITIAL_FETCH_START_TIME  = CommonVars("lannister.initialFetchStartTime", 0l)
   val EXECUTOR_NUM = CommonVars("lannister.executor.num", 5)
   val RETRY_INTERVAL = CommonVars("lannister.analysis.retry.interval", 60 * 1000)
   val FETCH_INTERVAL = CommonVars("lannister.analysis.fetch.interval", 1 * 1000)
-
   val RETRY_LIMIT = CommonVars("lannister.retry.limit", 3)
   val SECOND_RETRY_LIMIT = CommonVars("lannister.secondretry.limit", 5)
 

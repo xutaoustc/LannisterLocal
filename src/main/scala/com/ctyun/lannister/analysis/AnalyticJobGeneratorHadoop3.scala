@@ -1,5 +1,6 @@
 package com.ctyun.lannister.analysis
 import com.ctyun.lannister.LannisterContext
+import com.ctyun.lannister.conf.Configs
 import com.ctyun.lannister.hadoop.HadoopConf
 import com.ctyun.lannister.metric.MetricsController
 import com.ctyun.lannister.util.Logging
@@ -28,8 +29,7 @@ class AnalyticJobGeneratorHadoop3 extends AnalyticJobGenerator with Logging {
 
   private var _resourceManagerAddress:String = null
   private val _objectMapper = new ObjectMapper
-  private var _lastTime = 0L
-  private val _fetchStartTime = 0L
+  private var _lastTime:Long = 0L
   private var _currentTime = 0L
   private val FETCH_DELAY = 60000
   private val _firstRetryQueue:util.Queue[AnalyticJob] = new ConcurrentLinkedQueue[AnalyticJob]()
@@ -42,6 +42,9 @@ class AnalyticJobGeneratorHadoop3 extends AnalyticJobGenerator with Logging {
   private val RM_NODE_STATE_URL = "http://%s/ws/v1/cluster/info"
 
 
+  override def configure: Unit = {
+    _lastTime = Configs.INITIAL_FETCH_START_TIME.getValue
+  }
 
   override def fetchAnalyticJobs: List[AnalyticJob] = {
     updateResourceManagerAddresses
@@ -125,25 +128,21 @@ class AnalyticJobGeneratorHadoop3 extends AnalyticJobGenerator with Logging {
 
     apps.forEach(app=> {
         val appId = app.get("id").asText()
+        val user = app.get("user").asText()
+        val name = app.get("name").asText()
+        val queueName = app.get("queue").asText()
+        val trackingUrl = if( app.get("trackingUrl") != null)  app.get("trackingUrl").asText() else null
+        val startTime = app.get("startedTime").asLong()
+        val finishTime = app.get("finishedTime").asLong()
 
-        if (_lastTime > _fetchStartTime || (_lastTime == _fetchStartTime)) { //TODO  && AppResult.find.byId(appId) == null)
-          val user = app.get("user").asText()
-          val name = app.get("name").asText()
-          val queueName = app.get("queue").asText()
-          val trackingUrl = if( app.get("trackingUrl") != null)  app.get("trackingUrl").asText() else null
-          val startTime = app.get("startedTime").asLong()
-          val finishTime = app.get("finishedTime").asLong()
-
-          val applicationType = context.getApplicationTypeForName(app.get("applicationType").asText())
-          if(applicationType != None){
-            appList += AnalyticJob(appId, applicationType.get, user, name, queueName, trackingUrl, startTime, finishTime)
-          }
+        val applicationType = context.getApplicationTypeForName(app.get("applicationType").asText())
+        if(applicationType != None){
+          appList += AnalyticJob(appId, applicationType.get, user, name, queueName, trackingUrl, startTime, finishTime)
         }
     })
 
     appList
   }
-
 
 }
 
