@@ -6,9 +6,12 @@ import org.apache.spark.SparkConf
 import org.apache.spark.internal.config.Status.ASYNC_TRACKING_ENABLED
 import org.apache.spark.scheduler.ReplayListenerBus
 import org.apache.spark.scheduler.ReplayListenerBus.{ReplayEventsFilter, SELECT_ALL_FILTER}
-import org.apache.spark.status.{AppStatusListener, ElementTrackingStore}
+import org.apache.spark.status.{AppHistoryServerPlugin, AppStatusListener, ElementTrackingStore}
 import org.apache.spark.util.kvstore.InMemoryStore
 import org.apache.spark.util.{SystemClock, Utils}
+
+import java.util.ServiceLoader
+import scala.collection.JavaConverters.iterableAsScalaIterableConverter
 
 class ReplayListenerBusWrapper(fs:FileSystem, finalAttempt:FileStatus) extends Logging{
   private val APPL_START_EVENT_PREFIX = "{\"Event\":\"SparkListenerApplicationStart\""
@@ -37,6 +40,11 @@ class ReplayListenerBusWrapper(fs:FileSystem, finalAttempt:FileStatus) extends L
       val listener = new AppStatusListener(trackingStore, replayConf, false, lastUpdateTime = Some(applicationInfo.attempts.head.info.lastUpdated.getTime))
       replayBus.addListener(listener)
 
+      for {
+        plugin <- loadPlugins()
+        listener <- plugin.createListeners(replayConf, trackingStore)
+      } replayBus.addListener(listener)
+
       val eventLogFiles = reader.listEventLogFiles
       info(s"Parsing ${reader.rootPath} ...")
       parseAppEventLogs(eventLogFiles, replayBus, !reader.completed)
@@ -50,6 +58,10 @@ class ReplayListenerBusWrapper(fs:FileSystem, finalAttempt:FileStatus) extends L
         }
         throw e
     }
+  }
+
+  private def loadPlugins(): Iterable[AppHistoryServerPlugin] = {
+    ServiceLoader.load(classOf[AppHistoryServerPlugin], Utils.getContextOrSparkClassLoader).asScala
   }
 
   private def basicParse() ={
