@@ -61,7 +61,7 @@ class AnalyticJobGeneratorHadoop3 extends AnalyticJobGenerator with Logging {
     appList ++= succeededApps
 
     val failedAppsURL = new URL(new URL("http://" + _resourceManagerAddress), s"/ws/v1/cluster/apps?finalStatus=FAILED&state=FINISHED&finishedTimeBegin=${start}&finishedTimeEnd=${end}")
-    info(s"[Fetching] The failed apps URL is ${failedAppsURL}")
+    info(s"[Fetching] The falled apps URL is ${failedAppsURL}")
     val failedApps = readApps(failedAppsURL)
     appList ++= failedApps
 
@@ -88,7 +88,7 @@ class AnalyticJobGeneratorHadoop3 extends AnalyticJobGenerator with Logging {
     }
 
     _lastTime = _currentTime
-    info(s"[Fetching] Total ${appList.size} items fetched --- ${succeededApps.size} succeed, ${failedApps.size} failed, ${firstRetryQueueFetchCount} first retry, $secondRetryQueueFetchCount second retry")
+    info(s"[Fetching] Total ${appList.size} items fetched --- ${succeededApps.size} succeed, ${failedApps.size} falled, ${firstRetryQueueFetchCount} first retry, $secondRetryQueueFetchCount second retry")
     appList.toList
   }
 
