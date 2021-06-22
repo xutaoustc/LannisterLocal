@@ -40,7 +40,11 @@ class StagesHeuristic(private val heuristicConfigurationData: HeuristicConfigura
       new HeuristicResultDetails(
         "Spark stages with long average executor runtimes", evaluator.stagesWithLongAverageExecutorRuntimes
           .map { case (stageData, runtime) => s"stage ${stageData.stageId}.${stageData.attemptId} (runtime: ${Statistics.readableTimespan(runtime)})" }.mkString(", ")
-      )
+      ),
+      new HeuristicResultDetails("Total input bytes", evaluator.inputBytesTotal.toString),
+      new HeuristicResultDetails("Total output bytes", evaluator.outputBytesTotal.toString),
+      new HeuristicResultDetails("Total shuffle read bytes", evaluator.shuffleReadBytesTotal.toString),
+      new HeuristicResultDetails("Total shuffle write bytes", evaluator.shuffleWriteBytesTotal.toString)
     )
 
     new HeuristicResult(
@@ -63,13 +67,18 @@ object StagesHeuristic {
 
   class Evaluator(stagesHeuristic: StagesHeuristic, data: SparkApplicationData) {
     lazy val stageDatas = data.store.store.stageList(null)
-    lazy val numCompletedStages: Int = stageDatas.count { _.status == StageStatus.COMPLETE }
-    lazy val numFailedStages: Int = stageDatas.count { _.status == StageStatus.FAILED }
+    lazy val numCompletedStages = stageDatas.count { _.status == StageStatus.COMPLETE }
+    lazy val numFailedStages = stageDatas.count { _.status == StageStatus.FAILED }
     lazy val stageFailureRate: Option[Double] = {
       val numStages = numCompletedStages + numFailedStages
       if (numStages == 0) None else Some(numFailedStages.toDouble / numStages.toDouble)
     }
     private lazy val stageFailureRateSeverity = stagesHeuristic.stageFailureRateSeverityThresholds.severityOf(stageFailureRate.getOrElse[Double](0.0D))
+
+    lazy val inputBytesTotal = stageDatas.map(_.inputBytes).sum
+    lazy val outputBytesTotal = stageDatas.map(_.outputBytes).sum
+    lazy val shuffleReadBytesTotal = stageDatas.map(_.shuffleReadBytes).sum
+    lazy val shuffleWriteBytesTotal = stageDatas.map(_.shuffleWriteBytes).sum
 
 
     private def taskFailureRateOf(stageData: StageData): Option[Double] = {
