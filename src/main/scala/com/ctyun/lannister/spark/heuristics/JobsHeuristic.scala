@@ -28,7 +28,8 @@ class JobsHeuristic(private val heuristicConfigurationData: HeuristicConfigurati
       new HeuristicResultDetails("Spark failed jobs list", evaluator.failedJobs.map(job=>s"job ${job.jobId}, ${job.name}").mkString("\n")),
       new HeuristicResultDetails("Spark jobs with high task failure rates",evaluator.jobsWithHighTaskFailureRates
         .map { case (jobData, taskFailureRate) => s"job ${jobData.jobId}, ${jobData.name} (task failure rate: ${taskFailureRate})" }.mkString("\n")
-      )
+      ),
+      new HeuristicResultDetails("Spark completed tasks count", evaluator.numCompletedTasks.toString)
     )
 
     new HeuristicResult(
@@ -53,6 +54,8 @@ object JobsHeuristic {
     lazy val jobFailureRate = { val numJobs = numCompletedJobs + numFailedJobs
       if (numJobs == 0) None else Some(numFailedJobs.toDouble / numJobs.toDouble) }
     private lazy val jobFailureRateSeverity = jobsHeuristic.jobFailureRateSeverityThresholds.severityOf(jobFailureRate.getOrElse[Double](0.0D))
+
+    lazy val numCompletedTasks = jobDatas.map(_.numCompletedTasks).sum
 
     private lazy val jobsAndTaskFailureRateSeverities = for {jobData <- jobDatas
                                                           (taskFailureRate, severity) = taskFailureRateAndSeverityOf(jobData)
