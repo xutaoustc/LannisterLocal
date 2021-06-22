@@ -1,9 +1,9 @@
 package com.ctyun.lannister.util
 
-import java.text.DecimalFormat
-import java.util.regex.{Matcher, Pattern}
-
 import org.apache.commons.lang3.StringUtils
+
+import java.text.DecimalFormat
+import java.util.regex.Pattern
 
 
 object MemoryFormatUtils {
@@ -29,22 +29,17 @@ object MemoryFormatUtils {
    * @return The formatted string, null if
    */
   def bytesToString(value: Long): String = {
-    if (value < 0) throw new IllegalArgumentException("Invalid memory size: " + value)
-    var i = 0
-    while ( {
-      i < UNITS.length
-    }) {
-      val bytes = UNITS(i).getBytes
-      if (value >= bytes) {
-        val numResult = if (bytes > 1) value.toDouble / bytes.toDouble
-        else value.toDouble
-        return FORMATTER.format(numResult) + " " + UNITS(i).getName
-      }
+    if (value < 0)
+      return value.toString
 
-      {
-        i += 1; i - 1
+    UNITS.foreach(u=>{
+      val bytes = u.getBytes
+      if(value >= bytes){
+        val numResult = if(bytes > 1) value.toDouble / bytes.toDouble else value.toDouble
+        return FORMATTER.format(numResult) + " " + u.getName
       }
-    }
+    })
+
     value + " " + UNITS(UNITS.length - 1).getName
   }
 
