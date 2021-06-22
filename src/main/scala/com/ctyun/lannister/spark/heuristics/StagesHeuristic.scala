@@ -34,12 +34,12 @@ class StagesHeuristic(private val heuristicConfigurationData: HeuristicConfigura
       new HeuristicResultDetails("Spark completed stages count", evaluator.numCompletedStages.toString),
       new HeuristicResultDetails("Spark failed stages count", evaluator.numFailedStages.toString),
       new HeuristicResultDetails("Spark stage failure rate", s"${evaluator.stageFailureRate.getOrElse(0.0D)}"),
-      new HeuristicResultDetails("Spark stages with high task failure rates",evaluator.stagesWithHighTaskFailureRates
+      new HeuristicResultDetails("Spark stages with high task failure rates", evaluator.stagesWithHighTaskFailureRates
         .map { case (stageData, taskFailureRate) => s"stage ${stageData.stageId}, attempt ${stageData.attemptId} (task failure rate: $taskFailureRate)" }.mkString("\n")
       ),
       new HeuristicResultDetails(
         "Spark stages with long average executor runtimes", evaluator.stagesWithLongAverageExecutorRuntimes
-          .map { case (stageData, runtime) => s"stage ${stageData.stageId}, attempt ${stageData.attemptId} (runtime: ${Statistics.readableTimespan(runtime)})" }.mkString("\n")
+          .map { case (stageData, runtime) => s"stage ${stageData.stageId}.${stageData.attemptId} (runtime: ${Statistics.readableTimespan(runtime)})" }.mkString(", ")
       )
     )
 
