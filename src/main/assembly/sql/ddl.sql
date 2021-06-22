@@ -13,6 +13,7 @@ CREATE TABLE `app_result` (
                               `start_time` bigint(20) DEFAULT NULL,
                               `finish_time` bigint(20) DEFAULT NULL,
                               `name` varchar(100) DEFAULT NULL,
+                              `successful_job` BOOLEAN ,
                               `job_type` varchar(100) DEFAULT NULL,
                               `resource_used` bigint(20) DEFAULT NULL,
                               `total_delay` bigint(20) DEFAULT NULL,

@@ -16,6 +16,12 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
   private var _fetcher:Fetcher[_ <: ApplicationData] = _
   private var _heuristics:List[Heuristic] = _
   private var _metricsAggregator:MetricsAggregator = _
+  private var successfulJob:Boolean = false
+
+  def setSuccessfulJob: AnalyticJob ={
+    this.successfulJob = true
+    this
+  }
 
   def setJobFuture(future:Future[_])={
     this._jobFuture = future
@@ -50,6 +56,7 @@ case class AnalyticJob(appId:String, applicationType:ApplicationType, user:Strin
     result.startTime = startTime
     result.finishTime = finishTime
     result.name = name
+    result.successfulJob = successfulJob
     result.jobType = applicationType.upperName
     result.resourceUsed = 0 //TODO
     result.totalDelay = 0 //TODO

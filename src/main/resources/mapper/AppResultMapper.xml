@@ -5,9 +5,9 @@
     <insert id="upsert" parameterType="com.ctyun.lannister.model.AppResult" useGeneratedKeys="true" keyProperty="id">
         insert into
            app_result(app_id, tracking_url, queue_name, username,
-                      start_time,finish_time, name, job_type, resource_used, total_delay, resource_wasted, severity_Id, score)
+                      start_time,finish_time, name, successful_job, job_type, resource_used, total_delay, resource_wasted, severity_Id, score)
         values(#{appId},#{trackingUrl},#{queueName},#{username},
-               #{startTime},#{finishTime},#{name},#{jobType},#{resourceUsed},#{totalDelay},#{resourceWasted},#{severityId},#{score})
+               #{startTime},#{finishTime},#{name},#{successfulJob},#{jobType},#{resourceUsed},#{totalDelay},#{resourceWasted},#{severityId},#{score})
         on duplicate key update
             app_id=#{appId},
             tracking_url=#{trackingUrl},
@@ -16,6 +16,7 @@
             start_time=#{startTime},
             finish_time=#{finishTime},
             name=#{name},
+            successful_job=#{successfulJob},
             job_type=#{jobType},
             resource_used=#{resourceUsed},
             total_delay=#{totalDelay},

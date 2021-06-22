@@ -57,7 +57,7 @@ class AnalyticJobGeneratorHadoop3 extends AnalyticJobGenerator with Logging {
     info(s"[Fetching] Fetching recent finished application runs between last time: ${start}, and current time: ${end}")
     val succeededAppsURL = new URL(new URL("http://" + _resourceManagerAddress), s"/ws/v1/cluster/apps?finalStatus=SUCCEEDED&finishedTimeBegin=${start}&finishedTimeEnd=${end}")
     info(s"[Fetching] The succeeded apps URL is ${succeededAppsURL}")
-    val succeededApps = readApps(succeededAppsURL)
+    val succeededApps = readApps(succeededAppsURL).map(_.setSuccessfulJob)
     appList ++= succeededApps
 
     val failedAppsURL = new URL(new URL("http://" + _resourceManagerAddress), s"/ws/v1/cluster/apps?finalStatus=FAILED&state=FINISHED&finishedTimeBegin=${start}&finishedTimeEnd=${end}")

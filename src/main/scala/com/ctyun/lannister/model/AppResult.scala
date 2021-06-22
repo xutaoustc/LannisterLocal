@@ -1,6 +1,6 @@
 package com.ctyun.lannister.model
 
-import com.baomidou.mybatisplus.annotation.{IdType, TableField, TableId, TableName}
+import com.baomidou.mybatisplus.annotation.{TableField, TableName}
 import com.ctyun.lannister.analysis.Severity.Severity
 
 import scala.collection.mutable
@@ -14,6 +14,7 @@ class AppResult extends AppBase {
   var startTime:Long = _
   var finishTime:Long = _
   var name:String = _
+  var successfulJob:Boolean = _
   var jobType:String = _
   var resourceUsed:Long = _
   var totalDelay:Long = _
