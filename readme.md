@@ -54,5 +54,6 @@ CREATE DATABASE IF NOT EXISTS lannister DEFAULT CHARSET utf8 COLLATE utf8_genera
 相关的Metric通过JMX端口暴露，默认是39899，可以对接相应的监控系统
 
 ## 代码质量
-mvn clean checkstyle:check
+mvn scalastyle:check
+mvn checkstyle:check
 
