@@ -1,49 +1,50 @@
 package com.ctyun.lannister.security
 
-import com.ctyun.lannister.conf.Configs
+import java.io.File
+
+import com.ctyun.lannister.conf.Configs._
 import com.ctyun.lannister.hadoop.HadoopConf
 import com.ctyun.lannister.util.{Logging, Utils}
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.security.UserGroupInformation
 
-import java.io.File
-
 class HadoopSecurity extends Logging{
-  private var loginUser:UserGroupInformation = _
+  private var loginUser: UserGroupInformation = _
 
   UserGroupInformation.setConfiguration(HadoopConf.conf)
-  if(UserGroupInformation.isSecurityEnabled){
+  if (UserGroupInformation.isSecurityEnabled) {
     info("This cluster is kerberos enabled")
     check()
   }
 
-  def getUGI ={
+  def getUGI: UserGroupInformation = {
     checkLogin()
     loginUser
   }
 
-  private def checkLogin()={
-    if(UserGroupInformation.isSecurityEnabled) {
-      if(loginUser == null){
-        UserGroupInformation.loginUserFromKeytab(Configs.KEYTAB_USER.getValue, Configs.KEYTAB_LOCATION.getValue)
+  private def checkLogin(): Unit = {
+    if (UserGroupInformation.isSecurityEnabled) {
+      if (loginUser == null) {
+        UserGroupInformation.loginUserFromKeytab(KEYTAB_USER.getValue, KEYTAB_LOCATION.getValue)
         loginUser = UserGroupInformation.getLoginUser
-      }else{
+      } else {
         loginUser.checkTGTAndReloginFromKeytab
       }
-    } else{
+    } else {
       loginUser = UserGroupInformation.createRemoteUser(Utils.getJvmUser)
     }
   }
 
-  private def check()={
-    if(StringUtils.isBlank(Configs.KEYTAB_USER.getValue)){
+  private def check() = {
+    if (StringUtils.isBlank(KEYTAB_USER.getValue)) {
       throw new IllegalArgumentException("kerberos user not set")
     }
 
-    if(StringUtils.isBlank(Configs.KEYTAB_LOCATION.getValue)){
+    if (StringUtils.isBlank(KEYTAB_LOCATION.getValue)) {
       throw new IllegalArgumentException("kerberos location not set")
-    }else if(! new File(Configs.KEYTAB_LOCATION.getValue).exists() ){
-      throw new IllegalArgumentException(s"The keytab location ${Configs.KEYTAB_LOCATION.getValue} does not exist")
+    } else if (! new File(KEYTAB_LOCATION.getValue).exists() ) {
+      throw new IllegalArgumentException(
+        s"The keytab location ${KEYTAB_LOCATION.getValue} does not exist")
     }
   }
 }
@@ -52,7 +53,7 @@ class HadoopSecurity extends Logging{
 object HadoopSecurity{
   private val INSTANCE = new HadoopSecurity
 
-  def apply()={
+  def apply(): HadoopSecurity = {
     INSTANCE
   }
 }

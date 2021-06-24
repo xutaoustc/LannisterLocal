@@ -18,16 +18,17 @@ class SaveService {
   var appHeuristicResultDetailsDao: AppHeuristicResultDetailsDao = _
 
   @Transactional(isolation = Isolation.READ_COMMITTED)
-  def save(result:AppResult)={
+  def save(result: AppResult): Unit = {
     appResultDao.upsert(result)
     val resultId = readId[AppResult](appResultDao, result, "app_id", result.appId)
-    appHeuristicResultDao.delete( new QueryWrapper[AppHeuristicResult]().eq("result_id",resultId) )
-    appHeuristicResultDetailsDao.delete( new QueryWrapper[AppHeuristicResultDetails]().eq("result_id",resultId) )
+    appHeuristicResultDao.delete( new QueryWrapper[AppHeuristicResult]().eq("result_id", resultId) )
+    appHeuristicResultDetailsDao.delete(
+      new QueryWrapper[AppHeuristicResultDetails]().eq("result_id", resultId) )
 
-    result.heuristicResults.foreach(heuResult=>{
+    result.heuristicResults.foreach(heuResult => {
       heuResult.resultId = resultId
       appHeuristicResultDao.insert(heuResult)
-      heuResult.heuristicResultDetails.foreach{ heuResultDetail =>{
+      heuResult.heuristicResultDetails.foreach{ heuResultDetail => {
         heuResultDetail.resultId = resultId
         heuResultDetail.heuristicId = heuResult.id
         appHeuristicResultDetailsDao.insert(heuResultDetail)
@@ -35,11 +36,12 @@ class SaveService {
     })
   }
 
-  def readId[T <: AppBase](dao:BaseMapper[T], entity:T, column:String, value:Any):Long = {
-    if(entity.id != 0)
+  def readId[T <: AppBase](dao: BaseMapper[T], entity: T, column: String, value: Any): Long = {
+    if (entity.id != 0) {
       entity.id
-    else
-      dao.selectOne(new QueryWrapper[T]().eq(column,value)).id
+    } else {
+      dao.selectOne(new QueryWrapper[T]().eq(column, value)).id
+    }
   }
 
 }

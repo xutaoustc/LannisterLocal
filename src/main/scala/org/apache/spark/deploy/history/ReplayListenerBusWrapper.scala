@@ -1,5 +1,5 @@
 package org.apache.spark.deploy.history
-
+// scalastyle:off
 import com.ctyun.lannister.util.Logging
 import org.apache.hadoop.fs.{FileStatus, FileSystem}
 import org.apache.spark.SparkConf

@@ -11,12 +11,12 @@ object Configs {
 
   val AUTO_TUNING_ENABLED = CommonVars("lannister.autotuning.enabled", "true")
 
-  val AGGREGATORS_CONF  = CommonVars("lannister.aggregators.conf", "AggregatorConf.yml")
-  val FETCHERS_CONF  = CommonVars("lannister.fetchers.conf", "FetcherConf.yml")
-  val HEURISTICS_CONF  = CommonVars("lannister.heuristic.conf", "HeuristicConf.yml")
-  val JOBTYPES_CONF  = CommonVars("lannister.jobtype.conf", "JobTypeConf.yml")
+  val AGGREGATORS_CONF = CommonVars("lannister.aggregators.conf", "AggregatorConf.yml")
+  val FETCHERS_CONF = CommonVars("lannister.fetchers.conf", "FetcherConf.yml")
+  val HEURISTICS_CONF = CommonVars("lannister.heuristic.conf", "HeuristicConf.yml")
+  val JOBTYPES_CONF = CommonVars("lannister.jobtype.conf", "JobTypeConf.yml")
 
-  val INITIAL_FETCH_START_TIME  = CommonVars("lannister.initialFetchStartTime", 0l)
+  val INITIAL_FETCH_START_TIME = CommonVars("lannister.initialFetchStartTime", 0L)
   val EXECUTOR_NUM = CommonVars("lannister.executor.num", 5)
   val RETRY_INTERVAL = CommonVars("lannister.analysis.retry.interval", 60 * 1000)
   val FETCH_INTERVAL = CommonVars("lannister.analysis.fetch.interval", 1 * 1000)

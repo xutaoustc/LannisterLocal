@@ -1,12 +1,14 @@
 package com.ctyun.lannister.conf
 
-import com.ctyun.lannister.util.Logging
-
-import java.io.{File, FileInputStream, IOException, InputStream}
+import java.io.{File, FileInputStream, InputStream, IOException}
 import java.util.Properties
+
+import scala.collection.JavaConverters._
+
+import com.ctyun.lannister.util.Logging
 import org.apache.commons.io.IOUtils
 import org.apache.commons.lang3.StringUtils
-import scala.collection.JavaConversions._
+
 
 private[conf] object ConfigurationUtil extends Logging {
 
@@ -26,8 +28,9 @@ private[conf] object ConfigurationUtil extends Logging {
   private def init: Unit = {
     val propertyFile = sysProps.getOrElse("lannister.configuration", DEFAULT_PROPERTY_FILE_NAME)
     val configFileURL = getClass.getClassLoader.getResource(propertyFile)
-    if (configFileURL != null && new File(configFileURL.getPath).exists) initConfig(config, configFileURL.getPath)
-    else warn(s"******************************** Notice: The lannister configuration file $propertyFile is not exists! ***************************")
+    if (configFileURL != null && new File(configFileURL.getPath).exists) {
+      initConfig(config, configFileURL.getPath)
+    } else warn(s"****** Notice: The lannister config file $propertyFile is not exists! ******")
   }
 
   private def initConfig(config: Properties, filePath: String) {
@@ -46,22 +49,23 @@ private[conf] object ConfigurationUtil extends Logging {
     if(StringUtils.isNotEmpty(value)) {
       return Some(value)
     }
-    val propsValue =  sysProps.get(key).orElse(sys.props.get(key))
-    if(propsValue.isDefined){
+    val propsValue = sysProps.get(key).orElse(sys.props.get(key))
+    if(propsValue.isDefined) {
       return propsValue
     }
     env.get(key)
   }
 
-  def getOption[T](commonVars: CommonVars[T]): Option[T] = if(commonVars.value != null) Option(commonVars.value)
-  else {
+  def getOption[T](commonVars: CommonVars[T]): Option[T] = if (commonVars.value != null) {
+    Option(commonVars.value)
+  } else {
     val value = ConfigurationUtil.getOption(commonVars.key)
     if (value.isEmpty) Option(commonVars.defaultValue)
     else formatValue(commonVars.defaultValue, value)
   }
 
   private[conf] def formatValue[T](defaultValue: T, value: Option[String]): Option[T] = {
-    if(value.isEmpty || value.exists(StringUtils.isEmpty)) return Option(defaultValue)
+    if (value.isEmpty || value.exists(StringUtils.isEmpty)) return Option(defaultValue)
     val formattedValue = defaultValue match {
       case _: String => value
       case _: Byte => value.map(_.toByte)
@@ -79,7 +83,8 @@ private[conf] object ConfigurationUtil extends Logging {
 
 
 
-  def getBoolean(key: String, default: Boolean):Boolean = getOption(key).map(_.toBoolean).getOrElse(default)
+  def getBoolean(key: String, default: Boolean): Boolean =
+    getOption(key).map(_.toBoolean).getOrElse(default)
   def getBoolean(commonVars: CommonVars[Boolean]): Option[Boolean] = getOption(commonVars)
 
   def get(key: String, default: String): String = getOption(key).getOrElse(default)
@@ -87,17 +92,17 @@ private[conf] object ConfigurationUtil extends Logging {
 
   def get(key: String): String = getOption(key).getOrElse(throw new NoSuchElementException(key))
 
-  def getInt(key: String, default: Int):Int = getOption(key).map(_.toInt).getOrElse(default)
+  def getInt(key: String, default: Int): Int = getOption(key).map(_.toInt).getOrElse(default)
   def getInt(commonVars: CommonVars[Int]): Option[Int] = getOption(commonVars)
 
   def contains(key: String): Boolean = getOption(key).isDefined
 
 
-  def properties = {
+  def properties: Properties = {
     val props = new Properties
-    props.putAll(sysProps)
+    props.putAll(sysProps.asJava)
     props.putAll(config)
-    props.putAll(env)
+    props.putAll(env.asJava)
     props
   }
 }

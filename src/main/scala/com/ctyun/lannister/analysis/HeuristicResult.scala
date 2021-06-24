@@ -2,11 +2,11 @@ package com.ctyun.lannister.analysis
 
 import com.ctyun.lannister.analysis.Severity.Severity
 
-case class HeuristicResult(heuristicClass:String,
-                           heuristicName:String,
+case class HeuristicResult(heuristicClass: String,
+                           heuristicName: String,
                            severity: Severity,
-                           score:Int,
-                           heuristicResultDetails:List[HeuristicResultDetails]) {
+                           score: Int,
+                           heuristicResultDetails: List[HeuristicResultDetails]) {
 }
 
 object HeuristicResult{
@@ -15,5 +15,5 @@ object HeuristicResult{
     "No Data Received",
     Severity.LOW,
     0,
-    List( HeuristicResultDetails("No Data Received", "", "")))
+    List( HeuristicResultDetails("No Data Received", "")))
 }

@@ -8,7 +8,7 @@ class Lannister extends Runnable{
   // TODO    println(Configs.AUTO_TUNING_ENABLED.getValue)
 
   @Autowired
-  private var lannisterRunner:LannisterRunner = _
+  private var lannisterRunner: LannisterRunner = _
 
   override def run(): Unit = {
     // hear me roar!

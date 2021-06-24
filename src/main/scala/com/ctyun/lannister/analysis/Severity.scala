@@ -8,11 +8,12 @@ object Severity extends Enumeration {
   val SEVERE = Value(3, "Severe")
   val CRITICAL = Value(4, "Critical")
 
-  def max(a:Severity,b:Severity)={
-    if(a.id> b.id)
+  def max(a: Severity, b: Severity): Severity = {
+    if (a.id > b.id) {
       a
-    else
+    } else {
       b
+    }
   }
 
   def max(severities: Severity*): Severity = {
@@ -23,8 +24,8 @@ object Severity extends Enumeration {
     currentSeverity
   }
 
-  def  getSeverityAscending(value: Number,low: Number,  moderate: Number,  severe: Number,
-    critical: Number):Severity= {
+  def getSeverityAscending(value: Number, low: Number, moderate: Number, severe: Number,
+                           critical: Number): Severity = {
     if (value.doubleValue() >= critical.doubleValue()) {
       return CRITICAL;
     }
@@ -40,8 +41,8 @@ object Severity extends Enumeration {
     return NONE;
   }
 
-  def  getSeverityDescending(value: Number,low: Number,  moderate: Number,  severe: Number,
-                            critical: Number):Severity= {
+  def  getSeverityDescending(value: Number, low: Number, moderate: Number, severe: Number,
+                            critical: Number): Severity = {
     if (value.doubleValue() <= critical.doubleValue()) {
       return CRITICAL;
     }

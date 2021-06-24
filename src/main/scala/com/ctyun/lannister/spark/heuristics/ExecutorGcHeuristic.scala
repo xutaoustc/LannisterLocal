@@ -1,20 +1,19 @@
 package com.ctyun.lannister.spark.heuristics
 
-import com.ctyun.lannister.analysis.Severity.Severity
 import com.ctyun.lannister.analysis._
-import com.ctyun.lannister.conf.heuristic.HeuristicConfigurationData
+import com.ctyun.lannister.analysis.Severity.Severity
+import com.ctyun.lannister.conf.heuristic.HeuristicConfigData
 import com.ctyun.lannister.spark.data.SparkApplicationData
 
-class ExecutorGcHeuristic(private val heuristicConfigurationData: HeuristicConfigurationData) extends Heuristic{
+class ExecutorGcHeuristic(private val heuristicConfig: HeuristicConfigData) extends Heuristic{
 
   import ExecutorGcHeuristic._
 
-  val gcSeverityAThresholds: SeverityThresholds =
-    SeverityThresholds.parse(heuristicConfigurationData.params.get(GC_SEVERITY_A_THRESHOLDS_KEY), ascending = true)
-  val gcSeverityDThresholds: SeverityThresholds =
-    SeverityThresholds.parse(heuristicConfigurationData.params.get(GC_SEVERITY_D_THRESHOLDS_KEY), ascending = false)
+  val gcSeverityAThresholds: SeverityThresholds = SeverityThresholds.parse(
+    heuristicConfig.params.get(GC_SEVERITY_A_THRESHOLDS_KEY), ascending = true)
+  val gcSeverityDThresholds: SeverityThresholds = SeverityThresholds.parse(
+    heuristicConfig.params.get(GC_SEVERITY_D_THRESHOLDS_KEY), ascending = false)
 
-  override def getHeuristicConfData: HeuristicConfigurationData = ???
 
   override def apply(data: ApplicationData): HeuristicResult = {
     val evaluator = new Evaluator(this, data.asInstanceOf[SparkApplicationData])
@@ -25,15 +24,18 @@ class ExecutorGcHeuristic(private val heuristicConfigurationData: HeuristicConfi
     )
 
     if (evaluator.severityTimeA.id > Severity.LOW.id) {
-      resultDetails = resultDetails :+ new HeuristicResultDetails("Gc ratio high", "The job is spending too much time on GC. We recommend increasing the executor memory.")
+      resultDetails = resultDetails :+
+        new HeuristicResultDetails("Gc ratio high",
+          "The job is spending too much time on GC. We recommend increasing the executor memory.")
     }
     if (evaluator.severityTimeD.id > Severity.LOW.id) {
-      resultDetails = resultDetails :+ new HeuristicResultDetails("Gc ratio low", "The job is spending too less time in GC. Please check if you have asked for more executor memory than required.")
+      resultDetails = resultDetails :+
+        new HeuristicResultDetails("Gc ratio low", "The job is spending too less time in GC.")
     }
 
     new HeuristicResult(
-      heuristicConfigurationData.classname,
-      heuristicConfigurationData.name,
+      heuristicConfig.classname,
+      heuristicConfig.name,
       evaluator.severityTimeA,
       0,
       resultDetails.toList
@@ -46,10 +48,11 @@ object ExecutorGcHeuristic {
   val GC_SEVERITY_D_THRESHOLDS_KEY: String = "gc_severity_D_threshold"
 
   class Evaluator(executorGcHeuristic: ExecutorGcHeuristic, data: SparkApplicationData) {
-    var (gcTime, executorRunTimeTotal) = data.store.store.executorList(false).filterNot(_.id.equals("driver"))
-                                             .foldLeft((0l,0l))( (v,n)=> (v._1 + n.totalGCTime, v._2 + n.totalDuration) )
+    var (gcTime, executorRunTimeTotal) = data.store.store
+           .executorList(false).filterNot(_.id.equals("driver"))
+           .foldLeft((0L, 0L))( (v, n) => (v._1 + n.totalGCTime, v._2 + n.totalDuration) )
     var ratio: Double = gcTime.toDouble / executorRunTimeTotal.toDouble
-    lazy val severityTimeA: Severity = executorGcHeuristic.gcSeverityAThresholds.severityOf(ratio)
-    lazy val severityTimeD: Severity = executorGcHeuristic.gcSeverityDThresholds.severityOf(ratio)
+    lazy val severityTimeA: Severity = executorGcHeuristic.gcSeverityAThresholds.of(ratio)
+    lazy val severityTimeD: Severity = executorGcHeuristic.gcSeverityDThresholds.of(ratio)
   }
 }
