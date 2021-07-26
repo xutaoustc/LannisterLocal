@@ -1,12 +1,12 @@
-package com.ctyun.lannister.security
+package com.ctyun.lannister.core.hadoop
 
 import java.io.File
 
 import com.ctyun.lannister.core.conf.Configs._
-import com.ctyun.lannister.hadoop.HadoopConf
 import com.ctyun.lannister.util.{Logging, Utils}
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.security.UserGroupInformation
+
 
 class HadoopSecurity extends Logging{
   private var loginUser: UserGroupInformation = _

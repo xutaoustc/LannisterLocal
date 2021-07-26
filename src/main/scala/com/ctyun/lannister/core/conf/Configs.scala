@@ -3,10 +3,13 @@ package com.ctyun.lannister.core.conf
 import org.apache.commons.lang3.StringUtils
 
 object Configs {
-  require( StringUtils.isNotBlank(CommonVars("hadoop.config.dir", "").getValue) ||
-           StringUtils.isNotBlank(CommonVars("HADOOP_CONF_DIR", "").getValue),
-      "Neither hadoop.config.dir or HADOOP_CONF_DIR should not be empty")
+  require(
+      StringUtils.isNotBlank(CommonVars("hadoop.config.dir", "").getValue) ||
+      StringUtils.isNotBlank(CommonVars("HADOOP_CONF_DIR", "").getValue),
+      "Neither hadoop.config.dir or HADOOP_CONF_DIR should not be empty"
+  )
 
+  // HADOOP
   val hadoopConfDir = CommonVars("hadoop.config.dir", CommonVars("HADOOP_CONF_DIR", "").getValue)
 
   val AUTO_TUNING_ENABLED = CommonVars("lannister.autotuning.enabled", "true")

@@ -6,8 +6,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import com.ctyun.lannister.analysis.{AnalyticJob, AnalyticJobGeneratorHadoop3, HeuristicResult}
 import com.ctyun.lannister.core.conf.Configs
+import com.ctyun.lannister.core.hadoop.HadoopSecurity
 import com.ctyun.lannister.metric.MetricsController
-import com.ctyun.lannister.security.HadoopSecurity
 import com.ctyun.lannister.service.SaveService
 import com.ctyun.lannister.util.Logging
 import com.google.common.util.concurrent.ThreadFactoryBuilder
@@ -25,23 +25,33 @@ class LannisterLogic extends Runnable with Logging{
   @Autowired
   private var _metricsController: MetricsController = _
 
+  private val threadPoolExecutor = new ThreadPoolExecutor(
+                  Configs.EXECUTOR_NUM.getValue,
+                  Configs.EXECUTOR_NUM.getValue,
+                  0L, TimeUnit.MILLISECONDS,
+                  new LinkedBlockingQueue[Runnable](),
+                  new ThreadFactoryBuilder().setNameFormat("executor-thread-%d").build())
+  info(s"executor num is ${Configs.EXECUTOR_NUM.getValue}")
+
+
   private val running = new AtomicBoolean(true)
   private var thisRoundTs = 0L
-
-  private val factory = new ThreadFactoryBuilder().setNameFormat("executor-thread-%d").build()
-  private val threadPoolExecutor = new ThreadPoolExecutor(
-                                      Configs.EXECUTOR_NUM.getValue, Configs.EXECUTOR_NUM.getValue,
-                        0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue[Runnable](), factory)
-  info(s"executor num is ${Configs.EXECUTOR_NUM.getValue}")
 
 
   override def run(): Unit = {
     info("LannisterRunner has started")
-    runWithSecurity(loopCore)
+    runWithSecurity(core)
   }
 
+  private def runWithSecurity(f: () => Unit): Unit = {
+    HadoopSecurity().getUGI.doAs(
+      new PrivilegedAction[Unit]() {
+        override def run(): Unit = f()
+      }
+    )
+  }
 
-  private def loopCore(): Unit = {
+  private def core(): Unit = {
     // configure
     _analyticJobGenerator.configure
     _metricsController.init()
@@ -53,7 +63,7 @@ class LannisterLogic extends Runnable with Logging{
     error("LannisterRunner stopped")
   }
 
-  def fetchAndRunEachRound(): Unit = {
+  private def fetchAndRunEachRound(): Unit = {
     thisRoundTs = System.currentTimeMillis()
 
     // 1. Fetch
@@ -89,17 +99,6 @@ class LannisterLogic extends Runnable with Logging{
     Thread.sleep(waitTime)
   }
 
-
-
-  private def runWithSecurity(f: () => Unit): Unit = {
-    HadoopSecurity().getUGI.doAs(
-      new PrivilegedAction[Unit]() {
-        override def run(): Unit = {
-          f()
-        }
-      }
-    )
-  }
 
 
 

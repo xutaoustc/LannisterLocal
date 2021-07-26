@@ -3,10 +3,10 @@ package com.ctyun.lannister.core.spark.heuristics
 import com.ctyun.lannister.analysis._
 import com.ctyun.lannister.analysis.Severity.Severity
 import com.ctyun.lannister.core.conf.heuristic.HeuristicConfiguration
-import com.ctyun.lannister.math.Statistics
-import ExecutorsHeuristic.Evaluator
 import com.ctyun.lannister.core.spark.data.SparkApplicationData
+import com.ctyun.lannister.math.Statistics
 import com.ctyun.lannister.util.MemoryFormatUtils
+
 import org.apache.spark.status.api.v1.ExecutorSummary
 
 class ExecutorsHeuristic(private val heuristicConfig: HeuristicConfiguration) extends Heuristic{
@@ -20,6 +20,7 @@ class ExecutorsHeuristic(private val heuristicConfig: HeuristicConfiguration) ex
 
 
   override def apply(data: ApplicationData): HeuristicResult = {
+    import ExecutorsHeuristic.Evaluator
     val evaluator = new Evaluator(this, data.asInstanceOf[SparkApplicationData])
 
     val resultDetails = Seq(

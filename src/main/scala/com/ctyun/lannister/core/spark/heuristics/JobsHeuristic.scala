@@ -4,6 +4,7 @@ import com.ctyun.lannister.analysis.{ApplicationData, Heuristic, HeuristicResult
 import com.ctyun.lannister.analysis.Severity.Severity
 import com.ctyun.lannister.core.conf.heuristic.HeuristicConfiguration
 import com.ctyun.lannister.core.spark.data.SparkApplicationData
+
 import org.apache.spark.JobExecutionStatus
 import org.apache.spark.status.api.v1.JobData
 
