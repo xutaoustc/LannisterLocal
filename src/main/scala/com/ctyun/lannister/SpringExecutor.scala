@@ -11,10 +11,10 @@ class SpringExecutor {
   def taskExecutor: TaskExecutor = new SimpleAsyncTaskExecutor
 
   @Bean
-  def runner(executor: TaskExecutor, lannister: Lannister): CommandLineRunner =
+  def runner(executor: TaskExecutor, lannisterRunner: LannisterRunner): CommandLineRunner =
     new CommandLineRunner() {
       override def run(args: String*): Unit = {
-        executor.execute(lannister)
+        executor.execute(lannisterRunner)
       }
     }
 }

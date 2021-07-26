@@ -19,10 +19,8 @@ object Utils {
   }
 
   // scalastyle:off classforname
-  def classForName[C](
-                       className: String,
-                       initialize: Boolean = true,
-                       noSparkClassLoader: Boolean = false): Class[C] = {
+  def classForName[C]( className: String,
+                       initialize: Boolean = true): Class[C] = {
     Class.forName(className, initialize, Thread.currentThread().getContextClassLoader).
       asInstanceOf[Class[C]]
     // scalastyle:on classforname

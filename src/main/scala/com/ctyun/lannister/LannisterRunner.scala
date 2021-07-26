@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 @Component
-class Lannister extends Runnable{
+class LannisterRunner extends Runnable{
   @Autowired
   private var lannisterAnalyzer: LannisterAnalyzer = _
 
