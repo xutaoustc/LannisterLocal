@@ -145,7 +145,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.ctyun.lannister.Application</mainClass>
+                            <mainClass>com.ctyun.lannister.SpringApp</mainClass>
                             <classpathPrefix>../lib</classpathPrefix>
                             <addClasspath>true</addClasspath>
                         </manifest>

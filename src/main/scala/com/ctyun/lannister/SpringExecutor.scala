@@ -6,11 +6,12 @@ import org.springframework.core.task.SimpleAsyncTaskExecutor
 import org.springframework.core.task.TaskExecutor
 
 @Configuration
-class Booter {
+class SpringExecutor {
+  @Bean(name = Array("executor"))
+  def taskExecutor: TaskExecutor = new SimpleAsyncTaskExecutor
 
-  @Bean def taskExecutor: TaskExecutor = new SimpleAsyncTaskExecutor
-
-  @Bean def schedulingRunner(executor: TaskExecutor, lannister: Lannister): CommandLineRunner =
+  @Bean
+  def runner(executor: TaskExecutor, lannister: Lannister): CommandLineRunner =
     new CommandLineRunner() {
       override def run(args: String*): Unit = {
         executor.execute(lannister)

@@ -6,10 +6,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 
 @SpringBootApplication
 @MapperScan(Array[String]("com.ctyun.lannister.dao"))
-class Application
+class SpringApp
 
-object Application {
+
+object SpringApp {
   def main(args: Array[String]): Unit = {
-    SpringApplication.run(classOf[Application])
+    SpringApplication.run(classOf[SpringApp])
   }
 }

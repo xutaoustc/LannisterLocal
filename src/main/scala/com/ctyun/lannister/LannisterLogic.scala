@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 @Component
-class LannisterRunner extends Runnable with Logging{
+class LannisterLogic extends Runnable with Logging{
   @Autowired
   var context: LannisterContext = _
   @Autowired
