@@ -4,32 +4,28 @@ import scala.collection.mutable
 
 import com.ctyun.lannister.analysis._
 import com.ctyun.lannister.conf.Configs
-import com.ctyun.lannister.conf.aggregator.{AggregatorConfiguration, AggregatorConfigurationData}
-import com.ctyun.lannister.conf.fetcher.{FetcherConfiguration, FetcherConfigurationData}
-import com.ctyun.lannister.conf.heuristic.{HeuristicConfigData, HeuristicConfiguration}
+import com.ctyun.lannister.conf.aggregator.{AggregatorConfiguration, AggregatorConfigurations}
+import com.ctyun.lannister.conf.fetcher.{FetcherConfiguration, FetcherConfigurations}
+import com.ctyun.lannister.conf.heuristic.{HeuristicConfiguration, HeuristicConfigurations}
 import com.ctyun.lannister.util.{Logging, Utils}
 import org.springframework.stereotype.Component
 
 
 @Component
 class LannisterContext extends Logging{
-
-  private val _nameToType = mutable.Map[String, ApplicationType]()
   private val _typeToAggregator = mutable.Map[ApplicationType, MetricsAggregator]()
   private val _typeToFetcher = mutable.Map[ApplicationType, Fetcher[_<:ApplicationData]]()
   private val _typeToHeuristics = mutable.Map[ApplicationType, List[Heuristic]]()
+  private val _nameToType = mutable.Map[String, ApplicationType]()
 
   loadAggregators()
   loadFetchers()
   loadHeuristics()
-// TODO loadAutoTuningConf();
   configureSupportedApplicationTypes()
 
 
-  def getApplicationTypeForName(typ: String): Option[ApplicationType] = _nameToType.get(typ)
-
-  def getAggregatorForApplicationType(applicationType: ApplicationType): MetricsAggregator = {
-    _typeToAggregator(applicationType)
+  def getApplicationTypeForName(name: String): Option[ApplicationType] = {
+    _nameToType.get(name)
   }
 
   def getFetcherForApplicationType(typ: ApplicationType): Fetcher[_ <: ApplicationData] = {
@@ -40,66 +36,65 @@ class LannisterContext extends Logging{
     _typeToHeuristics(typ)
   }
 
-  private def loadAggregators(): Unit = {
-    val aggregatorConfiguration =
-      Utils.loadYmlDoc(Configs.AGGREGATORS_CONF.getValue)(classOf[AggregatorConfiguration])
+  def getAggregatorForApplicationType(typ: ApplicationType): MetricsAggregator = {
+    _typeToAggregator(typ)
+  }
 
-    aggregatorConfiguration.getAggregators.forEach(data => {
-      val instance = Utils.classForName(data.classname)
-                          .getConstructor(classOf[AggregatorConfigurationData])
-                          .newInstance(data).asInstanceOf[MetricsAggregator]
-      _typeToAggregator += (data.getAppType -> instance)
-      info(s"Load aggregator ${data.classname}")
-    })
+
+
+  private def loadAggregators(): Unit = {
+    Utils.loadYml(Configs.AGGREGATORS_CONF.getValue)(classOf[AggregatorConfigurations])
+      .iterator
+      .foreach(conf => {
+        val instance = Utils.classForName(conf.classname)
+                            .getConstructor(classOf[AggregatorConfiguration])
+                            .newInstance(conf).asInstanceOf[MetricsAggregator]
+        _typeToAggregator += (conf.getAppType -> instance)
+        info(s"Load aggregator ${conf.classname}")
+      })
   }
 
   private def loadFetchers(): Unit = {
-    val fetcherConfiguration =
-      Utils.loadYmlDoc(Configs.FETCHERS_CONF.getValue)(classOf[FetcherConfiguration])
-
-    fetcherConfiguration.getFetchers.forEach(data => {
-      val instance = Utils.classForName(data.classname)
-        .getConstructor(classOf[FetcherConfigurationData])
-        .newInstance(data).asInstanceOf[Fetcher[_<:ApplicationData]]
-      _typeToFetcher += (data.getAppType -> instance)
-      info(s"Load fetcher ${data.classname}")
-    })
+    Utils.loadYml(Configs.FETCHERS_CONF.getValue)(classOf[FetcherConfigurations])
+      .iterator
+      .foreach(conf => {
+        val instance = Utils.classForName(conf.classname)
+                            .getConstructor(classOf[FetcherConfiguration])
+                            .newInstance(conf).asInstanceOf[Fetcher[_<:ApplicationData]]
+        _typeToFetcher += (conf.getAppType -> instance)
+        info(s"Load fetcher ${conf.classname}")
+      })
   }
 
   private def loadHeuristics(): Unit = {
-    val heuristicsConfiguration =
-      Utils.loadYmlDoc(Configs.HEURISTICS_CONF.getValue)(classOf[HeuristicConfiguration])
-
-    heuristicsConfiguration.getHeuristics.forEach(data => {
-      val instance = Utils.classForName(data.classname)
-        .getConstructor(classOf[HeuristicConfigData])
-        .newInstance(data).asInstanceOf[Heuristic]
-      val value = _typeToHeuristics.getOrElseUpdate(data.getAppType, Nil)
-
-      _typeToHeuristics.put(data.getAppType, value :+ instance)
-      info(s"Load heuristic ${data.classname}")
-    })
+    Utils.loadYml(Configs.HEURISTICS_CONF.getValue)(classOf[HeuristicConfigurations])
+      .iterator
+      .foreach(conf => {
+        val instance = Utils.classForName(conf.classname)
+                            .getConstructor(classOf[HeuristicConfiguration])
+                            .newInstance(conf).asInstanceOf[Heuristic]
+        val value = _typeToHeuristics.getOrElseUpdate(conf.getAppType, Nil)
+        _typeToHeuristics.put(conf.getAppType, value :+ instance)
+        info(s"Load heuristic ${conf.classname}")
+      })
   }
 
 
   private def configureSupportedApplicationTypes(): Unit = {
-    val supportedTypes = _typeToFetcher.keySet &
-      _typeToHeuristics.keySet  &
-      _typeToAggregator.keySet
+    val supportedTypes = _typeToFetcher.keySet & _typeToHeuristics.keySet & _typeToAggregator.keySet
+
+    info("Configuring LannisterContext ... ")
+    supportedTypes.foreach(eachType => {
+      info(s"""Supports ${eachType.upperName} application type,
+           |using ${_typeToFetcher(eachType).getClass} fetcher class
+           |with Heuristics [ ${_typeToHeuristics(eachType).map(_.getClass).mkString(",")} ]
+           |""".stripMargin )
+    })
 
     _typeToFetcher.retain((t, _) => {supportedTypes.contains(t)})
     _typeToHeuristics.retain((t, _) => {supportedTypes.contains(t)})
     _typeToAggregator.retain((t, _) => {supportedTypes.contains(t)})
     supportedTypes.foldLeft(_nameToType)( (m, v) => {m.put(v.upperName, v); m} )
-
-    info("Configuring LannisterContext ... ")
-    supportedTypes.foreach(tpe => {
-      info(
-        s"""Supports ${tpe.upperName} application type,
-           |using ${_typeToFetcher(tpe).getClass} fetcher class
-           |with Heuristics [ ${_typeToHeuristics(tpe).map(_.getClass).mkString(",")} ]
-           |""".stripMargin )
-    })
   }
 
 }

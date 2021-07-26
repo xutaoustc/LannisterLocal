@@ -2,7 +2,7 @@ package com.ctyun.lannister.spark.heuristics
 
 import com.ctyun.lannister.analysis._
 import com.ctyun.lannister.analysis.Severity.Severity
-import com.ctyun.lannister.conf.heuristic.HeuristicConfigData
+import com.ctyun.lannister.conf.heuristic.HeuristicConfiguration
 import com.ctyun.lannister.math.Statistics
 import com.ctyun.lannister.spark.data.SparkApplicationData
 import com.ctyun.lannister.spark.heuristics.ExecutorsHeuristic.Evaluator
@@ -10,7 +10,7 @@ import com.ctyun.lannister.util.MemoryFormatUtils
 
 import org.apache.spark.status.api.v1.ExecutorSummary
 
-class ExecutorsHeuristic(private val heuristicConfig: HeuristicConfigData) extends Heuristic{
+class ExecutorsHeuristic(private val heuristicConfig: HeuristicConfiguration) extends Heuristic{
 
   val maxToMedianRatioSeverityThresholds = SeverityThresholds.parse(
     heuristicConfig.params.get("max_to_median_severity_thresholds"), ascending = true)

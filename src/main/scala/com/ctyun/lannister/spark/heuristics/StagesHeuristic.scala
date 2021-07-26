@@ -4,13 +4,13 @@ import scala.concurrent.duration.Duration
 
 import com.ctyun.lannister.analysis._
 import com.ctyun.lannister.analysis.Severity.Severity
-import com.ctyun.lannister.conf.heuristic.HeuristicConfigData
+import com.ctyun.lannister.conf.heuristic.HeuristicConfiguration
 import com.ctyun.lannister.math.Statistics._
 import com.ctyun.lannister.spark.data.SparkApplicationData
 
 import org.apache.spark.status.api.v1.{StageData, StageStatus}
 
-class StagesHeuristic(private val heuristicConfig: HeuristicConfigData)
+class StagesHeuristic(private val heuristicConfig: HeuristicConfiguration)
   extends Heuristic{
 
   import StagesHeuristic._

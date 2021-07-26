@@ -2,10 +2,10 @@ package com.ctyun.lannister.spark.heuristics
 
 import com.ctyun.lannister.analysis._
 import com.ctyun.lannister.analysis.Severity.Severity
-import com.ctyun.lannister.conf.heuristic.HeuristicConfigData
+import com.ctyun.lannister.conf.heuristic.HeuristicConfiguration
 import com.ctyun.lannister.spark.data.SparkApplicationData
 
-class ExecutorGcHeuristic(private val heuristicConfig: HeuristicConfigData) extends Heuristic{
+class ExecutorGcHeuristic(private val heuristicConfig: HeuristicConfiguration) extends Heuristic{
 
   import ExecutorGcHeuristic._
 

@@ -2,13 +2,13 @@ package com.ctyun.lannister.spark.heuristics
 
 import com.ctyun.lannister.analysis.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetails, Severity, SeverityThresholds}
 import com.ctyun.lannister.analysis.Severity.Severity
-import com.ctyun.lannister.conf.heuristic.HeuristicConfigData
+import com.ctyun.lannister.conf.heuristic.HeuristicConfiguration
 import com.ctyun.lannister.spark.data.SparkApplicationData
 
 import org.apache.spark.JobExecutionStatus
 import org.apache.spark.status.api.v1.JobData
 
-class JobsHeuristic(private val heuristicConfig: HeuristicConfigData) extends Heuristic {
+class JobsHeuristic(private val heuristicConfig: HeuristicConfiguration) extends Heuristic {
 
   import JobsHeuristic._
 

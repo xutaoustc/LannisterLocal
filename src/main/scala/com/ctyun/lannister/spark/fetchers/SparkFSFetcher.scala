@@ -6,7 +6,7 @@ import java.security.PrivilegedAction
 import scala.collection.JavaConverters._
 
 import com.ctyun.lannister.analysis.{AnalyticJob, Fetcher}
-import com.ctyun.lannister.conf.fetcher.FetcherConfigurationData
+import com.ctyun.lannister.conf.fetcher.FetcherConfiguration
 import com.ctyun.lannister.hadoop.HadoopConf
 import com.ctyun.lannister.security.HadoopSecurity
 import com.ctyun.lannister.spark.data.SparkApplicationData
@@ -15,7 +15,7 @@ import org.apache.hadoop.fs.{FileSystem, Path, PathFilter}
 import org.apache.spark.deploy.history.{HistoryAppStatusStoreWrapper, ReplayListenerBusWrapper}
 
 
-class SparkFSFetcher(fetcherConfig: FetcherConfigurationData) extends Fetcher[SparkApplicationData]{
+class SparkFSFetcher(fetcherConfig: FetcherConfiguration) extends Fetcher[SparkApplicationData]{
   private val rootPath: String = fetcherConfig.params.asScala("rootPath")
 
   override def fetchData(job: AnalyticJob): Option[SparkApplicationData] = {
