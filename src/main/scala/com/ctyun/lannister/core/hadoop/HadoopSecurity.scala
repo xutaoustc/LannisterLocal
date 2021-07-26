@@ -1,6 +1,7 @@
 package com.ctyun.lannister.core.hadoop
 
 import java.io.File
+import java.security.PrivilegedAction
 
 import com.ctyun.lannister.core.conf.Configs._
 import com.ctyun.lannister.util.{Logging, Utils}
@@ -9,15 +10,36 @@ import org.apache.hadoop.security.UserGroupInformation
 
 
 class HadoopSecurity extends Logging{
-  private var loginUser: UserGroupInformation = _
-
   UserGroupInformation.setConfiguration(HadoopConf.conf)
   if (UserGroupInformation.isSecurityEnabled) {
     info("This cluster is kerberos enabled")
     check()
   }
 
-  def getUGI: UserGroupInformation = {
+  private def check() = {
+    if (StringUtils.isBlank(KEYTAB_USER.getValue)) {
+      throw new IllegalArgumentException("kerberos user not set")
+    }
+
+    if (StringUtils.isBlank(KEYTAB_LOCATION.getValue)) {
+      throw new IllegalArgumentException("kerberos location not set")
+    } else if (! new File(KEYTAB_LOCATION.getValue).exists() ) {
+      throw new IllegalArgumentException(s"Keytab loc ${KEYTAB_LOCATION.getValue} does not exist")
+    }
+  }
+
+
+  private var loginUser: UserGroupInformation = _
+
+  def doAs[T](f: () => T): T = {
+    getUGI.doAs(
+      new PrivilegedAction[T]() {
+        override def run(): T = f()
+      }
+    )
+  }
+
+  private def getUGI: UserGroupInformation = {
     checkLogin()
     loginUser
   }
@@ -32,19 +54,6 @@ class HadoopSecurity extends Logging{
       }
     } else {
       loginUser = UserGroupInformation.createRemoteUser(Utils.getJvmUser)
-    }
-  }
-
-  private def check() = {
-    if (StringUtils.isBlank(KEYTAB_USER.getValue)) {
-      throw new IllegalArgumentException("kerberos user not set")
-    }
-
-    if (StringUtils.isBlank(KEYTAB_LOCATION.getValue)) {
-      throw new IllegalArgumentException("kerberos location not set")
-    } else if (! new File(KEYTAB_LOCATION.getValue).exists() ) {
-      throw new IllegalArgumentException(
-        s"The keytab location ${KEYTAB_LOCATION.getValue} does not exist")
     }
   }
 }

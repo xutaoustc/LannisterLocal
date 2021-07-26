@@ -10,6 +10,7 @@ import com.ctyun.lannister.LannisterContext
 import com.ctyun.lannister.core.conf.Configs
 import com.ctyun.lannister.core.hadoop.HadoopConf
 import com.ctyun.lannister.metric.MetricsController
+import com.ctyun.lannister.service.PersistService
 import com.ctyun.lannister.util.Logging
 import org.apache.hadoop.conf.Configuration
 import org.codehaus.jackson.map.ObjectMapper
@@ -23,9 +24,11 @@ import org.springframework.stereotype.Component
 @Component
 class AnalyticJobGeneratorHadoop3 extends AnalyticJobGenerator with Logging {
   @Autowired
-  var context: LannisterContext = _
+  var _context: LannisterContext = _
   @Autowired
   var _metricsController : MetricsController = _
+  @Autowired
+  private var _persistService: PersistService = _
 
   private val _configuration : Configuration = HadoopConf.conf
 
@@ -100,6 +103,8 @@ class AnalyticJobGeneratorHadoop3 extends AnalyticJobGenerator with Logging {
       s"${succeededApps.size} succeed, ${failedApps.size} falled, " +
       s"$firstRetryQueueFetchCount first retry, $secondRetryQueueFetchCount second retry")
     appList.toList
+      .map(_.setLannisterComponent(_context))
+      .map(_.setPersistService(_persistService))
   }
 
   override def addIntoRetries(job: AnalyticJob): Unit = {
@@ -147,7 +152,8 @@ class AnalyticJobGeneratorHadoop3 extends AnalyticJobGenerator with Logging {
         val startTime = app.get("startedTime").asLong()
         val finishTime = app.get("finishedTime").asLong()
 
-        val applicationType = context.getApplicationTypeForName(app.get("applicationType").asText())
+        val applicationType =
+          _context.getApplicationTypeForName(app.get("applicationType").asText())
         if(applicationType.isDefined) {
           appList += AnalyticJob(appId, applicationType.get, user,
                       name, queueName, trackingUrl, startTime, finishTime)

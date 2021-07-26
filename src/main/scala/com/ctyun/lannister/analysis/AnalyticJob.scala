@@ -3,28 +3,27 @@ package com.ctyun.lannister.analysis
 import com.ctyun.lannister.LannisterContext
 import com.ctyun.lannister.core.conf.Configs
 import com.ctyun.lannister.model.{AppHeuristicResult, AppHeuristicResultDetails, AppResult}
+import com.ctyun.lannister.service.PersistService
 import com.ctyun.lannister.util.Logging
-import java.util.concurrent.Future
 
 case class AnalyticJob(appId: String, applicationType: ApplicationType, user: String,
                        name: String, queueName: String, trackingUrl: String,
                        startTime: Long, finishTime: Long) extends Logging{
-  private var _jobFuture: Future[_] = null
   private var _retries = 0
   private var _secondRetries = 0
   private var _timeLeftToRetry = 0
+  private var successfulJob: Boolean = false
+
   private var _fetcher: Fetcher[_ <: ApplicationData] = _
   private var _heuristics: List[Heuristic] = _
   private var _metricsAggregator: MetricsAggregator = _
-  private var successfulJob: Boolean = false
+  private var _persistService: PersistService = _
+
+  def appTypeName() : String = applicationType.name
+  def appTypeNameAndAppId() : String = s"${appTypeName()} $appId"
 
   def setSuccessfulJob: AnalyticJob = {
     this.successfulJob = true
-    this
-  }
-
-  def setJobFuture(future: Future[_]): AnalyticJob = {
-    this._jobFuture = future
     this
   }
 
@@ -35,7 +34,12 @@ case class AnalyticJob(appId: String, applicationType: ApplicationType, user: St
     this
   }
 
-  def getAnalysis: AppResult = {
+  def setPersistService(persistService: PersistService): AnalyticJob = {
+    this._persistService = persistService
+    this
+  }
+
+  def analysis: AppResult = {
     // Fetch & Heuristic & Aggregator
     val (heuristicResults, aggregatedData) = _fetcher.fetchData(this) match {
       case Some(data) =>
@@ -55,7 +59,7 @@ case class AnalyticJob(appId: String, applicationType: ApplicationType, user: St
     result.finishTime = finishTime
     result.name = name
     result.successfulJob = successfulJob
-    result.jobType = applicationType.upperName
+    result.jobType = appTypeName()
     result.resourceUsed = 0 // TODO
     result.totalDelay = 0 // TODO
     result.resourceWasted = 0  // TODO
@@ -84,6 +88,7 @@ case class AnalyticJob(appId: String, applicationType: ApplicationType, user: St
     result.severityId = worstSeverity.id
     result.score = jobScore
 
+    _persistService.save(result)
     result
   }
 

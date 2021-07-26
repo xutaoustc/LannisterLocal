@@ -12,6 +12,12 @@ object Utils {
     yaml.load(stream).asInstanceOf[T]
   }
 
+  def executeWithRetTime[T](f : () => T): (Long, T) = {
+    val analysisStartTimeMillis = System.currentTimeMillis
+    val res: T = f()
+    (System.currentTimeMillis() - analysisStartTimeMillis, res)
+  }
+
   // scalastyle:off classforname
   def classForName[C](
                        className: String,

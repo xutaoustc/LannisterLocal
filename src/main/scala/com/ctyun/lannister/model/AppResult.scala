@@ -3,6 +3,7 @@ package com.ctyun.lannister.model
 import scala.collection.mutable
 
 import com.baomidou.mybatisplus.annotation.{TableField, TableName}
+import com.ctyun.lannister.analysis.HeuristicResult
 import com.ctyun.lannister.analysis.Severity.Severity
 
 @TableName("app_result")
@@ -25,4 +26,12 @@ class AppResult extends AppBase {
   var severity: Severity = _
   @TableField(`exist` = false)
   var heuristicResults = mutable.ListBuffer[AppHeuristicResult]()
+
+  def isNoData: Boolean = {
+    if (heuristicResults.head.heuristicClass == HeuristicResult.NO_DATA.heuristicClass) {
+      true
+    } else {
+      false
+    }
+  }
 }

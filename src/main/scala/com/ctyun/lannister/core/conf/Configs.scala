@@ -12,8 +12,6 @@ object Configs {
   // HADOOP
   val hadoopConfDir = CommonVars("hadoop.config.dir", CommonVars("HADOOP_CONF_DIR", "").getValue)
 
-  val AUTO_TUNING_ENABLED = CommonVars("lannister.autotuning.enabled", "true")
-
   // Global aggregator, fetcher, heuristic configuration
   val AGGREGATORS_CONF = CommonVars("lannister.aggregators.conf", "AggregatorConf.yml")
   val FETCHERS_CONF = CommonVars("lannister.fetchers.conf", "FetcherConf.yml")
@@ -23,6 +21,7 @@ object Configs {
   val KEYTAB_USER = CommonVars("lannister.keytab.user", "")
   val KEYTAB_LOCATION = CommonVars("lannister.keytab.location", "")
 
+  // Execute params
   val INITIAL_FETCH_START_TIME = CommonVars("lannister.initialFetchStartTime", 0L)
   val EXECUTOR_NUM = CommonVars("lannister.executor.num", 5)
   val RETRY_INTERVAL = CommonVars("lannister.analysis.retry.interval", 60 * 1000)
@@ -30,4 +29,6 @@ object Configs {
   val RETRY_LIMIT = CommonVars("lannister.retry.limit", 3)
   val SECOND_RETRY_LIMIT = CommonVars("lannister.secondretry.limit", 5)
 
+
+  val AUTO_TUNING_ENABLED = CommonVars("lannister.autotuning.enabled", "true")
 }

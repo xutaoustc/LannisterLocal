@@ -6,9 +6,9 @@ import org.springframework.stereotype.Component
 @Component
 class Lannister extends Runnable{
   @Autowired
-  private var lannisterRunner: LannisterLogic = _
+  private var lannisterAnalyzer: LannisterAnalyzer = _
 
   override def run(): Unit = {
-    lannisterRunner.run()
+    lannisterAnalyzer.run()
   }
 }
