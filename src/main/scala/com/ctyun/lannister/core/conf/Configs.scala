@@ -1,4 +1,4 @@
-package com.ctyun.lannister.conf
+package com.ctyun.lannister.core.conf
 
 import org.apache.commons.lang3.StringUtils
 

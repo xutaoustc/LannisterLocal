@@ -5,7 +5,7 @@ import java.util.concurrent.{LinkedBlockingQueue, ThreadPoolExecutor, TimeoutExc
 import java.util.concurrent.atomic.AtomicBoolean
 
 import com.ctyun.lannister.analysis.{AnalyticJob, AnalyticJobGeneratorHadoop3, HeuristicResult}
-import com.ctyun.lannister.conf.Configs
+import com.ctyun.lannister.core.conf.Configs
 import com.ctyun.lannister.metric.MetricsController
 import com.ctyun.lannister.security.HadoopSecurity
 import com.ctyun.lannister.service.SaveService

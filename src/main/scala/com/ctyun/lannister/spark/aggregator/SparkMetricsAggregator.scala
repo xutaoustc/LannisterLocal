@@ -1,7 +1,7 @@
 package com.ctyun.lannister.spark.aggregator
 
 import com.ctyun.lannister.analysis.{AggregatedData, ApplicationData, MetricsAggregator}
-import com.ctyun.lannister.conf.aggregator.AggregatorConfiguration
+import com.ctyun.lannister.core.conf.aggregator.AggregatorConfiguration
 import com.ctyun.lannister.util.Logging
 
 class SparkMetricsAggregator(private val aggregatorConfigurationData: AggregatorConfiguration)

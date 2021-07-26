@@ -4,7 +4,7 @@ import scala.concurrent.duration.Duration
 
 import com.ctyun.lannister.analysis._
 import com.ctyun.lannister.analysis.Severity.Severity
-import com.ctyun.lannister.conf.heuristic.HeuristicConfiguration
+import com.ctyun.lannister.core.conf.heuristic.HeuristicConfiguration
 import com.ctyun.lannister.math.Statistics._
 import com.ctyun.lannister.spark.data.SparkApplicationData
 

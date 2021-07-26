@@ -1,10 +1,12 @@
-package com.ctyun.lannister.conf.aggregator
+package com.ctyun.lannister.core.conf.fetcher
 
-import com.ctyun.lannister.analysis.ApplicationType
 import java.util
+
 import scala.beans.BeanProperty
 
-class AggregatorConfiguration{
+import com.ctyun.lannister.analysis.ApplicationType
+
+class FetcherConfiguration{
   @BeanProperty var classname: String = _
   @BeanProperty var applicationType: String = _
   @BeanProperty var params: util.HashMap[String, String] = _

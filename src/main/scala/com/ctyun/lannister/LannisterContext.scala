@@ -3,10 +3,10 @@ package com.ctyun.lannister
 import scala.collection.mutable
 
 import com.ctyun.lannister.analysis._
-import com.ctyun.lannister.conf.Configs
-import com.ctyun.lannister.conf.aggregator.{AggregatorConfiguration, AggregatorConfigurations}
-import com.ctyun.lannister.conf.fetcher.{FetcherConfiguration, FetcherConfigurations}
-import com.ctyun.lannister.conf.heuristic.{HeuristicConfiguration, HeuristicConfigurations}
+import com.ctyun.lannister.core.conf.Configs
+import com.ctyun.lannister.core.conf.aggregator.{AggregatorConfiguration, AggregatorConfigurations}
+import com.ctyun.lannister.core.conf.fetcher.{FetcherConfiguration, FetcherConfigurations}
+import com.ctyun.lannister.core.conf.heuristic.{HeuristicConfiguration, HeuristicConfigurations}
 import com.ctyun.lannister.util.{Logging, Utils}
 import org.springframework.stereotype.Component
 

@@ -2,7 +2,7 @@ package com.ctyun.lannister.hadoop
 
 import java.nio.file.Paths
 
-import com.ctyun.lannister.conf.Configs
+import com.ctyun.lannister.core.conf.Configs
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 

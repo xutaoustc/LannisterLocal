@@ -1,4 +1,4 @@
-package com.ctyun.lannister.conf.fetcher
+package com.ctyun.lannister.core.conf.fetcher
 
 import java.util
 

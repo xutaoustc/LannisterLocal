@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import scala.collection.mutable.ListBuffer
 
 import com.ctyun.lannister.LannisterContext
-import com.ctyun.lannister.conf.Configs
+import com.ctyun.lannister.core.conf.Configs
 import com.ctyun.lannister.hadoop.HadoopConf
 import com.ctyun.lannister.metric.MetricsController
 import com.ctyun.lannister.util.Logging

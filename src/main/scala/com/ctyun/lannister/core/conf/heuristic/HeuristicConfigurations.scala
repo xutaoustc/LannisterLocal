@@ -1,4 +1,4 @@
-package com.ctyun.lannister.conf.heuristic
+package com.ctyun.lannister.core.conf.heuristic
 
 import java.util
 

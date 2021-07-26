@@ -1,4 +1,4 @@
-package com.ctyun.lannister.conf.aggregator
+package com.ctyun.lannister.core.conf.aggregator
 
 import java.util
 

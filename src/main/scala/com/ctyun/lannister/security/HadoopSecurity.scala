@@ -2,7 +2,7 @@ package com.ctyun.lannister.security
 
 import java.io.File
 
-import com.ctyun.lannister.conf.Configs._
+import com.ctyun.lannister.core.conf.Configs._
 import com.ctyun.lannister.hadoop.HadoopConf
 import com.ctyun.lannister.util.{Logging, Utils}
 import org.apache.commons.lang3.StringUtils
