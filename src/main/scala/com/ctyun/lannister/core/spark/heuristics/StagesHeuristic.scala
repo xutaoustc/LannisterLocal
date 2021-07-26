@@ -1,13 +1,11 @@
-package com.ctyun.lannister.spark.heuristics
+package com.ctyun.lannister.core.spark.heuristics
 
 import scala.concurrent.duration.Duration
-
 import com.ctyun.lannister.analysis._
 import com.ctyun.lannister.analysis.Severity.Severity
 import com.ctyun.lannister.core.conf.heuristic.HeuristicConfiguration
+import com.ctyun.lannister.core.spark.data.SparkApplicationData
 import com.ctyun.lannister.math.Statistics._
-import com.ctyun.lannister.spark.data.SparkApplicationData
-
 import org.apache.spark.status.api.v1.{StageData, StageStatus}
 
 class StagesHeuristic(private val heuristicConfig: HeuristicConfiguration)

@@ -1,4 +1,4 @@
-package com.ctyun.lannister.spark.aggregator
+package com.ctyun.lannister.core.spark.aggregator
 
 import com.ctyun.lannister.analysis.{AggregatedData, ApplicationData, MetricsAggregator}
 import com.ctyun.lannister.core.conf.aggregator.AggregatorConfiguration

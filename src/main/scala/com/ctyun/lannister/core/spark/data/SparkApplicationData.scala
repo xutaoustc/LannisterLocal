@@ -1,4 +1,4 @@
-package com.ctyun.lannister.spark.data
+package com.ctyun.lannister.core.spark.data
 
 import com.ctyun.lannister.analysis.ApplicationData
 

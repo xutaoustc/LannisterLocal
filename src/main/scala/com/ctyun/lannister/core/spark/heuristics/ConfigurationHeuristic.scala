@@ -1,10 +1,10 @@
-package com.ctyun.lannister.spark.heuristics
+package com.ctyun.lannister.core.spark.heuristics
 
 import com.ctyun.lannister.analysis._
 import com.ctyun.lannister.analysis.Severity.Severity
 import com.ctyun.lannister.core.conf.heuristic.HeuristicConfiguration
+import com.ctyun.lannister.core.spark.data.SparkApplicationData
 import com.ctyun.lannister.math.Statistics
-import com.ctyun.lannister.spark.data.SparkApplicationData
 import com.ctyun.lannister.util.MemoryFormatUtils
 
 class ConfigurationHeuristic (val heuristicConfig: HeuristicConfiguration) extends Heuristic{

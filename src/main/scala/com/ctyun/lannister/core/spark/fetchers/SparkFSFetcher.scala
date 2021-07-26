@@ -1,17 +1,13 @@
-package com.ctyun.lannister.spark.fetchers
-
+package com.ctyun.lannister.core.spark.fetchers
 
 import java.security.PrivilegedAction
-
 import scala.collection.JavaConverters._
-
 import com.ctyun.lannister.analysis.{AnalyticJob, Fetcher}
 import com.ctyun.lannister.core.conf.fetcher.FetcherConfiguration
+import com.ctyun.lannister.core.spark.data.SparkApplicationData
 import com.ctyun.lannister.hadoop.HadoopConf
 import com.ctyun.lannister.security.HadoopSecurity
-import com.ctyun.lannister.spark.data.SparkApplicationData
 import org.apache.hadoop.fs.{FileSystem, Path, PathFilter}
-
 import org.apache.spark.deploy.history.{HistoryAppStatusStoreWrapper, ReplayListenerBusWrapper}
 
 
