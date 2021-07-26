@@ -99,7 +99,7 @@ class LannisterAnalyzer extends Runnable with Logging{
   class ExecutorJob(analyticJob: AnalyticJob) extends Runnable with Logging {
     override def run(): Unit = {
       val appTypeNameAndAppId = analyticJob.appTypeNameAndAppId
-      info(s"[Analyzing] Analyzing $appTypeNameAndAppId")
+      info(s"Analyzing $appTypeNameAndAppId")
 
       try{
         val (time, isNoData) = Utils.executeWithRetTime(() => analyticJob.analysis.isNoData)
@@ -109,7 +109,7 @@ class LannisterAnalyzer extends Runnable with Logging{
         if(isNoData) {
           _metricsController.markSkippedJobs()
         }
-        info(s"TOOK $time ms to analyze $appTypeNameAndAppId")
+        info(s"^o^ TOOK $time ms to analyze $appTypeNameAndAppId")
       } catch {
         case _: InterruptedException => // TODO
         case e: TimeoutException =>

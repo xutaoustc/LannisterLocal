@@ -1,6 +1,6 @@
 fetchers:
   -
-    applicationtype: spark
+    applicationType: spark
     classname: com.ctyun.lannister.core.spark.fetchers.SparkFSFetcher
     params:
       rootPath: hdfs:///spark3-history

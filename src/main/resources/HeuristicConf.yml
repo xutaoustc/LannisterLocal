@@ -1,7 +1,7 @@
 heuristics:
   -
     name: Spark Configuration
-    applicationtype: spark
+    applicationType: spark
     classname: com.ctyun.lannister.core.spark.heuristics.ConfigurationHeuristic
     viewname:
     params:
@@ -11,7 +11,7 @@ heuristics:
       serializer_if_non_null_recommendation: org.apache.spark.serializer.KryoSerializer
   -
     name: Spark Job
-    applicationtype: spark
+    applicationType: spark
     classname: com.ctyun.lannister.core.spark.heuristics.JobsHeuristic
     viewname:
     params:
@@ -19,7 +19,7 @@ heuristics:
       job_task_failure_rate_severity_thresholds: 0.1, 0.3, 0.5, 0.5
   -
     name: Spark Executor Gc
-    applicationtype: spark
+    applicationType: spark
     classname: com.ctyun.lannister.core.spark.heuristics.ExecutorGcHeuristic
     viewname:
     params:
@@ -27,7 +27,7 @@ heuristics:
       gc_severity_D_threshold: 0.05, 0.04, 0.03, 0.01
   -
     name: Spark Executors
-    applicationtype: spark
+    applicationType: spark
     classname: com.ctyun.lannister.core.spark.heuristics.ExecutorsHeuristic
     viewname:
     params:
@@ -36,7 +36,7 @@ heuristics:
       ignore_max_millis_less_than_threshold: 300000
   -
     name: Spark Stages
-    applicationtype: spark
+    applicationType: spark
     classname: com.ctyun.lannister.core.spark.heuristics.StagesHeuristic
     viewname:
     params:

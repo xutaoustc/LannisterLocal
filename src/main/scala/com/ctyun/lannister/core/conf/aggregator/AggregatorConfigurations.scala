@@ -4,10 +4,10 @@ import java.util
 
 import scala.beans.BeanProperty
 
-class AggregatorConfigurations extends Iterable[AggregatorConfiguration]{
+class AggregatorConfigurations {
   @BeanProperty var aggregators: util.ArrayList[AggregatorConfiguration] = _
 
-  override def iterator: Iterator[AggregatorConfiguration] = {
+  def iterator: Iterator[AggregatorConfiguration] = {
     import collection.JavaConverters._
     aggregators.iterator().asScala
   }
