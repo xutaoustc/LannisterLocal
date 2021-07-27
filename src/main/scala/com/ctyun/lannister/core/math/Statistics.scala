@@ -1,4 +1,4 @@
-package com.ctyun.lannister.math
+package com.ctyun.lannister.core.math
 
 import java.lang.{Long => JLong}
 
