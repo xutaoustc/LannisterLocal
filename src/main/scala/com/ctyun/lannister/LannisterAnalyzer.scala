@@ -5,8 +5,8 @@ import java.util.concurrent.{LinkedBlockingQueue, ThreadPoolExecutor, TimeoutExc
 import com.ctyun.lannister.analysis.{AnalyticJob, AnalyticJobGeneratorHadoop3}
 import com.ctyun.lannister.core.conf.Configs
 import com.ctyun.lannister.core.hadoop.HadoopSecurity
+import com.ctyun.lannister.core.metric.MetricsController
 import com.ctyun.lannister.core.util.{Logging, Utils}
-import com.ctyun.lannister.metric.MetricsController
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component

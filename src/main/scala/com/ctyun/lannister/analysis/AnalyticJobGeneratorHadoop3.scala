@@ -9,8 +9,8 @@ import scala.collection.mutable.ListBuffer
 import com.ctyun.lannister.LannisterContext
 import com.ctyun.lannister.core.conf.Configs
 import com.ctyun.lannister.core.hadoop.HadoopConf
+import com.ctyun.lannister.core.metric.MetricsController
 import com.ctyun.lannister.core.util.Logging
-import com.ctyun.lannister.metric.MetricsController
 import com.ctyun.lannister.service.PersistService
 import org.apache.hadoop.conf.Configuration
 import org.codehaus.jackson.map.ObjectMapper

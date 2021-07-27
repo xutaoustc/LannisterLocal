@@ -1,4 +1,4 @@
-package com.ctyun.lannister.metric
+package com.ctyun.lannister.core.metric
 
 import com.codahale.metrics.{Gauge, Histogram, Meter, MetricRegistry}
 import com.codahale.metrics.MetricRegistry.name
@@ -42,9 +42,6 @@ class MetricsController {
     _metricRegistry.register(name(className, "secondRetryQueue", "size"), new Gauge[Int] {
       override def getValue: Int = _secondRetryQueueSize
     })
-//    _metricRegistry.register(name(className, "lastDayJobs", "count"), new Gauge[Int] {
-//      override def getValue: Int = ???
-//    })
 
     JmxReporter.forRegistry(_metricRegistry).build.start()
   }
