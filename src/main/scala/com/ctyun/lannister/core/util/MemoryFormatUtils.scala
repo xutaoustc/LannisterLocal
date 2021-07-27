@@ -1,4 +1,4 @@
-package com.ctyun.lannister.util
+package com.ctyun.lannister.core.util
 
 import java.text.DecimalFormat
 import java.util.Locale
@@ -10,14 +10,12 @@ object MemoryFormatUtils {
 
   private class MemoryUnit(val _name: String, val _bytes: Long) {
     def getName: String = _name
-
     def getBytes: Long = _bytes
-
     override def toString: String = _name
   }
 
   // Units must be in a descent order
-  private val UNITS = Array[MemoryFormatUtils.MemoryUnit](
+  private val UNITS = Array(
     new MemoryFormatUtils.MemoryUnit("TB", 1L << 40),
     new MemoryFormatUtils.MemoryUnit("GB", 1L << 30),
     new MemoryFormatUtils.MemoryUnit("MB", 1L << 20),
@@ -29,33 +27,25 @@ object MemoryFormatUtils {
     "([-+]?\\d*\\.?\\d+(?:[eE][-+]?\\d+)?)\\s*((?:[T|G|M|K])?B?)?", Pattern.CASE_INSENSITIVE)
 
 
-  def bytesToString(value: Long): String = {
-    if (value < 0) {
-      return value.toString
+  def bytesToString(bytes: Long): String = {
+    def format(v : Double, ub : Long, un : String) = {
+      val res = v / ub
+      FORMATTER.format(res) + " " + un
+    }
+
+    if (bytes < 0) {
+      return bytes.toString
     }
 
     UNITS.foreach(u => {
-      val bytes = u.getBytes
-      if (value >= bytes) {
-        val numResult = if (bytes > 1) {
-          value.toDouble / bytes.toDouble
-        } else {
-          value.toDouble
-        }
-        return FORMATTER.format(numResult) + " " + u.getName
+      if (bytes >= u.getBytes) {
+        return format(bytes.toDouble, u.getBytes, u.getName)
       }
     })
 
-    value + " " + UNITS(UNITS.length - 1).getName
+    format(bytes.toDouble, UNITS(UNITS.length - 1).getBytes, UNITS(UNITS.length - 1).getName)
   }
 
-  /**
-   * Convert a formatted string into a long value in bytes.
-   * This method handles
-   *
-   * @param formattedString The string to convert
-   * @return The bytes value
-   */
   def stringToBytes(formattedString: String): Long = {
     if (formattedString == null) {
       return 0L

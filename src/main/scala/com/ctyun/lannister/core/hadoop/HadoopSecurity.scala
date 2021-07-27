@@ -4,7 +4,7 @@ import java.io.File
 import java.security.PrivilegedAction
 
 import com.ctyun.lannister.core.conf.Configs._
-import com.ctyun.lannister.util.{Logging, Utils}
+import com.ctyun.lannister.core.util.{Logging, Utils}
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.security.UserGroupInformation
 

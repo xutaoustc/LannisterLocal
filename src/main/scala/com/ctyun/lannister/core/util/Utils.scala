@@ -1,4 +1,4 @@
-package com.ctyun.lannister.util
+package com.ctyun.lannister.core.util
 
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.Constructor

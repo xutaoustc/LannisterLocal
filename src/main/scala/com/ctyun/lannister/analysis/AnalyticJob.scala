@@ -2,9 +2,9 @@ package com.ctyun.lannister.analysis
 
 import com.ctyun.lannister.LannisterContext
 import com.ctyun.lannister.core.conf.Configs
+import com.ctyun.lannister.core.util.Logging
 import com.ctyun.lannister.model.{AppHeuristicResult, AppHeuristicResultDetails, AppResult}
 import com.ctyun.lannister.service.PersistService
-import com.ctyun.lannister.util.Logging
 
 case class AnalyticJob(appId: String, applicationType: ApplicationType, user: String,
                        name: String, queueName: String, trackingUrl: String,

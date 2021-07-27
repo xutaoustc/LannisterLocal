@@ -1,6 +1,6 @@
 package org.apache.spark.deploy.history
 // scalastyle:off
-import com.ctyun.lannister.util.Logging
+import com.ctyun.lannister.core.util.Logging
 import org.apache.hadoop.fs.{FileStatus, FileSystem}
 import org.apache.spark.SparkConf
 import org.apache.spark.internal.config.Status.ASYNC_TRACKING_ENABLED

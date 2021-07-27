@@ -5,7 +5,7 @@ import java.util.Properties
 
 import scala.collection.JavaConverters._
 
-import com.ctyun.lannister.util.Logging
+import com.ctyun.lannister.core.util.Logging
 import org.apache.commons.io.IOUtils
 import org.apache.commons.lang3.StringUtils
 

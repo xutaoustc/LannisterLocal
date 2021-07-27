@@ -5,8 +5,8 @@ import java.util.concurrent.{LinkedBlockingQueue, ThreadPoolExecutor, TimeoutExc
 import com.ctyun.lannister.analysis.{AnalyticJob, AnalyticJobGeneratorHadoop3}
 import com.ctyun.lannister.core.conf.Configs
 import com.ctyun.lannister.core.hadoop.HadoopSecurity
+import com.ctyun.lannister.core.util.{Logging, Utils}
 import com.ctyun.lannister.metric.MetricsController
-import com.ctyun.lannister.util.{Logging, Utils}
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -18,33 +18,31 @@ class LannisterAnalyzer extends Runnable with Logging{
   private var _analyticJobGenerator: AnalyticJobGeneratorHadoop3 = _
   @Autowired
   private var _metricsController: MetricsController = _
-
   private var threadPoolExecutor: ThreadPoolExecutor = _
   private var eachRoundStartTs = 0L
 
 
-  override def run(): Unit = {
-    HadoopSecurity().doAs(core)
-  }
-
   /*
-  * Core logic of LannisterAnalysis:
-  *   * Global configure
-  *   * Loop each round
-  *     * Fetch AnalyticJob ready to be analyzed
-  *     * Encapsulate AnalyticJob to ExecutorJob, and submit ExecutorJob to ThreadPool
-  *       * AnalyticJob.getAnalysis, Persist
-  *       * Retry, add AnalyticJob back to AnalyticJobGenerator
+  *   Core logic of LannisterAnalysis:
+  *     * Global configure
+  *     * Loop
+  *       * Fetch AnalyticJob
+  *       * Encapsulate AnalyticJob to ExecutorJob, and submit ExecutorJob to ThreadPool
+  *         * AnalyticJob.getAnalysis, Persist
+  *         * Retry, add AnalyticJob back to AnalyticJobGenerator
+  *         * Log and metric
   * */
-  private def core(): Unit = {
-    info("LannisterLogic has started")
+  override def run(): Unit = {
+    HadoopSecurity().doAs(() => {
+      info("LannisterLogic has started")
 
-    globalConfigure
-    while(true) {
-      fetchAndRunEachRound()
-    }
+      globalConfigure
+      while(true) {
+        fetchAndRunEachRound()
+      }
 
-    error("LannisterLogic stopped")
+      error("LannisterLogic stopped")
+    })
   }
 
   private def globalConfigure(): Unit = {
@@ -61,9 +59,17 @@ class LannisterAnalyzer extends Runnable with Logging{
   }
 
   private def fetchAndRunEachRound(): Unit = {
-    eachRoundStartTs = System.currentTimeMillis()
+    def waitInterval(interval: Long) {
+      val nextRun = eachRoundStartTs + interval
+      val waitTime = nextRun - System.currentTimeMillis()
+
+      if(waitTime > 0) {
+        Thread.sleep(waitTime)
+      }
+    }
 
     try{
+      eachRoundStartTs = System.currentTimeMillis()
       _analyticJobGenerator.fetchAnalyticJobs
         .foreach(job => {
           threadPoolExecutor.submit( new ExecutorJob(job) )
@@ -79,23 +85,7 @@ class LannisterAnalyzer extends Runnable with Logging{
     waitInterval(Configs.FETCH_INTERVAL.getValue)
   }
 
-  private def waitInterval(interval: Long) {
-    val nextRun = eachRoundStartTs + interval
-    val waitTime = nextRun - System.currentTimeMillis()
 
-    if(waitTime > 0) {
-      Thread.sleep(waitTime)
-    }
-  }
-
-
-
-  /*
-  * Runtime form of AnalyticJob:
-  *   1. Execute AnalyticJob in thread
-  *   2. log and metric
-  *   3. retry
-  * */
   class ExecutorJob(analyticJob: AnalyticJob) extends Runnable with Logging {
     override def run(): Unit = {
       val appTypeNameAndAppId = analyticJob.appTypeNameAndAppId
