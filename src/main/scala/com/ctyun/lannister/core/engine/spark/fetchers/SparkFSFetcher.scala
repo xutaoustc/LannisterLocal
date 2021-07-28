@@ -1,11 +1,11 @@
-package com.ctyun.lannister.core.spark.fetchers
+package com.ctyun.lannister.core.engine.spark.fetchers
 
 import scala.collection.JavaConverters._
 
 import com.ctyun.lannister.analysis.{AnalyticJob, Fetcher}
 import com.ctyun.lannister.core.conf.fetcher.FetcherConfiguration
+import com.ctyun.lannister.core.engine.spark.data.SparkApplicationData
 import com.ctyun.lannister.core.hadoop.{HadoopConf, HadoopSecurity}
-import com.ctyun.lannister.core.spark.data.SparkApplicationData
 import org.apache.hadoop.fs.{FileSystem, Path, PathFilter}
 
 import org.apache.spark.deploy.history.{HistoryAppStatusStoreWrapper, ReplayListenerBusWrapper}

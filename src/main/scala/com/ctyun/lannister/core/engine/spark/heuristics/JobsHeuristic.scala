@@ -1,9 +1,9 @@
-package com.ctyun.lannister.core.spark.heuristics
+package com.ctyun.lannister.core.engine.spark.heuristics
 
 import com.ctyun.lannister.analysis.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetails, Severity, SeverityThresholds}
 import com.ctyun.lannister.analysis.Severity.Severity
 import com.ctyun.lannister.core.conf.heuristic.HeuristicConfiguration
-import com.ctyun.lannister.core.spark.data.SparkApplicationData
+import com.ctyun.lannister.core.engine.spark.data.SparkApplicationData
 
 import org.apache.spark.JobExecutionStatus
 import org.apache.spark.status.api.v1.JobData
