@@ -18,6 +18,14 @@ object Utils {
     (System.currentTimeMillis() - analysisStartTimeMillis, res)
   }
 
+  def getOrElse[U, V](v : U, f : U => V, d : V): V = {
+    if (v == null) {
+      d
+    } else {
+      f(v)
+    }
+  }
+
   // scalastyle:off classforname
   def classForName[C]( className: String,
                        initialize: Boolean = true): Class[C] = {

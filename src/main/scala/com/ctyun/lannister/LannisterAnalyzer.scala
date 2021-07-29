@@ -88,8 +88,8 @@ class LannisterAnalyzer extends Runnable with Logging{
 
   class ExecutorJob(analyticJob: AnalyticJob) extends Runnable with Logging {
     override def run(): Unit = {
-      val appTypeNameAndAppId = analyticJob.appTypeNameAndAppId
-      info(s"Analyzing $appTypeNameAndAppId")
+      val applicationTypeNameAndAppId = analyticJob.applicationTypeNameAndAppId
+      info(s"Analyzing $applicationTypeNameAndAppId")
 
       try{
         val (time, isNoData) = Utils.executeWithRetTime(() => analyticJob.analysis.isNoData)
@@ -99,24 +99,24 @@ class LannisterAnalyzer extends Runnable with Logging{
         if(isNoData) {
           _metricsController.markSkippedJobs()
         }
-        info(s"^o^ TOOK $time ms to analyze $appTypeNameAndAppId")
+        info(s"^o^ TOOK $time ms to analyze $applicationTypeNameAndAppId")
       } catch {
         case _: InterruptedException => // TODO
         case e: TimeoutException =>
           warn(s"Time out while fetching data. Exception is ${e.getMessage}")
           jobFate()
         case e: Exception =>
-          error(s"Failed to analyze $appTypeNameAndAppId", e)
+          error(s"Failed to analyze $applicationTypeNameAndAppId", e)
           jobFate()
       }
     }
 
 
     private def jobFate(): Unit = {
-      if (analyticJob.retry()) {
+      if (analyticJob.tryAdd2RetryQueue()) {
         warn(s"Add job id [${analyticJob.appId}] into the retry list.")
         _analyticJobGenerator.addIntoRetries(analyticJob)
-      } else if (analyticJob.isSecondPhaseRetry) {
+      } else if (analyticJob.tryAdd2SecondRetryQueue()) {
         warn(s"Add job id [${analyticJob.appId}] into the second retry list}")
         _analyticJobGenerator.addIntoSecondRetryQueue(analyticJob)
       } else {

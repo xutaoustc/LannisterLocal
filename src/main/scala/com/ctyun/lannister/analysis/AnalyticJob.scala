@@ -11,7 +11,7 @@ case class AnalyticJob(appId: String, applicationType: ApplicationType, user: St
                        startTime: Long, finishTime: Long) extends Logging{
   private var _retries = 0
   private var _secondRetries = 0
-  private var _timeLeftToRetry = 0
+  private var _secondRetriesDequeueGap = 0
   private var successfulJob: Boolean = false
 
   private var _fetcher: Fetcher[_ <: ApplicationData] = _
@@ -19,8 +19,8 @@ case class AnalyticJob(appId: String, applicationType: ApplicationType, user: St
   private var _metricsAggregator: MetricsAggregator = _
   private var _persistService: PersistService = _
 
-  def appTypeName() : String = applicationType.name
-  def appTypeNameAndAppId() : String = s"${appTypeName()} $appId"
+  def applicationTypeName() : String = applicationType.name
+  def applicationTypeNameAndAppId() : String = s"${applicationTypeName()} $appId"
 
   def setSuccessfulJob: AnalyticJob = {
     this.successfulJob = true
@@ -59,7 +59,7 @@ case class AnalyticJob(appId: String, applicationType: ApplicationType, user: St
     result.finishTime = finishTime
     result.name = name
     result.successfulJob = successfulJob
-    result.jobType = appTypeName()
+    result.jobType = applicationTypeName()
     result.resourceUsed = 0 // TODO
     result.totalDelay = 0 // TODO
     result.resourceWasted = 0  // TODO
@@ -92,25 +92,26 @@ case class AnalyticJob(appId: String, applicationType: ApplicationType, user: St
     result
   }
 
-  def readyForSecondRetry: Boolean = {
-    this._timeLeftToRetry = this._timeLeftToRetry - 1
-    this._timeLeftToRetry <= 0
-  }
 
-  def setTimeToSecondRetry: AnalyticJob = {
-    this._timeLeftToRetry = this._secondRetries * 5
-    this
-  }
-
-  def retry(): Boolean = {
+  def tryAdd2RetryQueue(): Boolean = {
     val b = _retries < Configs.RETRY_LIMIT.getValue
     _retries = _retries + 1
     b
   }
 
-  def isSecondPhaseRetry: Boolean = {
+  def tryAdd2SecondRetryQueue(): Boolean = {
     val b = _secondRetries < Configs.SECOND_RETRY_LIMIT.getValue
     _secondRetries = _secondRetries + 1
     b
+  }
+
+  def setInitialSecondRetryGap: AnalyticJob = {
+    this._secondRetriesDequeueGap = this._secondRetries * 5
+    this
+  }
+
+  def tryFetchOutFromSecondRetryQueue: Boolean = {
+    this._secondRetriesDequeueGap = this._secondRetriesDequeueGap - 1
+    this._secondRetriesDequeueGap <= 0
   }
 }

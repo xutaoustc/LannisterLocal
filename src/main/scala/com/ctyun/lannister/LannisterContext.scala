@@ -24,7 +24,7 @@ class LannisterContext extends Logging{
   configureSupportedApplicationTypes()
 
 
-  def getApplicationTypeForName(name: String): Option[ApplicationType] = {
+  def getAppTypeForName(name: String): Option[ApplicationType] = {
     _nameToType.get(name)
   }
 
@@ -49,7 +49,7 @@ class LannisterContext extends Logging{
         val instance = Utils.classForName(conf.classname)
                             .getConstructor(classOf[AggregatorConfiguration])
                             .newInstance(conf).asInstanceOf[MetricsAggregator]
-        _typeToAggregator += (conf.getAppType -> instance)
+        _typeToAggregator += (conf.retrieveApplicationType -> instance)
         info(s"Load aggregator ${conf.classname}")
       })
   }
@@ -61,7 +61,7 @@ class LannisterContext extends Logging{
         val instance = Utils.classForName(conf.classname)
                             .getConstructor(classOf[FetcherConfiguration])
                             .newInstance(conf).asInstanceOf[Fetcher[_<:ApplicationData]]
-        _typeToFetcher += (conf.getAppType -> instance)
+        _typeToFetcher += (conf.retrieveApplicationType -> instance)
         info(s"Load fetcher ${conf.classname}")
       })
   }
@@ -73,8 +73,8 @@ class LannisterContext extends Logging{
         val instance = Utils.classForName(conf.classname)
                             .getConstructor(classOf[HeuristicConfiguration])
                             .newInstance(conf).asInstanceOf[Heuristic]
-        val value = _typeToHeuristics.getOrElseUpdate(conf.getAppType, Nil)
-        _typeToHeuristics.put(conf.getAppType, value :+ instance)
+        val value = _typeToHeuristics.getOrElseUpdate(conf.retrieveApplicationType, Nil)
+        _typeToHeuristics.put(conf.retrieveApplicationType, value :+ instance)
         info(s"Load heuristic ${conf.classname}")
       })
   }

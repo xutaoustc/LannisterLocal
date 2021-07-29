@@ -13,5 +13,5 @@ class HeuristicConfiguration {
   @BeanProperty var viewname: String = _
   @BeanProperty var params: util.HashMap[String, String] = _
 
-  def getAppType: ApplicationType = ApplicationType(applicationType)
+  def retrieveApplicationType: ApplicationType = ApplicationType(applicationType)
 }
