@@ -20,7 +20,7 @@ class LannisterAnalyzer extends Runnable with Logging{
   @Autowired
   private var _metricsController: MetricsController = _
   private var threadPoolExecutor: ThreadPoolExecutor = _
-  private var eachRoundStartTs = 0L
+  private var eachRoundStartTs: Long = _
 
 
   /*
@@ -34,7 +34,7 @@ class LannisterAnalyzer extends Runnable with Logging{
   *         * Log and metric
   * */
   override def run(): Unit = {
-    HadoopSecurity().doAs(() => {
+    HadoopSecurity().doAs {
       info("LannisterLogic has started")
 
       globalConfigure
@@ -43,7 +43,7 @@ class LannisterAnalyzer extends Runnable with Logging{
       }
 
       error("LannisterLogic stopped")
-    })
+    }
   }
 
   private def globalConfigure(): Unit = {
@@ -93,7 +93,9 @@ class LannisterAnalyzer extends Runnable with Logging{
       info(s"Analyzing $applicationTypeNameAndAppId")
 
       try{
-        val (time, isNoData) = Utils.executeWithRetTime(() => analyticJob.analysis.isNoData)
+        val (time, isNoData) = Utils.executeWithRetTime {
+          analyticJob.analysis.isNoData
+        }
 
         _metricsController.markProcessedJobs()
         _metricsController.setJobProcessingTime(time)

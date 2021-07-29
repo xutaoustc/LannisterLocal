@@ -16,24 +16,23 @@ class SparkFSFetcher(fetcherConfig: FetcherConfiguration) extends Fetcher[SparkA
   private val rootPath: String = fetcherConfig.params.asScala("rootPath")
 
   override def fetchData(job: AnalyticJob): Option[SparkApplicationData] = {
-    HadoopSecurity().doAs( () => {
-        val fs = FileSystem.get(HadoopConf.conf)
-        val attemptsList = fs.listStatus(new Path(rootPath), new PathFilter {
-          override def accept(path: Path): Boolean = path.getName.contains(job.appId)
-        })
+    HadoopSecurity().doAs {
+      val fs = FileSystem.get(HadoopConf.conf)
+      val attemptsList = fs.listStatus(new Path(rootPath), new PathFilter {
+        override def accept(path: Path): Boolean = path.getName.contains(job.appId)
+      })
 
-        if(attemptsList.isEmpty) {
-          fs.close()
-          None
-        } else {
-          val finalAttempt = attemptsList
-                              .sortWith((x, y) => x.getPath.getName > y.getPath.getName).head
-          val replayBus = new ReplayListenerBusWrapper(fs, finalAttempt)
-          val data = new SparkApplicationData( HistoryAppStatusStoreWrapper(replayBus.parse()) )
-          fs.close()
-          Option(data)
-        }
+      if(attemptsList.isEmpty) {
+        fs.close()
+        None
+      } else {
+        val finalAttempt = attemptsList
+                            .sortWith((x, y) => x.getPath.getName > y.getPath.getName).head
+        val replayBus = new ReplayListenerBusWrapper(fs, finalAttempt)
+        val data = new SparkApplicationData( HistoryAppStatusStoreWrapper(replayBus.parse()) )
+        fs.close()
+        Option(data)
       }
-    )
+    }
   }
 }

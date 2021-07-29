@@ -31,10 +31,10 @@ class HadoopSecurity extends Logging{
 
   private var loginUser: UserGroupInformation = _
 
-  def doAs[T](f: () => T): T = {
+  def doAs[T](f: => T): T = {
     getUGI.doAs(
       new PrivilegedAction[T]() {
-        override def run(): T = f()
+        override def run(): T = f
       }
     )
   }

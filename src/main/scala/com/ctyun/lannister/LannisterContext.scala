@@ -1,6 +1,7 @@
 package com.ctyun.lannister
 
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 
 import com.ctyun.lannister.analysis._
 import com.ctyun.lannister.core.conf.Configs
@@ -16,7 +17,7 @@ import org.springframework.stereotype.Component
 class LannisterContext extends Logging{
   private val _typeToAggregator = mutable.Map[String, MetricsAggregator]()
   private val _typeToFetcher = mutable.Map[String, Fetcher[_<:ApplicationData]]()
-  private val _typeToHeuristics = mutable.Map[String, List[Heuristic]]()
+  private val _typeToHeuristics = mutable.Map[String, ListBuffer[Heuristic]]()
   private val _typeSet = mutable.Set[String]()
 
   loadAggregators()
@@ -34,7 +35,7 @@ class LannisterContext extends Logging{
   }
 
   def getHeuristicsForApplicationType(applicationType: String): List[Heuristic] = {
-    _typeToHeuristics(applicationType)
+    _typeToHeuristics(applicationType).toList
   }
 
   def getAggregatorForApplicationType(applicationType: String): MetricsAggregator = {
@@ -71,12 +72,10 @@ class LannisterContext extends Logging{
     Utils.loadYml(Configs.HEURISTICS_CONF.getValue)(classOf[HeuristicConfigurations])
       .iterator
       .foreach(conf => {
-
         val instance = Utils.classForName(conf.classname)
                             .getConstructor(classOf[HeuristicConfiguration])
                             .newInstance(conf).asInstanceOf[Heuristic]
-        val value = _typeToHeuristics.getOrElseUpdate(conf.applicationType, Nil)
-        _typeToHeuristics.put(conf.applicationType, value :+ instance)
+        _typeToHeuristics.getOrElseUpdate(conf.applicationType, ListBuffer()) += instance
         info(s"Load heuristic ${conf.classname}")
       })
   }
