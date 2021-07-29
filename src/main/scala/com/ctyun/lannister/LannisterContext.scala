@@ -14,10 +14,10 @@ import org.springframework.stereotype.Component
 
 @Component
 class LannisterContext extends Logging{
-  private val _typeToAggregator = mutable.Map[ApplicationType, MetricsAggregator]()
-  private val _typeToFetcher = mutable.Map[ApplicationType, Fetcher[_<:ApplicationData]]()
-  private val _typeToHeuristics = mutable.Map[ApplicationType, List[Heuristic]]()
-  private val _nameToType = mutable.Map[String, ApplicationType]()
+  private val _typeToAggregator = mutable.Map[String, MetricsAggregator]()
+  private val _typeToFetcher = mutable.Map[String, Fetcher[_<:ApplicationData]]()
+  private val _typeToHeuristics = mutable.Map[String, List[Heuristic]]()
+  private val _typeSet = mutable.Set[String]()
 
   loadAggregators()
   loadFetchers()
@@ -25,20 +25,20 @@ class LannisterContext extends Logging{
   configureSupportedApplicationTypes()
 
 
-  def getAppTypeForName(name: String): Option[ApplicationType] = {
-    _nameToType.get(name)
+  def applicationTypeSupported(applicationType: String): Boolean = {
+    _typeSet.contains(applicationType)
   }
 
-  def getFetcherForApplicationType(typ: ApplicationType): Fetcher[_ <: ApplicationData] = {
-    _typeToFetcher(typ)
+  def getFetcherForApplicationType(applicationType: String): Fetcher[_ <: ApplicationData] = {
+    _typeToFetcher(applicationType)
   }
 
-  def getHeuristicsForApplicationType(typ: ApplicationType): List[Heuristic] = {
-    _typeToHeuristics(typ)
+  def getHeuristicsForApplicationType(applicationType: String): List[Heuristic] = {
+    _typeToHeuristics(applicationType)
   }
 
-  def getAggregatorForApplicationType(typ: ApplicationType): MetricsAggregator = {
-    _typeToAggregator(typ)
+  def getAggregatorForApplicationType(applicationType: String): MetricsAggregator = {
+    _typeToAggregator(applicationType)
   }
 
 
@@ -50,7 +50,7 @@ class LannisterContext extends Logging{
         val instance = Utils.classForName(conf.classname)
                             .getConstructor(classOf[AggregatorConfiguration])
                             .newInstance(conf).asInstanceOf[MetricsAggregator]
-        _typeToAggregator += (conf.retrieveApplicationType -> instance)
+        _typeToAggregator += (conf.applicationType -> instance)
         info(s"Load aggregator ${conf.classname}")
       })
   }
@@ -62,7 +62,7 @@ class LannisterContext extends Logging{
         val instance = Utils.classForName(conf.classname)
                             .getConstructor(classOf[FetcherConfiguration])
                             .newInstance(conf).asInstanceOf[Fetcher[_<:ApplicationData]]
-        _typeToFetcher += (conf.retrieveApplicationType -> instance)
+        _typeToFetcher += (conf.applicationType -> instance)
         info(s"Load fetcher ${conf.classname}")
       })
   }
@@ -71,11 +71,12 @@ class LannisterContext extends Logging{
     Utils.loadYml(Configs.HEURISTICS_CONF.getValue)(classOf[HeuristicConfigurations])
       .iterator
       .foreach(conf => {
+
         val instance = Utils.classForName(conf.classname)
                             .getConstructor(classOf[HeuristicConfiguration])
                             .newInstance(conf).asInstanceOf[Heuristic]
-        val value = _typeToHeuristics.getOrElseUpdate(conf.retrieveApplicationType, Nil)
-        _typeToHeuristics.put(conf.retrieveApplicationType, value :+ instance)
+        val value = _typeToHeuristics.getOrElseUpdate(conf.applicationType, Nil)
+        _typeToHeuristics.put(conf.applicationType, value :+ instance)
         info(s"Load heuristic ${conf.classname}")
       })
   }
@@ -86,7 +87,7 @@ class LannisterContext extends Logging{
 
     info("Configuring LannisterContext ... ")
     supportedTypes.foreach(eachType => {
-      info(s"""Supports ${eachType.name} application type,
+      info(s"""Supports ${eachType} application type,
            |using ${_typeToFetcher(eachType).getClass} fetcher class
            |with Heuristics [ ${_typeToHeuristics(eachType).map(_.getClass).mkString(",")} ]
            |""".stripMargin )
@@ -95,7 +96,7 @@ class LannisterContext extends Logging{
     _typeToFetcher.retain((t, _) => {supportedTypes.contains(t)})
     _typeToHeuristics.retain((t, _) => {supportedTypes.contains(t)})
     _typeToAggregator.retain((t, _) => {supportedTypes.contains(t)})
-    supportedTypes.foldLeft(_nameToType)( (m, v) => {m.put(v.name, v); m} )
+    supportedTypes.foldLeft(_typeSet)( (s, v) => {s.add(v); s} )
   }
 
 }

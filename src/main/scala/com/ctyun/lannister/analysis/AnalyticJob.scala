@@ -7,7 +7,7 @@ import com.ctyun.lannister.core.util.Logging
 import com.ctyun.lannister.model.{AppHeuristicResult, AppHeuristicResultDetails, AppResult}
 import com.ctyun.lannister.service.PersistService
 
-case class AnalyticJob(appId: String, applicationType: ApplicationType, user: String,
+case class AnalyticJob(appId: String, applicationType: String, user: String,
                        name: String, queueName: String, trackingUrl: String,
                        startTime: Long, finishTime: Long) extends Logging{
   private var _retries = 0
@@ -20,8 +20,7 @@ case class AnalyticJob(appId: String, applicationType: ApplicationType, user: St
   private var _metricsAggregator: MetricsAggregator = _
   private var _persistService: PersistService = _
 
-  def applicationTypeName() : String = applicationType.name
-  def applicationTypeNameAndAppId() : String = s"${applicationTypeName()} $appId"
+  def applicationTypeNameAndAppId() : String = s"$applicationType $appId"
 
   def setSuccessfulJob: AnalyticJob = {
     this.successfulJob = true
@@ -60,7 +59,7 @@ case class AnalyticJob(appId: String, applicationType: ApplicationType, user: St
     result.finishTime = finishTime
     result.name = name
     result.successfulJob = successfulJob
-    result.jobType = applicationTypeName()
+    result.jobType = applicationType
     result.resourceUsed = 0 // TODO
     result.totalDelay = 0 // TODO
     result.resourceWasted = 0  // TODO
