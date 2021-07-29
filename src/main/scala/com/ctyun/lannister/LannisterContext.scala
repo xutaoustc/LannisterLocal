@@ -7,6 +7,7 @@ import com.ctyun.lannister.core.conf.Configs
 import com.ctyun.lannister.core.conf.aggregator.{AggregatorConfiguration, AggregatorConfigurations}
 import com.ctyun.lannister.core.conf.fetcher.{FetcherConfiguration, FetcherConfigurations}
 import com.ctyun.lannister.core.conf.heuristic.{HeuristicConfiguration, HeuristicConfigurations}
+import com.ctyun.lannister.core.domain.{ApplicationData, Fetcher, Heuristic}
 import com.ctyun.lannister.core.util.{Logging, Utils}
 import org.springframework.stereotype.Component
 

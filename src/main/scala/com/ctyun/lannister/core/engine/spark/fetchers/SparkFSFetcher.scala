@@ -2,8 +2,9 @@ package com.ctyun.lannister.core.engine.spark.fetchers
 
 import scala.collection.JavaConverters._
 
-import com.ctyun.lannister.analysis.{AnalyticJob, Fetcher}
+import com.ctyun.lannister.analysis.AnalyticJob
 import com.ctyun.lannister.core.conf.fetcher.FetcherConfiguration
+import com.ctyun.lannister.core.domain.Fetcher
 import com.ctyun.lannister.core.engine.spark.data.SparkApplicationData
 import com.ctyun.lannister.core.hadoop.{HadoopConf, HadoopSecurity}
 import org.apache.hadoop.fs.{FileSystem, Path, PathFilter}

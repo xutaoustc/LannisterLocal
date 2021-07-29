@@ -3,6 +3,7 @@ package com.ctyun.lannister.core.engine.spark.heuristics
 import com.ctyun.lannister.analysis._
 import com.ctyun.lannister.analysis.Severity.Severity
 import com.ctyun.lannister.core.conf.heuristic.HeuristicConfiguration
+import com.ctyun.lannister.core.domain.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetails}
 import com.ctyun.lannister.core.engine.spark.data.SparkApplicationData
 import com.ctyun.lannister.core.math.Statistics
 import com.ctyun.lannister.core.util.MemoryFormatUtils

@@ -1,4 +1,4 @@
-package com.ctyun.lannister.analysis
+package com.ctyun.lannister.core.jobGenerator
 
 import java.net.URL
 import java.util
@@ -8,6 +8,7 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 
 import com.ctyun.lannister.LannisterContext
+import com.ctyun.lannister.analysis.AnalyticJob
 import com.ctyun.lannister.core.conf.Configs
 import com.ctyun.lannister.core.hadoop.HadoopConf
 import com.ctyun.lannister.core.metric.MetricsController

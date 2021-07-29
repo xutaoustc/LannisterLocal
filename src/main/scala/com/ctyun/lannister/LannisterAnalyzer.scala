@@ -2,9 +2,10 @@ package com.ctyun.lannister
 
 import java.util.concurrent.{LinkedBlockingQueue, ThreadPoolExecutor, TimeoutException, TimeUnit}
 
-import com.ctyun.lannister.analysis.{AnalyticJob, AnalyticJobGeneratorHadoop3}
+import com.ctyun.lannister.analysis.AnalyticJob
 import com.ctyun.lannister.core.conf.Configs
 import com.ctyun.lannister.core.hadoop.HadoopSecurity
+import com.ctyun.lannister.core.jobGenerator.AnalyticJobGeneratorHadoop3
 import com.ctyun.lannister.core.metric.MetricsController
 import com.ctyun.lannister.core.util.{Logging, Utils}
 import com.google.common.util.concurrent.ThreadFactoryBuilder
