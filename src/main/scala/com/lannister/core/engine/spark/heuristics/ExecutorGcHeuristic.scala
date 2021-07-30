@@ -1,7 +1,7 @@
 package com.lannister.core.engine.spark.heuristics
 
 import com.lannister.core.conf.heuristic.HeuristicConfiguration
-import com.lannister.core.domain.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetails, Severity, SeverityThresholds}
+import com.lannister.core.domain.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetail, Severity, SeverityThresholds}
 import com.lannister.core.domain.Severity.Severity
 import com.lannister.core.engine.spark.data.SparkApplicationData
 
@@ -18,19 +18,19 @@ class ExecutorGcHeuristic(private val heuristicConfig: HeuristicConfiguration) e
   override def apply(data: ApplicationData): HeuristicResult = {
     val evaluator = new Evaluator(this, data.asInstanceOf[SparkApplicationData])
     var resultDetails = Seq(
-      new HeuristicResultDetails("GC time to Executor Run time ratio", evaluator.ratio.toString),
-      new HeuristicResultDetails("Total GC time", evaluator.gcTime.toString),
-      new HeuristicResultDetails("Total Executor Runtime", evaluator.executorRunTimeTotal.toString)
+      new HeuristicResultDetail("GC time to Executor Run time ratio", evaluator.ratio.toString),
+      new HeuristicResultDetail("Total GC time", evaluator.gcTime.toString),
+      new HeuristicResultDetail("Total Executor Runtime", evaluator.executorRunTimeTotal.toString)
     )
 
     if (evaluator.severityTimeA.id > Severity.LOW.id) {
       resultDetails = resultDetails :+
-        new HeuristicResultDetails("Gc ratio high",
+        new HeuristicResultDetail("Gc ratio high",
           "The job is spending too much time on GC. We recommend increasing the executor memory.")
     }
     if (evaluator.severityTimeD.id > Severity.LOW.id) {
       resultDetails = resultDetails :+
-        new HeuristicResultDetails("Gc ratio low", "The job is spending too less time in GC.")
+        new HeuristicResultDetail("Gc ratio low", "The job is spending too less time in GC.")
     }
 
     new HeuristicResult(

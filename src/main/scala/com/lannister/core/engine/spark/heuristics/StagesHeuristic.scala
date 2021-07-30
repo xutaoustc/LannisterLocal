@@ -3,7 +3,7 @@ package com.lannister.core.engine.spark.heuristics
 import scala.concurrent.duration.Duration
 
 import com.lannister.core.conf.heuristic.HeuristicConfiguration
-import com.lannister.core.domain.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetails, Severity, SeverityThresholds}
+import com.lannister.core.domain.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetail, Severity, SeverityThresholds}
 import com.lannister.core.domain.Severity.Severity
 import com.lannister.core.engine.spark.data.SparkApplicationData
 import com.lannister.core.math.Statistics._
@@ -27,27 +27,27 @@ class StagesHeuristic(private val heuristicConfig: HeuristicConfiguration)
     val evaluator = new Evaluator(this, data.asInstanceOf[SparkApplicationData])
 
     val resultDetails = Seq(
-      new HeuristicResultDetails("Spark completed stages count",
+      new HeuristicResultDetail("Spark completed stages count",
         evaluator.numCompletedStages.toString),
-      new HeuristicResultDetails("Spark failed stages count",
+      new HeuristicResultDetail("Spark failed stages count",
         evaluator.numFailedStages.toString),
-      new HeuristicResultDetails("Spark stage failure rate",
+      new HeuristicResultDetail("Spark stage failure rate",
         s"${evaluator.stageFailureRate.getOrElse(0.0D)}"),
-      new HeuristicResultDetails("Spark stages with high task failure rates",
+      new HeuristicResultDetail("Spark stages with high task failure rates",
         evaluator.stagesWithHighTaskFailureRates.map { case (stageData, taskFailureRate) =>
           s"stage${stageData.stageId}.${stageData.attemptId} (task fail rate: $taskFailureRate)" }
           .mkString("\n")
       ),
-      new HeuristicResultDetails("Spark stages with long average executor runtimes",
+      new HeuristicResultDetail("Spark stages with long average executor runtimes",
         evaluator.stagesWithLongAverageExecutorTime.map { case (stg, runtime) =>
           s"stage${stg.stageId}.${stg.attemptId} (runtime: ${readableTimespan(runtime)})" }
           .mkString(", ")
       ),
-      new HeuristicResultDetails("Total input bytes", evaluator.inputBytesTotal.toString),
-      new HeuristicResultDetails("Total output bytes", evaluator.outputBytesTotal.toString),
-      new HeuristicResultDetails("Total shuffle read bytes",
+      new HeuristicResultDetail("Total input bytes", evaluator.inputBytesTotal.toString),
+      new HeuristicResultDetail("Total output bytes", evaluator.outputBytesTotal.toString),
+      new HeuristicResultDetail("Total shuffle read bytes",
         evaluator.shuffleReadBytesTotal.toString),
-      new HeuristicResultDetails("Total shuffle write bytes",
+      new HeuristicResultDetail("Total shuffle write bytes",
         evaluator.shuffleWriteBytesTotal.toString)
     )
 

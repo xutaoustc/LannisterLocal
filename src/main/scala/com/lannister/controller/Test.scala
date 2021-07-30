@@ -2,7 +2,7 @@ package com.lannister.controller
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper
 import com.baomidou.mybatisplus.core.mapper.BaseMapper
-import com.lannister.dao.{AppHeuristicResultDetailsDao, AppResultDao}
+import com.lannister.dao.{AppHeuristicResultDetailDao, AppResultDao}
 import com.lannister.model.{AppBase, AppResult}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.{RequestMapping, RequestMethod, RestController}
@@ -13,7 +13,7 @@ class Test {
   @Autowired
   var appResultDao: AppResultDao = _
   @Autowired
-  var appHeuristicResultDetailsDao: AppHeuristicResultDetailsDao = _
+  var appHeuristicResultDetailDao: AppHeuristicResultDetailDao = _
 
   @RequestMapping(value = Array("/aa"), method = Array(RequestMethod.GET))
   def aa(): String = {

@@ -4,21 +4,29 @@ import com.lannister.LannisterContext
 import com.lannister.core.conf.Configs
 import com.lannister.core.domain.{ApplicationData, Fetcher, Heuristic, HeuristicResult, Severity}
 import com.lannister.core.util.Logging
-import com.lannister.model.{AppHeuristicResult, AppHeuristicResultDetails, AppResult}
+import com.lannister.model.{AppHeuristicResult, AppHeuristicResultDetail, AppResult}
 import com.lannister.service.PersistService
 
-case class AnalyticJob(appId: String, applicationType: String, user: String,
-                       name: String, queueName: String, trackingUrl: String,
-                       startTime: Long, finishTime: Long) extends Logging{
+case class AnalyticJob(
+    appId: String,
+    applicationType: String,
+    user: String,
+    name: String,
+    queueName: String,
+    trackingUrl: String,
+    startTime: Long,
+    finishTime: Long) extends Logging{
+
   private var _retries = 0
   private var _secondRetries = 0
   private var _secondRetriesDequeueGap = 0
-  private var successfulJob: Boolean = false
+  private var successfulJob = false
 
   private var _fetcher: Fetcher[_ <: ApplicationData] = _
   private var _heuristics: List[Heuristic] = _
-  private var _metricsAggregator: MetricsAggregator = _
+  private var _aggregator: Aggregator = _
   private var _persistService: PersistService = _
+
 
   def applicationTypeNameAndAppId() : String = s"$applicationType $appId"
 
@@ -30,7 +38,7 @@ case class AnalyticJob(appId: String, applicationType: String, user: String,
   def setLannisterComponent(context: LannisterContext): AnalyticJob = {
     _fetcher = context.getFetcherForApplicationType(applicationType)
     _heuristics = context.getHeuristicsForApplicationType(applicationType)
-    _metricsAggregator = context.getAggregatorForApplicationType(applicationType)
+    _aggregator = context.getAggregatorForApplicationType(applicationType)
     this
   }
 
@@ -40,16 +48,17 @@ case class AnalyticJob(appId: String, applicationType: String, user: String,
   }
 
   def analysis: AppResult = {
-    // Fetch & Heuristic & Aggregator
     val (heuristicResults, aggregatedData) = _fetcher.fetchData(this) match {
-      case Some(data) =>
-        ( _heuristics.map(_.apply(data)), _metricsAggregator.aggregate(data).getResult )
-      case None =>
-        warn(s"No Data Received for analytic job: $appId")
-        (HeuristicResult.NO_DATA :: Nil, None)
-    }
+        case Some(data) => ( _heuristics.map(_.apply(data)), _aggregator.aggregate(data).getResult )
+        case None =>
+          warn(s"No Data Received for analytic job: $appId")
+          (HeuristicResult.NO_DATA :: Nil, None)
+      }
 
+    save(heuristicResults)
+  }
 
+  private def save(heuristicResults : List[HeuristicResult]): AppResult = {
     val result = new AppResult()
     result.appId = appId
     result.trackingUrl = trackingUrl
@@ -64,29 +73,15 @@ case class AnalyticJob(appId: String, applicationType: String, user: String,
     result.totalDelay = 0 // TODO
     result.resourceWasted = 0  // TODO
 
-    var jobScore = 0
-    var worstSeverity = Severity.NONE
-    heuristicResults.foreach(heu => {
-      val heuForSave = new AppHeuristicResult
-      heuForSave.heuristicClass = heu.heuristicClass
-      heuForSave.heuristicName = heu.heuristicName
-      heuForSave.severity = heu.severity
-      heuForSave.severityId = heu.severity.id
-      heuForSave.score = heu.score
-      result.heuristicResults += heuForSave
+    heuristicResults.foreach(h => {
+      val heuSave = AppHeuristicResult(h.heuristicClass, h.heuristicName, h.severity, h.score)
+      result.heuristicResults += heuSave
 
-      heu.heuristicResultDetails.foreach(heuDtl => {
-        val heuDetailForSave = new AppHeuristicResultDetails
-        heuDetailForSave.name = heuDtl.name
-        heuDetailForSave.value = heuDtl.value
-        heuForSave.heuristicResultDetails += heuDetailForSave
+      h.heuristicResultDetails.foreach(hd => {
+        heuSave.heuristicResultDetails += AppHeuristicResultDetail(hd.name, hd.value)
       })
-      worstSeverity = Severity.max(worstSeverity, heuForSave.severity)
-      jobScore = jobScore + heuForSave.score
     })
-
-    result.severityId = worstSeverity.id
-    result.score = jobScore
+    result.computeScoreAndSeverity()
 
     _persistService.save(result)
     result

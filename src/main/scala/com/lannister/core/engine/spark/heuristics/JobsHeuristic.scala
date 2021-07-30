@@ -1,7 +1,7 @@
 package com.lannister.core.engine.spark.heuristics
 
 import com.lannister.core.conf.heuristic.HeuristicConfiguration
-import com.lannister.core.domain.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetails, Severity, SeverityThresholds}
+import com.lannister.core.domain.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetail, Severity, SeverityThresholds}
 import com.lannister.core.domain.Severity.Severity
 import com.lannister.core.engine.spark.data.SparkApplicationData
 
@@ -22,18 +22,18 @@ class JobsHeuristic(private val heuristicConfig: HeuristicConfiguration) extends
     val evaluator = new Evaluator(this, data.asInstanceOf[SparkApplicationData])
 
     val resultDetails = Seq(
-      HeuristicResultDetails("Spark completed jobs count", evaluator.numCompletedJobs.toString),
-      HeuristicResultDetails("Spark failed jobs count", evaluator.numFailedJobs.toString),
-      HeuristicResultDetails("Spark job failure rate",
+      HeuristicResultDetail("Spark completed jobs count", evaluator.numCompletedJobs.toString),
+      HeuristicResultDetail("Spark failed jobs count", evaluator.numFailedJobs.toString),
+      HeuristicResultDetail("Spark job failure rate",
         evaluator.jobFailureRate.getOrElse(0.0D).toString),
-      HeuristicResultDetails("Spark failed jobs list",
+      HeuristicResultDetail("Spark failed jobs list",
         evaluator.failedJobs.map(job => s"job ${job.jobId}, ${job.name}").mkString("\n")),
-      HeuristicResultDetails("Spark jobs with high task failure rates",
+      HeuristicResultDetail("Spark jobs with high task failure rates",
         evaluator.jobsWithHighTaskFailureRates.map { case (jobData, taskFailureRate) =>
           s"job ${jobData.jobId}, ${jobData.name} (task fail rate: ${taskFailureRate})" }
           .mkString("\n")
       ),
-      HeuristicResultDetails("Spark completed tasks count", evaluator.numCompletedTasks.toString)
+      HeuristicResultDetail("Spark completed tasks count", evaluator.numCompletedTasks.toString)
     )
 
     new HeuristicResult(

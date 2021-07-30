@@ -1,8 +1,8 @@
 package com.lannister.service
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper
-import com.lannister.dao.{AppHeuristicResultDao, AppHeuristicResultDetailsDao, AppResultDao}
-import com.lannister.model.{AppBase, AppHeuristicResult, AppHeuristicResultDetails, AppResult}
+import com.lannister.dao.{AppHeuristicResultDao, AppHeuristicResultDetailDao, AppResultDao}
+import com.lannister.model.{AppBase, AppHeuristicResult, AppHeuristicResultDetail, AppResult}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.{Isolation, Transactional}
@@ -14,15 +14,15 @@ class PersistService {
   @Autowired
   private var appHeuristicResultDao: AppHeuristicResultDao = _
   @Autowired
-  private var appHeuristicResultDetailsDao: AppHeuristicResultDetailsDao = _
+  private var appHeuristicResultDetailDao: AppHeuristicResultDetailDao = _
 
   @Transactional(isolation = Isolation.READ_COMMITTED)
   def save(result: AppResult): Unit = {
     appResultDao.upsert(result)
     val resultId = readId[AppResult](result, "app_id", result.appId)
     appHeuristicResultDao.delete( new QueryWrapper[AppHeuristicResult]().eq("result_id", resultId) )
-    appHeuristicResultDetailsDao.delete(
-      new QueryWrapper[AppHeuristicResultDetails]().eq("result_id", resultId) )
+    appHeuristicResultDetailDao.delete(
+      new QueryWrapper[AppHeuristicResultDetail]().eq("result_id", resultId) )
 
     result.heuristicResults.foreach(heuResult => {
       heuResult.resultId = resultId
@@ -30,7 +30,7 @@ class PersistService {
       heuResult.heuristicResultDetails.foreach{ heuResultDetail => {
         heuResultDetail.resultId = resultId
         heuResultDetail.heuristicId = heuResult.id
-        appHeuristicResultDetailsDao.insert(heuResultDetail)
+        appHeuristicResultDetailDao.insert(heuResultDetail)
       }}
     })
   }

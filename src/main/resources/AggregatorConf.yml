@@ -1,6 +1,6 @@
 aggregators:
   -
     applicationType: spark
-    classname: com.lannister.core.engine.spark.aggregator.SparkMetricsAggregator
+    classname: com.lannister.core.engine.spark.aggregator.SparkAggregator
     params:
         allocated_memory_waste_buffer_percentage: 0.5

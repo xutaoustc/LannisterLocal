@@ -1,9 +1,8 @@
 package com.lannister.model
 
 import scala.collection.mutable
-
 import com.baomidou.mybatisplus.annotation.{TableField, TableName}
-import com.lannister.core.domain.HeuristicResult
+import com.lannister.core.domain.{HeuristicResult, Severity}
 import com.lannister.core.domain.Severity.Severity
 
 @TableName("app_result")
@@ -33,5 +32,18 @@ class AppResult extends AppBase {
     } else {
       false
     }
+  }
+
+  def computeScoreAndSeverity(): Unit = {
+    var jobScore = 0
+    var worstSeverity = Severity.NONE
+
+    heuristicResults.foreach(h => {
+      worstSeverity = Severity.max(worstSeverity, h.severity)
+      jobScore = jobScore + h.score
+    })
+    
+    this.severityId = worstSeverity.id
+    this.score = jobScore
   }
 }

@@ -1,7 +1,7 @@
 package com.lannister.core.engine.spark.heuristics
 
 import com.lannister.core.conf.heuristic.HeuristicConfiguration
-import com.lannister.core.domain.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetails, Severity, SeverityThresholds}
+import com.lannister.core.domain.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetail, Severity, SeverityThresholds}
 import com.lannister.core.domain.Severity.Severity
 import com.lannister.core.engine.spark.data.SparkApplicationData
 import com.lannister.core.math.Statistics
@@ -29,55 +29,55 @@ class ConfigurationHeuristic (val heuristicConfig: HeuristicConfiguration) exten
       property.getOrElse("Not presented. Using default.")
 
     var resultDetails = Seq(
-      new HeuristicResultDetails(SPARK_DRIVER_MEMORY_KEY,
+      new HeuristicResultDetail(SPARK_DRIVER_MEMORY_KEY,
         formatProperty(evaluator.driverMemoryBytes.map(MemoryFormatUtils.bytesToString))),
-      new HeuristicResultDetails(SPARK_EXECUTOR_MEMORY_KEY,
+      new HeuristicResultDetail(SPARK_EXECUTOR_MEMORY_KEY,
         formatProperty(evaluator.executorMemoryBytes.map(MemoryFormatUtils.bytesToString))),
-      new HeuristicResultDetails(SPARK_EXECUTOR_CORES_KEY,
+      new HeuristicResultDetail(SPARK_EXECUTOR_CORES_KEY,
         formatProperty(evaluator.executorCores.map(_.toString))),
-      new HeuristicResultDetails(SPARK_DRIVER_CORES_KEY,
+      new HeuristicResultDetail(SPARK_DRIVER_CORES_KEY,
         formatProperty(evaluator.driverCores.map(_.toString))),
-      new HeuristicResultDetails(SPARK_EXECUTOR_INSTANCES_KEY,
+      new HeuristicResultDetail(SPARK_EXECUTOR_INSTANCES_KEY,
         formatProperty(evaluator.executorInstances.map(_.toString))),
-      new HeuristicResultDetails(SPARK_APPLICATION_DURATION,
+      new HeuristicResultDetail(SPARK_APPLICATION_DURATION,
         evaluator.applicationDuration.toString + " Seconds"),
-      new HeuristicResultDetails(SPARK_YARN_EXECUTOR_MEMORY_OVERHEAD,
+      new HeuristicResultDetail(SPARK_YARN_EXECUTOR_MEMORY_OVERHEAD,
         evaluator.sparkYarnExecutorMemoryOverhead),
-      new HeuristicResultDetails(SPARK_YARN_DRIVER_MEMORY_OVERHEAD,
+      new HeuristicResultDetail(SPARK_YARN_DRIVER_MEMORY_OVERHEAD,
         evaluator.sparkYarnDriverMemoryOverhead),
-      new HeuristicResultDetails(SPARK_DYNAMIC_ALLOCATION_ENABLED,
+      new HeuristicResultDetail(SPARK_DYNAMIC_ALLOCATION_ENABLED,
         formatProperty(evaluator.isDynamicAllocEnabled.map(_.toString)))
     )
 
     if (evaluator.serializerSeverity != Severity.NONE) {
-      resultDetails = resultDetails :+ HeuristicResultDetails(SPARK_SERIALIZER_KEY,
+      resultDetails = resultDetails :+ HeuristicResultDetail(SPARK_SERIALIZER_KEY,
         formatProperty(evaluator.serializer))
     }
     if (evaluator.shuffleAndDynamicAllocSeverity != Severity.NONE) {
-      resultDetails = resultDetails :+ HeuristicResultDetails(SPARK_SHUFFLE_SERVICE_ENABLED,
+      resultDetails = resultDetails :+ HeuristicResultDetail(SPARK_SHUFFLE_SERVICE_ENABLED,
         formatProperty(evaluator.isShuffleServiceEnabled.map(_.toString)))
     }
     if (evaluator.severityMinExecutors == Severity.CRITICAL) {
-      resultDetails = resultDetails :+ new HeuristicResultDetails("Minimum Executors",
+      resultDetails = resultDetails :+ new HeuristicResultDetail("Minimum Executors",
         "The minimum executors for Dynamic Allocation should be <=1. " +
           "Please change it in the " + SPARK_DYNAMIC_ALLOCATION_MIN_EXECUTORS + " field.")
     }
     if (evaluator.severityMaxExecutors == Severity.CRITICAL) {
-      resultDetails = resultDetails :+ new HeuristicResultDetails("Maximum Executors",
+      resultDetails = resultDetails :+ new HeuristicResultDetail("Maximum Executors",
         "The maximum executors for Dynamic Allocation should be <=900. " +
           "Please change it in the " + SPARK_DYNAMIC_ALLOCATION_MAX_EXECUTORS + " field.")
     }
     if (evaluator.jarsSeverity == Severity.CRITICAL) {
-      resultDetails = resultDetails :+ new HeuristicResultDetails("Jars notation",
+      resultDetails = resultDetails :+ new HeuristicResultDetail("Jars notation",
 "It is recommended to not use * notation while specifying jars in the field " + SPARK_YARN_JARS)
     }
     if(evaluator.severityDriverMemoryOverhead.id >= Severity.SEVERE.id) {
-      resultDetails = resultDetails :+ new HeuristicResultDetails("Driver Overhead Memory",
+      resultDetails = resultDetails :+ new HeuristicResultDetail("Driver Overhead Memory",
         "Please do not specify excessive amount of overhead memory for Driver." +
           " Change it in the field " + SPARK_YARN_DRIVER_MEMORY_OVERHEAD)
     }
     if(evaluator.severityExecutorMemoryOverhead.id >= Severity.SEVERE.id) {
-      resultDetails = resultDetails :+ new HeuristicResultDetails("Executor Overhead Memory",
+      resultDetails = resultDetails :+ new HeuristicResultDetail("Executor Overhead Memory",
         "Please do not specify excessive amount of overhead memory for Executors." +
           " Change it in the field " + SPARK_YARN_EXECUTOR_MEMORY_OVERHEAD)
     }

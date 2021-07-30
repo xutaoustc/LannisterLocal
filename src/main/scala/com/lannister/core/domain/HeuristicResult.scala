@@ -3,14 +3,14 @@ package com.lannister.core.domain
 import Severity.Severity
 
 case class HeuristicResult(
-  heuristicClass: String,
-  heuristicName: String,
-  severity: Severity,
-  score: Int,
-  heuristicResultDetails: List[HeuristicResultDetails]
+    heuristicClass: String,
+    heuristicName: String,
+    severity: Severity,
+    score: Int,
+    heuristicResultDetails: List[HeuristicResultDetail]
 )
 
-case class HeuristicResultDetails(name: String, value: String)
+case class HeuristicResultDetail(name: String, value: String)
 
 object HeuristicResult{
   val NO_DATA = HeuristicResult(
@@ -18,5 +18,5 @@ object HeuristicResult{
     "No Data Received",
     Severity.LOW,
     0,
-    HeuristicResultDetails("No Data Received", "") :: Nil)
+    HeuristicResultDetail("No Data Received", "") :: Nil)
 }

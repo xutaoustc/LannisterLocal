@@ -2,7 +2,7 @@ package com.lannister.analysis
 
 import com.lannister.core.domain.ApplicationData
 
-trait MetricsAggregator {
-  def aggregate(data: ApplicationData): MetricsAggregator
+trait Aggregator {
+  def aggregate(data: ApplicationData): Aggregator
   def getResult: AggregatedData
 }

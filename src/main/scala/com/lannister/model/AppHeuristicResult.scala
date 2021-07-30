@@ -16,5 +16,21 @@ class AppHeuristicResult extends AppBase{
   @TableField(`exist` = false)
   var severity: Severity = _
   @TableField(`exist` = false)
-  var heuristicResultDetails = mutable.ListBuffer[AppHeuristicResultDetails]()
+  var heuristicResultDetails = mutable.ListBuffer[AppHeuristicResultDetail]()
+}
+
+object AppHeuristicResult{
+  def apply(heuristicClass: String,
+            heuristicName: String,
+            severity: Severity,
+            score: Int
+           ): AppHeuristicResult = {
+    val heuSave = new AppHeuristicResult
+    heuSave.heuristicClass = heuristicClass
+    heuSave.heuristicName = heuristicName
+    heuSave.severity = severity
+    heuSave.severityId = severity.id
+    heuSave.score = score
+    heuSave
+  }
 }

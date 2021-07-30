@@ -3,7 +3,7 @@ package com.lannister
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
-import com.lannister.analysis.MetricsAggregator
+import com.lannister.analysis.Aggregator
 import com.lannister.core.conf.Configs
 import com.lannister.core.conf.aggregator.{AggregatorConfiguration, AggregatorConfigurations}
 import com.lannister.core.conf.fetcher.{FetcherConfiguration, FetcherConfigurations}
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class LannisterContext extends Logging{
-  private val _typeToAggregator = mutable.Map[String, MetricsAggregator]()
+  private val _typeToAggregator = mutable.Map[String, Aggregator]()
   private val _typeToFetcher = mutable.Map[String, Fetcher[_<:ApplicationData]]()
   private val _typeToHeuristics = mutable.Map[String, ListBuffer[Heuristic]]()
   private val _typeSet = mutable.Set[String]()
@@ -38,7 +38,7 @@ class LannisterContext extends Logging{
     _typeToHeuristics(applicationType).toList
   }
 
-  def getAggregatorForApplicationType(applicationType: String): MetricsAggregator = {
+  def getAggregatorForApplicationType(applicationType: String): Aggregator = {
     _typeToAggregator(applicationType)
   }
 
@@ -50,7 +50,7 @@ class LannisterContext extends Logging{
       .foreach(conf => {
         val instance = Utils.classForName(conf.classname)
                             .getConstructor(classOf[AggregatorConfiguration])
-                            .newInstance(conf).asInstanceOf[MetricsAggregator]
+                            .newInstance(conf).asInstanceOf[Aggregator]
         _typeToAggregator += (conf.applicationType -> instance)
         info(s"Load aggregator ${conf.classname}")
       })

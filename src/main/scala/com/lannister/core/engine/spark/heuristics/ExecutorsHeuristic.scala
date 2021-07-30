@@ -1,7 +1,7 @@
 package com.lannister.core.engine.spark.heuristics
 
 import com.lannister.core.conf.heuristic.HeuristicConfiguration
-import com.lannister.core.domain.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetails, Severity, SeverityThresholds}
+import com.lannister.core.domain.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetail, Severity, SeverityThresholds}
 import com.lannister.core.domain.Severity.Severity
 import com.lannister.core.engine.spark.data.SparkApplicationData
 import com.lannister.core.math.Statistics
@@ -24,39 +24,39 @@ class ExecutorsHeuristic(private val heuristicConfig: HeuristicConfiguration) ex
     val evaluator = new Evaluator(this, data.asInstanceOf[SparkApplicationData])
 
     val resultDetails = Seq(
-      new HeuristicResultDetails(
+      new HeuristicResultDetail(
         "Total executor storage memory allocated",
         MemoryFormatUtils.bytesToString(evaluator.totalStorageMemoryAllocated)
       ),
-      new HeuristicResultDetails(
+      new HeuristicResultDetail(
         "Total executor storage memory used",
         MemoryFormatUtils.bytesToString(evaluator.totalStorageMemoryUsed)
       ),
-      new HeuristicResultDetails(
+      new HeuristicResultDetail(
         "Executor storage memory utilization rate",
         f"${evaluator.storageMemoryUtilizationRate}%1.3f"
       ),
-      new HeuristicResultDetails(
+      new HeuristicResultDetail(
         "Executor storage memory used distribution",
         evaluator.storageMemoryUsedDistribution.formatDistribution(MemoryFormatUtils.bytesToString)
       ),
-      new HeuristicResultDetails(
+      new HeuristicResultDetail(
         "Executor task time distribution",
         evaluator.taskTimeDistribution.formatDistribution(Statistics.readableTimespan)
       ),
-      new HeuristicResultDetails(
+      new HeuristicResultDetail(
         "Executor task time sum",
         (evaluator.totalTaskTime / Statistics.SECOND_IN_MS).toString
       ),
-      new HeuristicResultDetails(
+      new HeuristicResultDetail(
         "Executor input bytes distribution",
         evaluator.inputBytesDistribution.formatDistribution(MemoryFormatUtils.bytesToString)
       ),
-      new HeuristicResultDetails(
+      new HeuristicResultDetail(
         "Executor shuffle read bytes distribution",
         evaluator.shuffleReadBytesDistribution.formatDistribution(MemoryFormatUtils.bytesToString)
       ),
-      new HeuristicResultDetails(
+      new HeuristicResultDetail(
         "Executor shuffle write bytes distribution",
         evaluator.shuffleWriteBytesDistribution.formatDistribution(MemoryFormatUtils.bytesToString)
       )
