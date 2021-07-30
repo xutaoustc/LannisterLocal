@@ -27,19 +27,19 @@ class LannisterContext extends Logging{
 
 
   def applicationTypeSupported(applicationType: String): Boolean = {
-    _typeSet.contains(applicationType)
+    _typeSet.contains(applicationType.toUpperCase())
   }
 
   def getFetcherForApplicationType(applicationType: String): Fetcher[_ <: ApplicationData] = {
-    _typeToFetcher(applicationType)
+    _typeToFetcher(applicationType.toUpperCase())
   }
 
   def getHeuristicsForApplicationType(applicationType: String): List[Heuristic] = {
-    _typeToHeuristics(applicationType).toList
+    _typeToHeuristics(applicationType.toUpperCase()).toList
   }
 
   def getAggregatorForApplicationType(applicationType: String): Aggregator = {
-    _typeToAggregator(applicationType)
+    _typeToAggregator(applicationType.toUpperCase())
   }
 
 
@@ -51,7 +51,7 @@ class LannisterContext extends Logging{
         val instance = Utils.classForName(conf.classname)
                             .getConstructor(classOf[AggregatorConfiguration])
                             .newInstance(conf).asInstanceOf[Aggregator]
-        _typeToAggregator += (conf.applicationType -> instance)
+        _typeToAggregator += (conf.applicationType.toUpperCase() -> instance)
         info(s"Load aggregator ${conf.classname}")
       })
   }
@@ -63,7 +63,7 @@ class LannisterContext extends Logging{
         val instance = Utils.classForName(conf.classname)
                             .getConstructor(classOf[FetcherConfiguration])
                             .newInstance(conf).asInstanceOf[Fetcher[_<:ApplicationData]]
-        _typeToFetcher += (conf.applicationType -> instance)
+        _typeToFetcher += (conf.applicationType.toUpperCase() -> instance)
         info(s"Load fetcher ${conf.classname}")
       })
   }
@@ -75,7 +75,8 @@ class LannisterContext extends Logging{
         val instance = Utils.classForName(conf.classname)
                             .getConstructor(classOf[HeuristicConfiguration])
                             .newInstance(conf).asInstanceOf[Heuristic]
-        _typeToHeuristics.getOrElseUpdate(conf.applicationType, ListBuffer()) += instance
+        val applicationType = conf.applicationType.toUpperCase()
+        _typeToHeuristics.getOrElseUpdate(applicationType, ListBuffer()) += instance
         info(s"Load heuristic ${conf.classname}")
       })
   }

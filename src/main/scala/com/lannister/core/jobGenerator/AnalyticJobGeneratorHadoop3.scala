@@ -148,7 +148,7 @@ class AnalyticJobGeneratorHadoop3 extends AnalyticJobGenerator with Logging {
         val applicationType = app.get("applicationType").asText()
 
         AnalyticJob(appId, applicationType, user, name, queue, url, startTime, finishTime)
-    })
+      })
   }
 }
 
