@@ -2,7 +2,7 @@ heuristics:
   -
     name: Spark Configuration
     applicationType: spark
-    classname: com.ctyun.lannister.core.engine.spark.heuristics.ConfigurationHeuristic
+    classname: com.lannister.core.engine.spark.heuristics.ConfigurationHeuristic
     viewname:
     params:
       spark_overheadMemory_thresholds_key: 2, 4, 6, 8
@@ -12,7 +12,7 @@ heuristics:
   -
     name: Spark Job
     applicationType: spark
-    classname: com.ctyun.lannister.core.engine.spark.heuristics.JobsHeuristic
+    classname: com.lannister.core.engine.spark.heuristics.JobsHeuristic
     viewname:
     params:
       job_failure_rate_severity_thresholds: 0.1, 0.3, 0.5, 0.5
@@ -20,7 +20,7 @@ heuristics:
   -
     name: Spark Executor Gc
     applicationType: spark
-    classname: com.ctyun.lannister.core.engine.spark.heuristics.ExecutorGcHeuristic
+    classname: com.lannister.core.engine.spark.heuristics.ExecutorGcHeuristic
     viewname:
     params:
       gc_severity_A_threshold: 0.08, 0.10, 0.15, 0.20
@@ -28,7 +28,7 @@ heuristics:
   -
     name: Spark Executors
     applicationType: spark
-    classname: com.ctyun.lannister.core.engine.spark.heuristics.ExecutorsHeuristic
+    classname: com.lannister.core.engine.spark.heuristics.ExecutorsHeuristic
     viewname:
     params:
       max_to_median_severity_thresholds: 1.334, 1.778, 3.162, 10
@@ -37,7 +37,7 @@ heuristics:
   -
     name: Spark Stages
     applicationType: spark
-    classname: com.ctyun.lannister.core.engine.spark.heuristics.StagesHeuristic
+    classname: com.lannister.core.engine.spark.heuristics.StagesHeuristic
     viewname:
     params:
       stage_failure_rate_severity_thresholds: 0.2, 0.4, 0.6, 0.8

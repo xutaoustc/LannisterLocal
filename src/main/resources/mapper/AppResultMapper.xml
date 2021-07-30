@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.ctyun.lannister.dao.AppResultDao">
+<mapper namespace="com.lannister.dao.AppResultDao">
 
-    <insert id="upsert" parameterType="com.ctyun.lannister.model.AppResult" useGeneratedKeys="true" keyProperty="id">
+    <insert id="upsert" parameterType="com.lannister.model.AppResult" useGeneratedKeys="true" keyProperty="id">
         insert into
            app_result(app_id, tracking_url, queue_name, username,
                       start_time,finish_time, name, successful_job, job_type, resource_used, total_delay, resource_wasted, severity_Id, score)
