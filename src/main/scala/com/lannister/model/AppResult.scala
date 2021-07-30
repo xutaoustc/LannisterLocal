@@ -28,18 +28,4 @@ class AppResult extends AppBase {
   var heuristicResults = mutable.ListBuffer[AppHeuristicResult]()
   @TableField(`exist` = false)
   var isNoData: Boolean = _
-
-
-  def computeScoreAndSeverity(): Unit = {
-    var jobScore = 0
-    var worstSeverity = Severity.NONE
-
-    heuristicResults.foreach(h => {
-      worstSeverity = Severity.max(worstSeverity, h.severity)
-      jobScore = jobScore + h.score
-    })
-
-    this.severityId = worstSeverity.id
-    this.score = jobScore
-  }
 }

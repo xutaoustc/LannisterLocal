@@ -13,9 +13,9 @@ class AppHeuristicResultDetail extends AppBase {
 
 object AppHeuristicResultDetail {
   def apply(name: String, value: String): AppHeuristicResultDetail = {
-    val heuDetailForSave = new AppHeuristicResultDetail
-    heuDetailForSave.name = name
-    heuDetailForSave.value = value
-    heuDetailForSave
+    val heuDetailSave = new AppHeuristicResultDetail
+    heuDetailSave.name = name
+    heuDetailSave.value = value
+    heuDetailSave
   }
 }

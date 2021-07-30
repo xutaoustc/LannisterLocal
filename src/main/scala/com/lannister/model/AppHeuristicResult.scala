@@ -16,7 +16,7 @@ class AppHeuristicResult extends AppBase {
   @TableField(`exist` = false)
   var severity: Severity = _
   @TableField(`exist` = false)
-  var heuristicResultDetails = mutable.ListBuffer[AppHeuristicResultDetail]()
+  var heuristicResultDetails : List[AppHeuristicResultDetail] = _
 }
 
 object AppHeuristicResult{

@@ -74,19 +74,23 @@ case class AnalyticJob(
     result.resourceUsed = 0 // TODO
     result.totalDelay = 0 // TODO
     result.resourceWasted = 0 // TODO
-
-    heuristicResults.foreach(h => {
-      if (h == HeuristicResult.NO_DATA) {
+    heuristicResults.foreach(x => {
+      if (x == HeuristicResult.NO_DATA) {
         result.isNoData = true
       }
-      val heuSave = AppHeuristicResult(h.heuristicClass, h.heuristicName, h.severity, h.score)
-      result.heuristicResults += heuSave
-
-      h.heuristicResultDetails.foreach(hd => {
-        heuSave.heuristicResultDetails += AppHeuristicResultDetail(hd.name, hd.value)
-      })
     })
-    result.computeScoreAndSeverity()
+
+    heuristicResults.foreach(x => {
+      result.heuristicResults +=
+        AppHeuristicResult(x.heuristicClass, x.heuristicName, x.severity, x.score)
+
+      result.heuristicResults.last.heuristicResultDetails =
+        x.heuristicResultDetails.map(hd => AppHeuristicResultDetail(hd.name, hd.value))
+    })
+
+    result.score = heuristicResults.foldLeft(0)((s, v) => s + v.score)
+    result.severityId =
+      heuristicResults.foldLeft(Severity.NONE)((s, v) => Severity.max(s, v.severity)).id
 
     _persistService.save(result)
     result
