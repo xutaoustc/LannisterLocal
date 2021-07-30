@@ -1,8 +1,7 @@
 package com.lannister.core.engine.spark.heuristics
 
-import com.lannister.analysis.SeverityThresholds
 import com.lannister.core.conf.heuristic.HeuristicConfiguration
-import com.lannister.core.domain.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetails, Severity}
+import com.lannister.core.domain.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetails, Severity, SeverityThresholds}
 import com.lannister.core.domain.Severity.Severity
 import com.lannister.core.engine.spark.data.SparkApplicationData
 import com.lannister.core.math.Statistics
@@ -13,13 +12,13 @@ class ConfigurationHeuristic (val heuristicConfig: HeuristicConfiguration) exten
 
   import ConfigurationHeuristic._
 
-  val sparkOverheadMemoryThreshold: SeverityThresholds = SeverityThresholds.parse(
-    heuristicConfig.getParams.get(SPARK_OVERHEAD_MEMORY_THRESHOLD_KEY), ascending = true)
-  val sparkMemoryThreshold: SeverityThresholds = SeverityThresholds.parse(
+  val sparkOverheadMemoryThreshold: SeverityThresholds = SeverityThresholds.parse(true,
+    heuristicConfig.getParams.get(SPARK_OVERHEAD_MEMORY_THRESHOLD_KEY))
+  val sparkMemoryThreshold: SeverityThresholds = SeverityThresholds.parse(true,
     heuristicConfig.getParams.get(SPARK_MEMORY_THRESHOLD_KEY),
-    ascending = true, MemoryFormatUtils.stringToBytes)
-  val sparkCoreThreshold: SeverityThresholds = SeverityThresholds.parse(
-    heuristicConfig.getParams.get(SPARK_CORE_THRESHOLD_KEY), ascending = true)
+    MemoryFormatUtils.stringToBytes)
+  val sparkCoreThreshold: SeverityThresholds = SeverityThresholds.parse(true,
+    heuristicConfig.getParams.get(SPARK_CORE_THRESHOLD_KEY))
   val serializerIfNonNullRecommendation: String =
     heuristicConfig.getParams.get(SERIALIZER_IF_NON_NULL_RECOMMENDATION_KEY)
 

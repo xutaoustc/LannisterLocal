@@ -1,8 +1,7 @@
 package com.lannister.core.engine.spark.heuristics
 
-import com.lannister.analysis.SeverityThresholds
 import com.lannister.core.conf.heuristic.HeuristicConfiguration
-import com.lannister.core.domain.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetails, Severity}
+import com.lannister.core.domain.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetails, Severity, SeverityThresholds}
 import com.lannister.core.domain.Severity.Severity
 import com.lannister.core.engine.spark.data.SparkApplicationData
 
@@ -13,10 +12,10 @@ class JobsHeuristic(private val heuristicConfig: HeuristicConfiguration) extends
 
   import JobsHeuristic._
 
-  val jobFailureRateSeverityThresholds: SeverityThresholds = SeverityThresholds.parse(
-    heuristicConfig.getParams.get(JOB_FAILURE_RATE_SEVERITY_THRESHOLDS_KEY), ascending = true)
-  val taskFailureRateSeverityThresholds: SeverityThresholds = SeverityThresholds.parse(
-    heuristicConfig.getParams.get(TASK_FAILURE_RATE_SEVERITY_THRESHOLDS_KEY), ascending = true)
+  val jobFailureRateSeverityThresholds: SeverityThresholds = SeverityThresholds.parse(true,
+    heuristicConfig.getParams.get(JOB_FAILURE_RATE_SEVERITY_THRESHOLDS_KEY))
+  val taskFailureRateSeverityThresholds: SeverityThresholds = SeverityThresholds.parse(true,
+    heuristicConfig.getParams.get(TASK_FAILURE_RATE_SEVERITY_THRESHOLDS_KEY))
 
 
   override def apply(data: ApplicationData): HeuristicResult = {

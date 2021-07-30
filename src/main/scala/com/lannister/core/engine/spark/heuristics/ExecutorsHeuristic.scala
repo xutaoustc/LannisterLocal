@@ -1,8 +1,7 @@
 package com.lannister.core.engine.spark.heuristics
 
-import com.lannister.analysis.SeverityThresholds
 import com.lannister.core.conf.heuristic.HeuristicConfiguration
-import com.lannister.core.domain.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetails, Severity}
+import com.lannister.core.domain.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetails, Severity, SeverityThresholds}
 import com.lannister.core.domain.Severity.Severity
 import com.lannister.core.engine.spark.data.SparkApplicationData
 import com.lannister.core.math.Statistics
@@ -12,8 +11,8 @@ import org.apache.spark.status.api.v1.ExecutorSummary
 
 class ExecutorsHeuristic(private val heuristicConfig: HeuristicConfiguration) extends Heuristic{
 
-  val maxToMedianRatioSeverityThresholds = SeverityThresholds.parse(
-    heuristicConfig.params.get("max_to_median_severity_thresholds"), ascending = true)
+  val maxToMedianRatioSeverityThresholds = SeverityThresholds.parse(true,
+    heuristicConfig.params.get("max_to_median_severity_thresholds"))
   val ignoreMaxBytesLessThanThreshold = MemoryFormatUtils.stringToBytes(
     heuristicConfig.params.get("ignore_max_bytes_less_than_threshold"))
   val ignoreMaxMillisLessThanThreshold =

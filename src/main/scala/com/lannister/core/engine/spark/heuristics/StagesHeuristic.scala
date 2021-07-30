@@ -2,9 +2,8 @@ package com.lannister.core.engine.spark.heuristics
 
 import scala.concurrent.duration.Duration
 
-import com.lannister.analysis.SeverityThresholds
 import com.lannister.core.conf.heuristic.HeuristicConfiguration
-import com.lannister.core.domain.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetails, Severity}
+import com.lannister.core.domain.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetails, Severity, SeverityThresholds}
 import com.lannister.core.domain.Severity.Severity
 import com.lannister.core.engine.spark.data.SparkApplicationData
 import com.lannister.core.math.Statistics._
@@ -16,12 +15,12 @@ class StagesHeuristic(private val heuristicConfig: HeuristicConfiguration)
 
   import StagesHeuristic._
 
-  val stageFailureRateSeverityThresholds: SeverityThresholds = SeverityThresholds.parse(
-    heuristicConfig.params.get(STAGE_FAILURE_RATE_SEVERITY_THRESHOLDS_KEY), ascending = true)
-  val taskFailureRateSeverityThresholds: SeverityThresholds = SeverityThresholds.parse(
-    heuristicConfig.params.get(TASK_FAILURE_RATE_SEVERITY_THRESHOLDS_KEY), ascending = true)
-  val stageRuntimeMillisSeverityThresholds: SeverityThresholds = SeverityThresholds.parse(
-    heuristicConfig.params.get(STAGE_RUNTIME_MINUTES_SEVERITY_THRESHOLDS_KEY), ascending = true,
+  val stageFailureRateSeverityThresholds: SeverityThresholds = SeverityThresholds.parse(true,
+    heuristicConfig.params.get(STAGE_FAILURE_RATE_SEVERITY_THRESHOLDS_KEY) )
+  val taskFailureRateSeverityThresholds: SeverityThresholds = SeverityThresholds.parse(true,
+    heuristicConfig.params.get(TASK_FAILURE_RATE_SEVERITY_THRESHOLDS_KEY) )
+  val stageRuntimeMillisSeverityThresholds: SeverityThresholds = SeverityThresholds.parse(true,
+    heuristicConfig.params.get(STAGE_RUNTIME_MINUTES_SEVERITY_THRESHOLDS_KEY),
     x => Duration(x).toMillis)
 
   override def apply(data: ApplicationData): HeuristicResult = {

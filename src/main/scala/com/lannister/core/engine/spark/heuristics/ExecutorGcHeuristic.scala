@@ -1,8 +1,7 @@
 package com.lannister.core.engine.spark.heuristics
 
-import com.lannister.analysis.SeverityThresholds
 import com.lannister.core.conf.heuristic.HeuristicConfiguration
-import com.lannister.core.domain.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetails, Severity}
+import com.lannister.core.domain.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetails, Severity, SeverityThresholds}
 import com.lannister.core.domain.Severity.Severity
 import com.lannister.core.engine.spark.data.SparkApplicationData
 
@@ -10,10 +9,10 @@ class ExecutorGcHeuristic(private val heuristicConfig: HeuristicConfiguration) e
 
   import ExecutorGcHeuristic._
 
-  val gcSeverityAThresholds: SeverityThresholds = SeverityThresholds.parse(
-    heuristicConfig.params.get(GC_SEVERITY_A_THRESHOLDS_KEY), ascending = true)
-  val gcSeverityDThresholds: SeverityThresholds = SeverityThresholds.parse(
-    heuristicConfig.params.get(GC_SEVERITY_D_THRESHOLDS_KEY), ascending = false)
+  val gcSeverityAThresholds: SeverityThresholds = SeverityThresholds.parse(true,
+    heuristicConfig.params.get(GC_SEVERITY_A_THRESHOLDS_KEY) )
+  val gcSeverityDThresholds: SeverityThresholds = SeverityThresholds.parse(false,
+    heuristicConfig.params.get(GC_SEVERITY_D_THRESHOLDS_KEY) )
 
 
   override def apply(data: ApplicationData): HeuristicResult = {
