@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.annotation.{TableField, TableName}
 import com.lannister.core.domain.Severity.Severity
 
 @TableName("app_heuristic_result")
-class AppHeuristicResult extends AppBase{
+class AppHeuristicResult extends AppBase {
   var heuristicClass: String = _
   var heuristicName: String = _
   var severityId: Int = _

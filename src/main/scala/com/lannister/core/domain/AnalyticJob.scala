@@ -17,9 +17,6 @@ case class AnalyticJob(
     startTime: Long,
     finishTime: Long) extends Logging {
 
-  private var _retries = 0
-  private var _secondRetries = 0
-  private var _secondRetriesDequeueGap = 0
   private var successfulJob = false
 
   private var _fetcher: Fetcher[_ <: ApplicationData] = _
@@ -27,8 +24,10 @@ case class AnalyticJob(
   private var _aggregator: Aggregator = _
   private var _persistService: PersistService = _
 
+  private var _retries = 0
+  private var _secondRetries = 0
+  private var _secondRetriesDequeueGap = 0
 
-  def applicationTypeNameAndAppId(): String = s"$applicationType $appId"
 
   def setSuccessfulJob: AnalyticJob = {
     this.successfulJob = true
@@ -46,6 +45,9 @@ case class AnalyticJob(
     this._persistService = persistService
     this
   }
+
+  def applicationTypeNameAndAppId(): String = s"$applicationType $appId"
+
 
   def analysis: AppResult = {
     val (heuristicResults, aggregatedData) = _fetcher.fetchData(this) match {
@@ -74,6 +76,9 @@ case class AnalyticJob(
     result.resourceWasted = 0 // TODO
 
     heuristicResults.foreach(h => {
+      if (h == HeuristicResult.NO_DATA) {
+        result.isNoData = true
+      }
       val heuSave = AppHeuristicResult(h.heuristicClass, h.heuristicName, h.severity, h.score)
       result.heuristicResults += heuSave
 

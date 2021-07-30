@@ -20,13 +20,13 @@ class PersistService {
   def save(result: AppResult): Unit = {
     appResultDao.upsert(result)
     val resultId = readId[AppResult](result, "app_id", result.appId)
-    appHeuristicResultDao.delete( new QueryWrapper[AppHeuristicResult]().eq("result_id", resultId) )
-    appHeuristicResultDetailDao.delete(
-      new QueryWrapper[AppHeuristicResultDetail]().eq("result_id", resultId) )
+    appHeuristicResultDao.delete( new QueryWrapper().eq("result_id", resultId) )
+    appHeuristicResultDetailDao.delete(new QueryWrapper().eq("result_id", resultId) )
 
     result.heuristicResults.foreach(heuResult => {
       heuResult.resultId = resultId
       appHeuristicResultDao.insert(heuResult)
+
       heuResult.heuristicResultDetails.foreach{ heuResultDetail => {
         heuResultDetail.resultId = resultId
         heuResultDetail.heuristicId = heuResult.id

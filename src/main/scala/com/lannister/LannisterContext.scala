@@ -86,15 +86,14 @@ class LannisterContext extends Logging{
 
     info("Configuring LannisterContext ... ")
     supportedTypes.foreach(eachType => {
-      info(s"""Supports ${eachType} application type,
+      info(s"""Supports $eachType application type,
            |using ${_typeToFetcher(eachType).getClass} fetcher class
-           |with Heuristics [ ${_typeToHeuristics(eachType).map(_.getClass).mkString(",")} ]
-           |""".stripMargin )
+           |with Heuristics [ ${_typeToHeuristics(eachType).map(_.getClass).mkString(",")} ]""" )
     })
 
-    _typeToFetcher.retain((t, _) => {supportedTypes.contains(t)})
-    _typeToHeuristics.retain((t, _) => {supportedTypes.contains(t)})
-    _typeToAggregator.retain((t, _) => {supportedTypes.contains(t)})
+    _typeToFetcher.retain((t, _) => supportedTypes.contains(t))
+    _typeToHeuristics.retain((t, _) => supportedTypes.contains(t))
+    _typeToAggregator.retain((t, _) => supportedTypes.contains(t))
     supportedTypes.foldLeft(_typeSet)( (s, v) => {s.add(v); s} )
   }
 
