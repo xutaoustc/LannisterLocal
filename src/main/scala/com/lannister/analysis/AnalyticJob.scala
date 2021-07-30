@@ -2,7 +2,7 @@ package com.lannister.analysis
 
 import com.lannister.LannisterContext
 import com.lannister.core.conf.Configs
-import com.lannister.core.domain.{ApplicationData, Fetcher, Heuristic, HeuristicResult}
+import com.lannister.core.domain.{ApplicationData, Fetcher, Heuristic, HeuristicResult, Severity}
 import com.lannister.core.util.Logging
 import com.lannister.model.{AppHeuristicResult, AppHeuristicResultDetails, AppResult}
 import com.lannister.service.PersistService

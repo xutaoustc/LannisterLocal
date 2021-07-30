@@ -2,11 +2,10 @@ package com.lannister.core.engine.spark.heuristics
 
 import scala.concurrent.duration.Duration
 
-import com.lannister.analysis.Severity
-import com.lannister.analysis.Severity.Severity
 import com.lannister.analysis.SeverityThresholds
 import com.lannister.core.conf.heuristic.HeuristicConfiguration
-import com.lannister.core.domain.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetails}
+import com.lannister.core.domain.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetails, Severity}
+import com.lannister.core.domain.Severity.Severity
 import com.lannister.core.engine.spark.data.SparkApplicationData
 import com.lannister.core.math.Statistics._
 

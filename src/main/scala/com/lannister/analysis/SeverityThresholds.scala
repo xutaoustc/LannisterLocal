@@ -1,14 +1,12 @@
 package com.lannister.analysis
 
-import Severity.Severity
+import com.lannister.core.domain.Severity
+import com.lannister.core.domain.Severity.Severity
 
 case class SeverityThresholds(low: Number, moderate: Number, severe: Number,
                               critical: Number, ascending: Boolean) {
-  def of(value: Number): Severity = if (ascending) {
-    Severity.getSeverityAscending(value, low, moderate, severe, critical)
-  } else {
-    Severity.getSeverityDescending(value, low, moderate, severe, critical)
-  }
+  def of(value: Number): Severity =
+    Severity.getSeverity(value, ascending, low, moderate, severe, critical)
 }
 
 object SeverityThresholds {

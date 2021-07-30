@@ -1,7 +1,6 @@
 package com.lannister.core.domain
 
-import com.lannister.analysis.Severity
-import com.lannister.analysis.Severity.Severity
+import Severity.Severity
 
 case class HeuristicResult(
   heuristicClass: String,

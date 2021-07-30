@@ -3,8 +3,8 @@ package com.lannister.model
 import scala.collection.mutable
 
 import com.baomidou.mybatisplus.annotation.{TableField, TableName}
-import com.lannister.analysis.Severity.Severity
 import com.lannister.core.domain.HeuristicResult
+import com.lannister.core.domain.Severity.Severity
 
 @TableName("app_result")
 class AppResult extends AppBase {
