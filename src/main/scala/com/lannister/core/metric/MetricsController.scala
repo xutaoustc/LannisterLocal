@@ -3,7 +3,7 @@ package com.lannister.core.metric
 import com.codahale.metrics.{Gauge, Histogram, Meter, MetricRegistry}
 import com.codahale.metrics.MetricRegistry.name
 import com.codahale.metrics.jmx.JmxReporter
-import com.lannister.analysis.AnalyticJob
+import com.lannister.core.domain.AnalyticJob
 import org.springframework.stereotype.Component
 
 @Component

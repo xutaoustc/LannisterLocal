@@ -1,8 +1,8 @@
-package com.lannister.analysis
+package com.lannister.core.domain
 
 import com.lannister.LannisterContext
+import com.lannister.analysis.Aggregator
 import com.lannister.core.conf.Configs
-import com.lannister.core.domain.{ApplicationData, Fetcher, Heuristic, HeuristicResult, Severity}
 import com.lannister.core.util.Logging
 import com.lannister.model.{AppHeuristicResult, AppHeuristicResultDetail, AppResult}
 import com.lannister.service.PersistService
@@ -15,7 +15,7 @@ case class AnalyticJob(
     queueName: String,
     trackingUrl: String,
     startTime: Long,
-    finishTime: Long) extends Logging{
+    finishTime: Long) extends Logging {
 
   private var _retries = 0
   private var _secondRetries = 0
@@ -28,7 +28,7 @@ case class AnalyticJob(
   private var _persistService: PersistService = _
 
 
-  def applicationTypeNameAndAppId() : String = s"$applicationType $appId"
+  def applicationTypeNameAndAppId(): String = s"$applicationType $appId"
 
   def setSuccessfulJob: AnalyticJob = {
     this.successfulJob = true
@@ -49,16 +49,16 @@ case class AnalyticJob(
 
   def analysis: AppResult = {
     val (heuristicResults, aggregatedData) = _fetcher.fetchData(this) match {
-        case Some(data) => ( _heuristics.map(_.apply(data)), _aggregator.aggregate(data).getResult )
-        case None =>
-          warn(s"No Data Received for analytic job: $appId")
-          (HeuristicResult.NO_DATA :: Nil, None)
-      }
+      case Some(data) => (_heuristics.map(_.apply(data)), _aggregator.aggregate(data).getResult)
+      case None =>
+        warn(s"No Data Received for analytic job: $appId")
+        (HeuristicResult.NO_DATA :: Nil, None)
+    }
 
     save(heuristicResults)
   }
 
-  private def save(heuristicResults : List[HeuristicResult]): AppResult = {
+  private def save(heuristicResults: List[HeuristicResult]): AppResult = {
     val result = new AppResult()
     result.appId = appId
     result.trackingUrl = trackingUrl
@@ -71,7 +71,7 @@ case class AnalyticJob(
     result.jobType = applicationType
     result.resourceUsed = 0 // TODO
     result.totalDelay = 0 // TODO
-    result.resourceWasted = 0  // TODO
+    result.resourceWasted = 0 // TODO
 
     heuristicResults.foreach(h => {
       val heuSave = AppHeuristicResult(h.heuristicClass, h.heuristicName, h.severity, h.score)

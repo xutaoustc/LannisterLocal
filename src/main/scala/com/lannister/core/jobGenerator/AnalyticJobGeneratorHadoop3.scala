@@ -8,8 +8,8 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 
 import com.lannister.LannisterContext
-import com.lannister.analysis.AnalyticJob
 import com.lannister.core.conf.Configs
+import com.lannister.core.domain.AnalyticJob
 import com.lannister.core.hadoop.HadoopConf
 import com.lannister.core.metric.MetricsController
 import com.lannister.core.util.{Logging, Utils}

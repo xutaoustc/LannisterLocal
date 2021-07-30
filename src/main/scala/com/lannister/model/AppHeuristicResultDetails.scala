@@ -10,7 +10,8 @@ class AppHeuristicResultDetail extends AppBase {
   var heuristicId: Long = _
 }
 
-object AppHeuristicResultDetail{
+
+object AppHeuristicResultDetail {
   def apply(name: String, value: String): AppHeuristicResultDetail = {
     val heuDetailForSave = new AppHeuristicResultDetail
     heuDetailForSave.name = name

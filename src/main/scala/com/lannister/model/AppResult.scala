@@ -1,6 +1,7 @@
 package com.lannister.model
 
 import scala.collection.mutable
+
 import com.baomidou.mybatisplus.annotation.{TableField, TableName}
 import com.lannister.core.domain.{HeuristicResult, Severity}
 import com.lannister.core.domain.Severity.Severity
@@ -42,7 +43,7 @@ class AppResult extends AppBase {
       worstSeverity = Severity.max(worstSeverity, h.severity)
       jobScore = jobScore + h.score
     })
-    
+
     this.severityId = worstSeverity.id
     this.score = jobScore
   }

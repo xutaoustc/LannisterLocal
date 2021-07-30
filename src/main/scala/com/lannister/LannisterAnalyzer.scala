@@ -3,8 +3,8 @@ package com.lannister
 import java.util.concurrent.{LinkedBlockingQueue, ThreadPoolExecutor, TimeoutException, TimeUnit}
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder
-import com.lannister.analysis.AnalyticJob
 import com.lannister.core.conf.Configs
+import com.lannister.core.domain.AnalyticJob
 import com.lannister.core.hadoop.HadoopSecurity
 import com.lannister.core.jobGenerator.AnalyticJobGeneratorHadoop3
 import com.lannister.core.metric.MetricsController

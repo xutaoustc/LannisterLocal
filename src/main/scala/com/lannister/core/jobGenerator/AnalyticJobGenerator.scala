@@ -1,6 +1,6 @@
 package com.lannister.core.jobGenerator
 
-import com.lannister.analysis.AnalyticJob
+import com.lannister.core.domain.AnalyticJob
 
 trait AnalyticJobGenerator {
   def configure: Unit
