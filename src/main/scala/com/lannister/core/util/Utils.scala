@@ -26,6 +26,14 @@ object Utils {
     }
   }
 
+  def tryFinally[U](action: => U)(fiFun: => Unit): U = {
+    try {
+      action
+    } finally {
+      fiFun
+    }
+  }
+
   // scalastyle:off classforname
   def classForName[C]( className: String,
                        initialize: Boolean = true): Class[C] = {
