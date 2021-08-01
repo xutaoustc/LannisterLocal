@@ -50,7 +50,7 @@ case class AnalyticJob(
 
 
   def analysis: AppResult = {
-    val (heuristicResults, aggregatedData) = _fetcher.fetchData(this) match {
+    val (heuristicResults, aggregatedData) = _fetcher.fetchAndParse(this) match {
       case Some(data) => (_heuristics.map(_.apply(data)), _aggregator.aggregate(data).getResult)
       case None =>
         warn(s"No Data Received for analytic job: $appId")
