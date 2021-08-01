@@ -8,6 +8,14 @@ object Severity extends Enumeration {
   val SEVERE = Value(3, "Severe")
   val CRITICAL = Value(4, "Critical")
 
+  def bigger(a: Severity, b: Severity): Boolean = {
+    if (a.id > b.id) {
+      true
+    } else {
+      false
+    }
+  }
+
   def max(a: Severity, b: Severity): Severity = {
     if (a.id > b.id) {
       a
@@ -17,7 +25,7 @@ object Severity extends Enumeration {
   }
 
   def max(severities: Severity*): Severity = {
-    severities.fold(NONE)((o, n) => max(o, n))
+    severities.fold(NONE)(max)
   }
 
 

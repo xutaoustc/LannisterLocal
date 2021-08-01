@@ -90,7 +90,7 @@ class LannisterAnalyzer extends Runnable with Logging{
   class ExecutorJob(analyticJob: AnalyticJob) extends Runnable with Logging {
     override def run(): Unit = {
       val applicationTypeNameAndAppId = analyticJob.applicationTypeNameAndAppId
-      info(s"- - Analyzing $applicationTypeNameAndAppId")
+      info(s"* * Analyzing $applicationTypeNameAndAppId")
 
       try{
         val (time, isNoData) = Utils.executeWithRetTime {
