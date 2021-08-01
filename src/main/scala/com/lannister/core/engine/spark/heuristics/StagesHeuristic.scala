@@ -5,7 +5,7 @@ import scala.concurrent.duration.Duration
 import com.lannister.core.conf.heuristic.HeuristicConfiguration
 import com.lannister.core.domain.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetail, Severity, SeverityThresholds}
 import com.lannister.core.domain.Severity.Severity
-import com.lannister.core.engine.spark.data.SparkApplicationData
+import com.lannister.core.engine.spark.fetchers.SparkApplicationData
 import com.lannister.core.math.Statistics._
 
 import org.apache.spark.status.api.v1.{StageData, StageStatus}

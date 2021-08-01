@@ -4,7 +4,6 @@ import scala.collection.JavaConverters._
 
 import com.lannister.core.conf.fetcher.FetcherConfiguration
 import com.lannister.core.domain.{AnalyticJob, Fetcher}
-import com.lannister.core.engine.spark.data.SparkApplicationData
 import com.lannister.core.hadoop.{HadoopConf, HadoopSecurity}
 import org.apache.hadoop.fs.{FileSystem, Path, PathFilter}
 

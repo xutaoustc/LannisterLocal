@@ -3,7 +3,7 @@ package com.lannister.core.engine.spark.heuristics
 import com.lannister.core.conf.heuristic.HeuristicConfiguration
 import com.lannister.core.domain.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetail, Severity, SeverityThresholds}
 import com.lannister.core.domain.Severity.Severity
-import com.lannister.core.engine.spark.data.SparkApplicationData
+import com.lannister.core.engine.spark.fetchers.SparkApplicationData
 
 import org.apache.spark.JobExecutionStatus
 import org.apache.spark.status.api.v1.JobData

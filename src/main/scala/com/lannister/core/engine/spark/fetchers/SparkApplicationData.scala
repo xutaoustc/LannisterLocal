@@ -1,4 +1,4 @@
-package com.lannister.core.engine.spark.data
+package com.lannister.core.engine.spark.fetchers
 
 import com.lannister.core.domain.ApplicationData
 
