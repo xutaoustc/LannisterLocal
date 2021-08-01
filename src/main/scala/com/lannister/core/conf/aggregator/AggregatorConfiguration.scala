@@ -9,3 +9,13 @@ class AggregatorConfiguration{
   @BeanProperty var applicationType: String = _
   @BeanProperty var params: util.HashMap[String, String] = _
 }
+
+
+class AggregatorConfigurations {
+  @BeanProperty var aggregators: util.ArrayList[AggregatorConfiguration] = _
+
+  def iterator: Iterator[AggregatorConfiguration] = {
+    import collection.JavaConverters._
+    aggregators.iterator().asScala
+  }
+}

@@ -11,3 +11,13 @@ class HeuristicConfiguration {
   @BeanProperty var viewname: String = _
   @BeanProperty var params: util.HashMap[String, String] = _
 }
+
+
+class HeuristicConfigurations extends Iterable[HeuristicConfiguration]{
+  @BeanProperty var heuristics: util.ArrayList[HeuristicConfiguration] = _
+
+  def iterator: Iterator[HeuristicConfiguration] = {
+    import collection.JavaConverters._
+    heuristics.iterator().asScala
+  }
+}

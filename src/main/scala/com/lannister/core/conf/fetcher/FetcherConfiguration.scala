@@ -9,3 +9,13 @@ class FetcherConfiguration{
   @BeanProperty var applicationType: String = _
   @BeanProperty var params: util.HashMap[String, String] = _
 }
+
+
+class FetcherConfigurations extends Iterable[FetcherConfiguration] {
+  @BeanProperty var fetchers: util.ArrayList[FetcherConfiguration] = _
+
+  def iterator: Iterator[FetcherConfiguration] = {
+    import collection.JavaConverters._
+    fetchers.iterator().asScala
+  }
+}
