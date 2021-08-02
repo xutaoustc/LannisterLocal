@@ -9,7 +9,7 @@
     <fileSets>
         <fileSet>
             <directory>src/main/assembly/bin</directory>
-            <outputDirectory>/bin</outputDirectory>
+            <outputDirectory>bin</outputDirectory>
             <includes>
                 <include>*.sh</include>
             </includes>
@@ -31,7 +31,7 @@
 
         <fileSet>
             <directory>src/main/assembly/sql</directory>
-            <outputDirectory>/sql</outputDirectory>
+            <outputDirectory>sql</outputDirectory>
             <fileMode>0755</fileMode>
         </fileSet>
 
