@@ -27,7 +27,7 @@ object MemoryFormatUtils {
     "([-+]?\\d*\\.?\\d+(?:[eE][-+]?\\d+)?)\\s*((?:[T|G|M|K])?B?)?", Pattern.CASE_INSENSITIVE)
 
 
-  def bytesToString(bytes: Long): String = {
+  def bytes2Str(bytes: Long): String = {
     def format(v : Double, ub : Long, un : String) = {
       val res = v / ub
       FORMATTER.format(res) + " " + un
@@ -46,7 +46,7 @@ object MemoryFormatUtils {
     format(bytes.toDouble, UNITS(UNITS.length - 1).getBytes, UNITS(UNITS.length - 1).getName)
   }
 
-  def stringToBytes(formattedString: String): Long = {
+  def str2Bytes(formattedString: String): Long = {
     if (formattedString == null) {
       return 0L
     }
