@@ -10,8 +10,6 @@ case class HeuristicResult(
     heuristicResultDetails: List[HeuristicResultDetail]
 )
 
-case class HeuristicResultDetail(name: String, value: String)
-
 object HeuristicResult{
   val NO_DATA = HeuristicResult(
     "NoDataReceived",
@@ -20,3 +18,6 @@ object HeuristicResult{
     0,
     HeuristicResultDetail("No Data Received", "") :: Nil)
 }
+
+
+case class HeuristicResultDetail(name: String, value: String)
