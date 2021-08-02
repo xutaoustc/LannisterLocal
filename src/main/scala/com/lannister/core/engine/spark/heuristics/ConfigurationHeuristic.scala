@@ -1,214 +1,164 @@
 package com.lannister.core.engine.spark.heuristics
 
+import scala.collection.mutable.ListBuffer
+
 import com.lannister.core.conf.heuristic.HeuristicConfiguration
-import com.lannister.core.domain.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetail, Severity, SeverityThresholds}
+import com.lannister.core.domain._
+import com.lannister.core.domain.{HeuristicResult => HR}
+import com.lannister.core.domain.{HeuristicResultDetail => HD}
 import com.lannister.core.domain.Severity.Severity
 import com.lannister.core.engine.spark.fetchers.SparkApplicationData
-import com.lannister.core.math.Statistics
-import com.lannister.core.util.MemoryFormatUtils
+import com.lannister.core.math.Statistics._
+import com.lannister.core.util.MemoryFormatUtils._
 
 
-class ConfigurationHeuristic (val heuristicConfig: HeuristicConfiguration) extends Heuristic{
+class ConfigurationHeuristic (val config: HeuristicConfiguration) extends Heuristic{
 
-  import ConfigurationHeuristic._
-
-  val sparkOverheadMemoryThreshold: SeverityThresholds = SeverityThresholds.parse(true,
-    heuristicConfig.getParams.get(SPARK_OVERHEAD_MEMORY_THRESHOLD_KEY))
-  val sparkMemoryThreshold: SeverityThresholds = SeverityThresholds.parse(true,
-    heuristicConfig.getParams.get(SPARK_MEMORY_THRESHOLD_KEY),
-    MemoryFormatUtils.stringToBytes)
-  val sparkCoreThreshold: SeverityThresholds = SeverityThresholds.parse(true,
-    heuristicConfig.getParams.get(SPARK_CORE_THRESHOLD_KEY))
-  val serializerIfNonNullRecommendation: String =
-    heuristicConfig.getParams.get(SERIALIZER_IF_NON_NULL_RECOMMENDATION_KEY)
-
-  override def apply(data: ApplicationData): HeuristicResult = {
-    val evaluator = new Evaluator(this, data.asInstanceOf[SparkApplicationData])
-
-    def formatProperty(property: Option[String]): String =
-      property.getOrElse("Not presented. Using default.")
-
-    var resultDetails = Seq(
-      new HeuristicResultDetail(SPARK_DRIVER_MEMORY_KEY,
-        formatProperty(evaluator.driverMemoryBytes.map(MemoryFormatUtils.bytesToString))),
-      new HeuristicResultDetail(SPARK_EXECUTOR_MEMORY_KEY,
-        formatProperty(evaluator.executorMemoryBytes.map(MemoryFormatUtils.bytesToString))),
-      new HeuristicResultDetail(SPARK_EXECUTOR_CORES_KEY,
-        formatProperty(evaluator.executorCores.map(_.toString))),
-      new HeuristicResultDetail(SPARK_DRIVER_CORES_KEY,
-        formatProperty(evaluator.driverCores.map(_.toString))),
-      new HeuristicResultDetail(SPARK_EXECUTOR_INSTANCES_KEY,
-        formatProperty(evaluator.executorInstances.map(_.toString))),
-      new HeuristicResultDetail(SPARK_APPLICATION_DURATION,
-        evaluator.applicationDuration.toString + " Seconds"),
-      new HeuristicResultDetail(SPARK_YARN_EXECUTOR_MEMORY_OVERHEAD,
-        evaluator.sparkYarnExecutorMemoryOverhead),
-      new HeuristicResultDetail(SPARK_YARN_DRIVER_MEMORY_OVERHEAD,
-        evaluator.sparkYarnDriverMemoryOverhead),
-      new HeuristicResultDetail(SPARK_DYNAMIC_ALLOCATION_ENABLED,
-        formatProperty(evaluator.isDynamicAllocEnabled.map(_.toString)))
-    )
-
-    if (evaluator.serializerSeverity != Severity.NONE) {
-      resultDetails = resultDetails :+ HeuristicResultDetail(SPARK_SERIALIZER_KEY,
-        formatProperty(evaluator.serializer))
-    }
-    if (evaluator.shuffleAndDynamicAllocSeverity != Severity.NONE) {
-      resultDetails = resultDetails :+ HeuristicResultDetail(SPARK_SHUFFLE_SERVICE_ENABLED,
-        formatProperty(evaluator.isShuffleServiceEnabled.map(_.toString)))
-    }
-    if (evaluator.severityMinExecutors == Severity.CRITICAL) {
-      resultDetails = resultDetails :+ new HeuristicResultDetail("Minimum Executors",
-        "The minimum executors for Dynamic Allocation should be <=1. " +
-          "Please change it in the " + SPARK_DYNAMIC_ALLOCATION_MIN_EXECUTORS + " field.")
-    }
-    if (evaluator.severityMaxExecutors == Severity.CRITICAL) {
-      resultDetails = resultDetails :+ new HeuristicResultDetail("Maximum Executors",
-        "The maximum executors for Dynamic Allocation should be <=900. " +
-          "Please change it in the " + SPARK_DYNAMIC_ALLOCATION_MAX_EXECUTORS + " field.")
-    }
-    if (evaluator.jarsSeverity == Severity.CRITICAL) {
-      resultDetails = resultDetails :+ new HeuristicResultDetail("Jars notation",
-"It is recommended to not use * notation while specifying jars in the field " + SPARK_YARN_JARS)
-    }
-    if(evaluator.severityDriverMemoryOverhead.id >= Severity.SEVERE.id) {
-      resultDetails = resultDetails :+ new HeuristicResultDetail("Driver Overhead Memory",
-        "Please do not specify excessive amount of overhead memory for Driver." +
-          " Change it in the field " + SPARK_YARN_DRIVER_MEMORY_OVERHEAD)
-    }
-    if(evaluator.severityExecutorMemoryOverhead.id >= Severity.SEVERE.id) {
-      resultDetails = resultDetails :+ new HeuristicResultDetail("Executor Overhead Memory",
-        "Please do not specify excessive amount of overhead memory for Executors." +
-          " Change it in the field " + SPARK_YARN_EXECUTOR_MEMORY_OVERHEAD)
-    }
-
-    new HeuristicResult(
-      heuristicConfig.getClassname,
-      heuristicConfig.getName,
-      evaluator.severity,
-      0,
-      resultDetails.toList
-    )
-  }
-}
-
-object ConfigurationHeuristic {
+  /*
+  * Heu configuration parse part
+  * */
+  import SeverityThresholds._
+  val params = config.params
   val SPARK_OVERHEAD_MEMORY_THRESHOLD_KEY = "spark_overheadMemory_thresholds_key"
   val SPARK_MEMORY_THRESHOLD_KEY = "spark_memory_thresholds_key"
   val SPARK_CORE_THRESHOLD_KEY = "spark_core_thresholds_key"
   val SERIALIZER_IF_NON_NULL_RECOMMENDATION_KEY = "serializer_if_non_null_recommendation"
+  val thresOverheadMem = parse(params.get(SPARK_OVERHEAD_MEMORY_THRESHOLD_KEY))
+  val thresholdMemory = parse(params.get(SPARK_MEMORY_THRESHOLD_KEY), fm = str2Bytes)
+  val thresholdCore = parse(params.get(SPARK_CORE_THRESHOLD_KEY))
+  val serializerIfNonNullRecommendation = params.get(SERIALIZER_IF_NON_NULL_RECOMMENDATION_KEY)
 
-  val SPARK_DRIVER_MEMORY_KEY = "spark.driver.memory"
-  val SPARK_EXECUTOR_MEMORY_KEY = "spark.executor.memory"
-  val SPARK_EXECUTOR_CORES_KEY = "spark.executor.cores"
-  val SPARK_DRIVER_CORES_KEY = "spark.driver.cores"
-  val SPARK_EXECUTOR_INSTANCES_KEY = "spark.executor.instances"
-  val SPARK_APPLICATION_DURATION = "spark.application.duration"
-  val SPARK_YARN_EXECUTOR_MEMORY_OVERHEAD = "spark.yarn.executor.memoryOverhead"
-  val SPARK_YARN_DRIVER_MEMORY_OVERHEAD = "spark.yarn.driver.memoryOverhead"
-  val SPARK_SHUFFLE_SERVICE_ENABLED = "spark.shuffle.service.enabled"
+
+  override def apply(data: ApplicationData): HeuristicResult = {
+    import ConfigurationHeuristic._
+
+    def fmt(property: Option[String]): String =
+      property.getOrElse("Not presented. Using default.")
+
+    val evaluator = new Evaluator(this, data.asInstanceOf[SparkApplicationData])
+    var hds = ListBuffer(
+      HD(SPARK_DRIVER_MEMORY, fmt(evaluator.driverMemBytes.map(bytes2Str))),
+      HD(SPARK_EXECUTOR_MEMORY, fmt(evaluator.executorMemBytes.map(bytes2Str))),
+      HD(SPARK_EXECUTOR_CORES, fmt(evaluator.executorCores.map(_.toString))),
+      HD(SPARK_DRIVER_CORES, fmt(evaluator.driverCores.map(_.toString))),
+      HD(SPARK_EXECUTOR_INSTANCES, fmt(evaluator.executorInstances.map(_.toString))),
+      HD(SPARK_EXECUTOR_MEMORY_OVERHEAD, evaluator.executorMemOverhead),
+      HD(SPARK_DRIVER_MEMORY_OVERHEAD, evaluator.driverMemOverhead),
+      HD(SPARK_DYNAMIC_ALLOCATION_ENABLED, fmt(evaluator.dyAllocEnable.map(_.toString))),
+      HD(SPARK_APPLICATION_DURATION, evaluator.appDuration.toString + " Seconds")
+    )
+
+    if (evaluator.severityMinExecutors == Severity.CRITICAL) {
+      hds += HD("Minimum Executors", "The minimum executors for Dynamic Allocation should be <=1")
+    }
+    if (evaluator.severityMaxExecutors == Severity.CRITICAL) {
+      hds += HD("Maximum Executors", "The maximum executors for Dynamic Allocation should be <=900")
+    }
+    if (evaluator.jarsSeverity == Severity.CRITICAL) {
+      hds += HD("Jars notation", "Not use * while specifying jars in the field " + SPARK_YARN_JARS)
+    }
+    if(evaluator.severityDriverMemOverhead.id >= Severity.SEVERE.id) {
+      hds += HD("Driver Overhead Memory", "Do not specify excessive overhead memory for Driver")
+    }
+    if(evaluator.severityExecutorMemOverhead.id >= Severity.SEVERE.id) {
+      hds += HD("Executor Overhead Memory", "Do not specify excessive overhead memory for Executor")
+    }
+    if (evaluator.serializerSeverity != Severity.NONE) {
+      hds += HD(SPARK_SERIALIZER_KEY, fmt(evaluator.serializer))
+    }
+    if (evaluator.shuffleAndDynamicAllocSeverity != Severity.NONE) {
+      hds += HD(SPARK_SHUFFLE_SERVICE_ENABLED, fmt(evaluator.shuffleSerEnable.map(_.toString)))
+    }
+
+
+    HR(config.getClassname, config.getName, evaluator.severity, 0, hds.toList)
+  }
+}
+
+object ConfigurationHeuristic {
+  val SPARK_DRIVER_MEMORY = "spark.driver.memory"
+  val SPARK_EXECUTOR_MEMORY = "spark.executor.memory"
+  val SPARK_EXECUTOR_CORES = "spark.executor.cores"
+  val SPARK_DRIVER_CORES = "spark.driver.cores"
+  val SPARK_EXECUTOR_INSTANCES = "spark.executor.instances"
+  val SPARK_EXECUTOR_MEMORY_OVERHEAD = "spark.executor.memoryOverhead"
+  val SPARK_DRIVER_MEMORY_OVERHEAD = "spark.driver.memoryOverhead"
   val SPARK_DYNAMIC_ALLOCATION_ENABLED = "spark.dynamicAllocation.enabled"
+  val SPARK_SHUFFLE_SERVICE_ENABLED = "spark.shuffle.service.enabled"
   val SPARK_SERIALIZER_KEY = "spark.serializer"
   val SPARK_DYNAMIC_ALLOCATION_MIN_EXECUTORS = "spark.dynamicAllocation.minExecutors"
   val SPARK_DYNAMIC_ALLOCATION_MAX_EXECUTORS = "spark.dynamicAllocation.maxExecutors"
   val SPARK_YARN_JARS = "spark.yarn.secondary.jars"
+  val SPARK_APPLICATION_DURATION = "spark.application.duration"
+  val THRESHOLD_MIN_EXECUTORS = 1
+  val THRESHOLD_MAX_EXECUTORS = 900
+
+  class Evaluator(heuristic: ConfigurationHeuristic, data: SparkApplicationData) {
+    /*
+    * Common data retrieve part
+    * */
+    lazy val appConf = data.store.store.environmentInfo().sparkProperties.toMap
+    lazy val appInfo = data.store.store.applicationInfo.attempts.last
+
+    lazy val driverMemBytes = appConf.get(SPARK_DRIVER_MEMORY).map(str2Bytes)
+    lazy val executorMemBytes = appConf.get(SPARK_EXECUTOR_MEMORY).map(str2Bytes)
+    lazy val executorCores = appConf.get(SPARK_EXECUTOR_CORES).map(_.toInt)
+    lazy val driverCores = appConf.get(SPARK_DRIVER_CORES).map(_.toInt)
+    lazy val executorInstances = appConf.get(SPARK_EXECUTOR_INSTANCES).map(_.toInt)
+    lazy val executorMemOverhead = appConf.getOrElse(SPARK_EXECUTOR_MEMORY_OVERHEAD, "0")
+    lazy val driverMemOverhead = appConf.getOrElse(SPARK_DRIVER_MEMORY_OVERHEAD, "0")
+    lazy val dyAllocEnable = Some(appConf.get(SPARK_DYNAMIC_ALLOCATION_ENABLED).exists(_.toBoolean))
+    lazy val shuffleSerEnable = Some(appConf.get(SPARK_SHUFFLE_SERVICE_ENABLED).exists(_.toBoolean))
+    lazy val serializer = appConf.get(SPARK_SERIALIZER_KEY)
+    lazy val dynamicMinExecutors = appConf.get(SPARK_DYNAMIC_ALLOCATION_MIN_EXECUTORS).map(_.toInt)
+    lazy val dynamicMaxExecutors = appConf.get(SPARK_DYNAMIC_ALLOCATION_MAX_EXECUTORS).map(_.toInt)
+    lazy val yarnJars = appConf.getOrElse(SPARK_YARN_JARS, "")
+    lazy val appDuration = (appInfo.endTime.getTime - appInfo.startTime.getTime)/ SECOND_IN_MS
 
 
-
-  class Evaluator(configurationHeuristic: ConfigurationHeuristic, data: SparkApplicationData) {
-    lazy val appConfigurationProperties: Map[String, String] =
-      data.store.store.environmentInfo().sparkProperties.toMap
-
-    lazy val driverMemoryBytes: Option[Long] =
-      appConfigurationProperties.get(SPARK_DRIVER_MEMORY_KEY).map(MemoryFormatUtils.stringToBytes)
-    lazy val executorMemoryBytes: Option[Long] =
-      appConfigurationProperties.get(SPARK_EXECUTOR_MEMORY_KEY).map(MemoryFormatUtils.stringToBytes)
-    lazy val executorCores: Option[Int] =
-      appConfigurationProperties.get(SPARK_EXECUTOR_CORES_KEY).map(_.toInt)
-    lazy val driverCores: Option[Int] =
-      appConfigurationProperties.get(SPARK_DRIVER_CORES_KEY).map(_.toInt)
-    val severityExecutorMemory: Severity = configurationHeuristic.sparkMemoryThreshold
-      .of(executorMemoryBytes.getOrElse(0).asInstanceOf[Number].longValue)
-    val severityDriverMemory: Severity = configurationHeuristic.sparkMemoryThreshold
-      .of(driverMemoryBytes.getOrElse(0).asInstanceOf[Number].longValue)
-    val severityDriverCores: Severity = configurationHeuristic.sparkCoreThreshold
-      .of(driverCores.getOrElse(0).asInstanceOf[Number].intValue)
-    val severityExecutorCores: Severity = configurationHeuristic.sparkCoreThreshold
-      .of(executorCores.getOrElse(0).asInstanceOf[Number].intValue)
-
-    lazy val executorInstances: Option[Int] =
-      appConfigurationProperties.get(SPARK_EXECUTOR_INSTANCES_KEY).map(_.toInt)
-    lazy val applicationDuration: Long = {
-      require(data.store.store.applicationInfo.attempts.nonEmpty)
-      val lastApplicationAttemptInfo = data.store.store.applicationInfo.attempts.last
-      (lastApplicationAttemptInfo.endTime.getTime - lastApplicationAttemptInfo.startTime.getTime)/
-        Statistics.SECOND_IN_MS
+    /*
+    * Severity compute part
+    *  */
+    val severityDriverCores = heuristic.thresholdCore.of(driverCores.getOrElse(0))
+    val severityDriverMemory = heuristic.thresholdMemory.of(driverMemBytes.getOrElse(0L))
+    val severityExecutorCores = heuristic.thresholdCore.of(executorCores.getOrElse(0))
+    val severityExecutorMemory = heuristic.thresholdMemory.of(executorMemBytes.getOrElse(0L))
+    val severityMinExecutors = if (dynamicMinExecutors.getOrElse(0) > THRESHOLD_MIN_EXECUTORS) {
+      Severity.CRITICAL
+    } else {
+      Severity.NONE
+    }
+    val severityMaxExecutors = if (dynamicMaxExecutors.getOrElse(0) > THRESHOLD_MAX_EXECUTORS) {
+      Severity.CRITICAL
+    } else {
+      Severity.NONE
+    }
+    lazy val jarsSeverity = if (yarnJars.contains("*")) { Severity.CRITICAL } else { Severity.NONE }
+    val severityExecutorMemOverhead = heuristic.thresOverheadMem.of(str2Bytes(executorMemOverhead))
+    val severityDriverMemOverhead = heuristic.thresOverheadMem.of(str2Bytes(driverMemOverhead))
+    lazy val serializerSeverity = serializer match {
+      case None => Severity.SEVERE
+      case Some(heuristic.serializerIfNonNullRecommendation) => Severity.NONE
+      case Some(_) => Severity.MODERATE
+    }
+    lazy val shuffleAndDynamicAllocSeverity = (dyAllocEnable, shuffleSerEnable) match {
+      case (_, Some(true)) => Severity.NONE
+      case (Some(false), Some(false)) => Severity.MODERATE
+      case (Some(true), Some(false)) => Severity.SEVERE
     }
 
-    lazy val sparkYarnExecutorMemoryOverhead: String =
-      appConfigurationProperties.getOrElse(SPARK_YARN_EXECUTOR_MEMORY_OVERHEAD, "0")
-    lazy val sparkYarnDriverMemoryOverhead: String =
-      appConfigurationProperties.getOrElse(SPARK_YARN_DRIVER_MEMORY_OVERHEAD, "0")
-    val severityExecutorMemoryOverhead: Severity =
-      configurationHeuristic.sparkOverheadMemoryThreshold.of(
-        MemoryFormatUtils.stringToBytes(sparkYarnExecutorMemoryOverhead))
-    val severityDriverMemoryOverhead: Severity =
-      configurationHeuristic.sparkOverheadMemoryThreshold.of(
-        MemoryFormatUtils.stringToBytes(sparkYarnDriverMemoryOverhead))
-
-    lazy val isDynamicAllocEnabled: Option[Boolean] = Some(
-      appConfigurationProperties.get(SPARK_DYNAMIC_ALLOCATION_ENABLED).exists(_.toBoolean == true))
-    lazy val isShuffleServiceEnabled: Option[Boolean] = Some(
-      appConfigurationProperties.get(SPARK_SHUFFLE_SERVICE_ENABLED).exists(_.toBoolean == true))
-    lazy val shuffleAndDynamicAllocSeverity: Severity =
-      (isDynamicAllocEnabled, isShuffleServiceEnabled) match {
-        case (_, Some(true)) => Severity.NONE
-        case (Some(false), Some(false)) => Severity.MODERATE
-        case (Some(true), Some(false)) => Severity.SEVERE
-      }
-
-    private val serializerIfNonNullRecommendation =
-      configurationHeuristic.serializerIfNonNullRecommendation
-    private val DEFAULT_SERIALIZER_IF_NON_NULL_SEVERITY_IF_RECOMMENDATION_UNMET = Severity.MODERATE
-    lazy val serializer: Option[String] = appConfigurationProperties.get(SPARK_SERIALIZER_KEY)
-    lazy val serializerSeverity: Severity = serializer match {
-      case None => Severity.MODERATE
-      case Some(`serializerIfNonNullRecommendation`) => Severity.NONE
-      case Some(_) => DEFAULT_SERIALIZER_IF_NON_NULL_SEVERITY_IF_RECOMMENDATION_UNMET
-    }
-
-
-    val THRESHOLD_MIN_EXECUTORS: Int = 1
-    val THRESHOLD_MAX_EXECUTORS: Int = 900
-    lazy val dynamicMinExecutors: Option[Int] =
-      appConfigurationProperties.get(SPARK_DYNAMIC_ALLOCATION_MIN_EXECUTORS).map(_.toInt)
-    lazy val dynamicMaxExecutors: Option[Int] =
-      appConfigurationProperties.get(SPARK_DYNAMIC_ALLOCATION_MAX_EXECUTORS).map(_.toInt)
-    val severityMinExecutors: Severity =
-      if (dynamicMinExecutors.getOrElse(0).intValue > THRESHOLD_MIN_EXECUTORS) {
-        Severity.CRITICAL
-      } else {
-        Severity.NONE
-      }
-    val severityMaxExecutors: Severity =
-      if (dynamicMaxExecutors.getOrElse(0).intValue > THRESHOLD_MAX_EXECUTORS) {
-        Severity.CRITICAL
-      } else {
-        Severity.NONE
-      }
-
-
-    lazy val jarsSeverity: Severity =
-      if (appConfigurationProperties.getOrElse(SPARK_YARN_JARS, "").contains("*")) {
-        Severity.CRITICAL
-      } else {
-        Severity.NONE
-      }
-
-    val severity: Severity = Severity.max(severityDriverCores, severityDriverMemory,
-      severityExecutorCores, severityExecutorMemory, severityMinExecutors, severityMaxExecutors,
-      jarsSeverity, severityExecutorMemoryOverhead, severityDriverMemoryOverhead,
-      serializerSeverity, shuffleAndDynamicAllocSeverity)
+    val severity: Severity = Severity.max(
+      severityDriverCores,
+      severityDriverMemory,
+      severityExecutorCores,
+      severityExecutorMemory,
+      severityMinExecutors,
+      severityMaxExecutors,
+      jarsSeverity,
+      severityExecutorMemOverhead,
+      severityDriverMemOverhead,
+      serializerSeverity,
+      shuffleAndDynamicAllocSeverity)
   }
 
 }
