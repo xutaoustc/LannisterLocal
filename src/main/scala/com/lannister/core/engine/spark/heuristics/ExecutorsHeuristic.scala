@@ -28,7 +28,7 @@ class ExecutorsHeuristic(private val config: HeuristicConfiguration) extends Heu
       HD("Executor storage memory used distribution", evl.storageMemoryUsedDistr.text(bytes2Str)),
       HD("Executor task time distribution", evl.taskTimeDistr.text(readableTimespan)),
       HD("Executor task time sum", (evl.totalTaskTime / Statistics.SECOND_IN_MS).toString),
-      HD("Executor input bytes distribution", evl.inputBytesDistribution.text(bytes2Str)),
+      HD("Executor input bytes distribution", evl.inputBytesDistr.text(bytes2Str)),
       HD("Executor shuffle read bytes distribution", evl.shuffleReadBytesDistr.text(bytes2Str)),
       HD("Executor shuffle write bytes distribution", evl.shuffleWriteBytesDistr.text(bytes2Str))
     )
@@ -49,14 +49,14 @@ object ExecutorsHeuristic{
     lazy val totalTaskTime = exSummaries.map(_.totalDuration).sum
     lazy val storageMemoryUsedDistr = Distribution(exSummaries.map { _.memoryUsed })
     lazy val taskTimeDistr = Distribution(exSummaries.map { _.totalDuration })
-    lazy val inputBytesDistribution = Distribution(exSummaries.map { _.totalInputBytes })
+    lazy val inputBytesDistr = Distribution(exSummaries.map { _.totalInputBytes })
     lazy val shuffleReadBytesDistr = Distribution(exSummaries.map { _.totalShuffleRead })
     lazy val shuffleWriteBytesDistr = Distribution(exSummaries.map { _.totalShuffleWrite })
 
     lazy val storageMemoryUsedSeverity = storageMemoryUsedDistr.severityOfDistribution
     lazy val taskTimeSeverity = taskTimeDistr.severityOfDistribution(
       heuristic.maxToMedianRatioSeverityThresholds, heuristic.ignoreMaxMillisLessThanThreshold)
-    lazy val inputBytesSeverity = inputBytesDistribution.severityOfDistribution
+    lazy val inputBytesSeverity = inputBytesDistr.severityOfDistribution
     lazy val shuffleReadBytesSeverity = shuffleReadBytesDistr.severityOfDistribution
     lazy val shuffleWriteBytesSeverity = shuffleWriteBytesDistr.severityOfDistribution
 
