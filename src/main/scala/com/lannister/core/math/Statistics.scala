@@ -1,12 +1,10 @@
 package com.lannister.core.math
 
-import java.lang.{Long => JLong}
-
 object Statistics {
 
   val SECOND_IN_MS = 1000L
 
-  def median(values: List[JLong]): Long = {
+  def median(values: List[Long]): Long = {
     val sorted = values.sorted
     val middle = sorted.size / 2
     if (sorted.size % 2 == 0) {
@@ -16,7 +14,7 @@ object Statistics {
     }
   }
 
-  def percentile(values: List[JLong], percentile: Int): Long = {
+  def percentile(values: List[Long], percentile: Int): Long = {
     if (percentile == 0) {
       return 0
     }

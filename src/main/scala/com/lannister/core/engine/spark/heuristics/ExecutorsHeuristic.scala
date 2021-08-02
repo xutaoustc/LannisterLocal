@@ -1,160 +1,73 @@
 package com.lannister.core.engine.spark.heuristics
 
 import com.lannister.core.conf.heuristic.HeuristicConfiguration
-import com.lannister.core.domain.{ApplicationData, Heuristic, HeuristicResult, HeuristicResultDetail, Severity, SeverityThresholds}
-import com.lannister.core.domain.Severity.Severity
+import com.lannister.core.domain.{HeuristicResult => HR, HeuristicResultDetail => HD, _}
 import com.lannister.core.engine.spark.fetchers.SparkApplicationData
 import com.lannister.core.math.Statistics
-import com.lannister.core.util.MemoryFormatUtils
-
-import org.apache.spark.status.api.v1.ExecutorSummary
-
-class ExecutorsHeuristic(private val heuristicConfig: HeuristicConfiguration) extends Heuristic{
-
-  val maxToMedianRatioSeverityThresholds = SeverityThresholds.parse(true,
-    heuristicConfig.params.get("max_to_median_severity_thresholds"))
-  val ignoreMaxBytesLessThanThreshold = MemoryFormatUtils.stringToBytes(
-    heuristicConfig.params.get("ignore_max_bytes_less_than_threshold"))
-  val ignoreMaxMillisLessThanThreshold =
-    heuristicConfig.params.get("ignore_max_millis_less_than_threshold").toLong
+import com.lannister.core.util.MemoryFormatUtils._
 
 
-  override def apply(data: ApplicationData): HeuristicResult = {
+class ExecutorsHeuristic(private val config: HeuristicConfiguration) extends Heuristic{
+
+  import SeverityThresholds._
+  val params = config.params
+  val maxToMedianRatioSeverityThresholds = parse(params.get("max_to_median_severity_thresholds"))
+  val ignoreMaxBytLessThanThreshold = str2Bytes(params.get("ignore_max_bytes_less_than_threshold"))
+  val ignoreMaxMillisLessThanThreshold = params.get("ignore_max_millis_less_than_threshold").toLong
+
+
+  override def apply(data: ApplicationData): HR = {
     import ExecutorsHeuristic.Evaluator
-    val evaluator = new Evaluator(this, data.asInstanceOf[SparkApplicationData])
+    import Statistics._
+    val evl = new Evaluator(this, data.asInstanceOf[SparkApplicationData])
 
-    val resultDetails = Seq(
-      new HeuristicResultDetail(
-        "Total executor storage memory allocated",
-        MemoryFormatUtils.bytesToString(evaluator.totalStorageMemoryAllocated)
-      ),
-      new HeuristicResultDetail(
-        "Total executor storage memory used",
-        MemoryFormatUtils.bytesToString(evaluator.totalStorageMemoryUsed)
-      ),
-      new HeuristicResultDetail(
-        "Executor storage memory utilization rate",
-        f"${evaluator.storageMemoryUtilizationRate}%1.3f"
-      ),
-      new HeuristicResultDetail(
-        "Executor storage memory used distribution",
-        evaluator.storageMemoryUsedDistribution.formatDistribution(MemoryFormatUtils.bytesToString)
-      ),
-      new HeuristicResultDetail(
-        "Executor task time distribution",
-        evaluator.taskTimeDistribution.formatDistribution(Statistics.readableTimespan)
-      ),
-      new HeuristicResultDetail(
-        "Executor task time sum",
-        (evaluator.totalTaskTime / Statistics.SECOND_IN_MS).toString
-      ),
-      new HeuristicResultDetail(
-        "Executor input bytes distribution",
-        evaluator.inputBytesDistribution.formatDistribution(MemoryFormatUtils.bytesToString)
-      ),
-      new HeuristicResultDetail(
-        "Executor shuffle read bytes distribution",
-        evaluator.shuffleReadBytesDistribution.formatDistribution(MemoryFormatUtils.bytesToString)
-      ),
-      new HeuristicResultDetail(
-        "Executor shuffle write bytes distribution",
-        evaluator.shuffleWriteBytesDistribution.formatDistribution(MemoryFormatUtils.bytesToString)
-      )
+    val hds = Seq(
+      HD("Total executor storage memory allocated", bytes2Str(evl.totalStorageMemAllocated)),
+      HD("Total executor storage memory used", bytes2Str(evl.totalStorageMemUsed)),
+      HD("Executor storage memory utilization rate", f"${evl.storageMemoryUtilizationRate}%1.3f"),
+      HD("Executor storage memory used distribution", evl.storageMemoryUsedDistr.text(bytes2Str)),
+      HD("Executor task time distribution", evl.taskTimeDistr.text(readableTimespan)),
+      HD("Executor task time sum", (evl.totalTaskTime / Statistics.SECOND_IN_MS).toString),
+      HD("Executor input bytes distribution", evl.inputBytesDistribution.text(bytes2Str)),
+      HD("Executor shuffle read bytes distribution", evl.shuffleReadBytesDistr.text(bytes2Str)),
+      HD("Executor shuffle write bytes distribution", evl.shuffleWriteBytesDistr.text(bytes2Str))
     )
-    new HeuristicResult(
-      heuristicConfig.classname,
-      heuristicConfig.name,
-      evaluator.severity,
-      0,
-      resultDetails.toList
-    )
+
+    HR(config.classname, config.name, evl.severity, 0, hds.toList)
   }
 }
 
 object ExecutorsHeuristic{
-  class Evaluator(executorsHeuristic: ExecutorsHeuristic, data: SparkApplicationData) {
-    lazy val executorSummaries: Seq[ExecutorSummary] = data.store.store.executorList(true)
+  class Evaluator(heuristic: ExecutorsHeuristic, data: SparkApplicationData) {
+    implicit val ignoreMaxBytLessThanThreshold = heuristic.ignoreMaxBytLessThanThreshold
+    implicit val maxToMedianRatioSeverityThresholds = heuristic.maxToMedianRatioSeverityThresholds
+    lazy val exSummaries = data.store.store.executorList(true)
 
-    lazy val totalStorageMemoryAllocated: Long = executorSummaries.map { _.maxMemory }.sum
-    lazy val totalStorageMemoryUsed: Long = executorSummaries.map { _.memoryUsed }.sum
-    lazy val storageMemoryUtilizationRate: Double =
-      totalStorageMemoryUsed.toDouble / totalStorageMemoryAllocated.toDouble
-    lazy val storageMemoryUsedDistribution: Distribution =
-      Distribution(executorSummaries.map { _.memoryUsed })
-    lazy val storageMemoryUsedSeverity = severityOfDistribution(storageMemoryUsedDistribution,
-        executorsHeuristic.ignoreMaxBytesLessThanThreshold)
+    lazy val totalStorageMemAllocated = exSummaries.map { _.maxMemory }.sum
+    lazy val totalStorageMemUsed = exSummaries.map { _.memoryUsed }.sum
+    lazy val storageMemoryUtilizationRate = totalStorageMemUsed.toDouble / totalStorageMemAllocated
+    lazy val totalTaskTime = exSummaries.map(_.totalDuration).sum
+    lazy val storageMemoryUsedDistr = Distribution(exSummaries.map { _.memoryUsed })
+    lazy val taskTimeDistr = Distribution(exSummaries.map { _.totalDuration })
+    lazy val inputBytesDistribution = Distribution(exSummaries.map { _.totalInputBytes })
+    lazy val shuffleReadBytesDistr = Distribution(exSummaries.map { _.totalShuffleRead })
+    lazy val shuffleWriteBytesDistr = Distribution(exSummaries.map { _.totalShuffleWrite })
 
-    lazy val totalTaskTime : Long = executorSummaries.map(_.totalDuration).sum
-    lazy val taskTimeDistribution: Distribution =
-      Distribution(executorSummaries.map { _.totalDuration })
-    lazy val taskTimeSeverity = severityOfDistribution(taskTimeDistribution,
-      executorsHeuristic.ignoreMaxMillisLessThanThreshold)
+    lazy val storageMemoryUsedSeverity = storageMemoryUsedDistr.severityOfDistribution
+    lazy val taskTimeSeverity = taskTimeDistr.severityOfDistribution(
+      heuristic.maxToMedianRatioSeverityThresholds, heuristic.ignoreMaxMillisLessThanThreshold)
+    lazy val inputBytesSeverity = inputBytesDistribution.severityOfDistribution
+    lazy val shuffleReadBytesSeverity = shuffleReadBytesDistr.severityOfDistribution
+    lazy val shuffleWriteBytesSeverity = shuffleWriteBytesDistr.severityOfDistribution
 
-    lazy val inputBytesDistribution: Distribution =
-      Distribution(executorSummaries.map { _.totalInputBytes })
-    lazy val inputBytesSeverity: Severity = severityOfDistribution(inputBytesDistribution,
-      executorsHeuristic.ignoreMaxBytesLessThanThreshold)
 
-    lazy val shuffleReadBytesDistribution: Distribution =
-      Distribution(executorSummaries.map { _.totalShuffleRead })
-    lazy val shuffleReadBytesSeverity = severityOfDistribution(shuffleReadBytesDistribution,
-      executorsHeuristic.ignoreMaxBytesLessThanThreshold)
-
-    lazy val shuffleWriteBytesDistribution: Distribution =
-      Distribution(executorSummaries.map { _.totalShuffleWrite })
-    lazy val shuffleWriteBytesSeverity = severityOfDistribution(shuffleWriteBytesDistribution,
-      executorsHeuristic.ignoreMaxBytesLessThanThreshold)
-
-    lazy val severity: Severity = Severity.max(
+    lazy val severity = Severity.max(
       storageMemoryUsedSeverity,
       taskTimeSeverity,
       inputBytesSeverity,
       shuffleReadBytesSeverity,
       shuffleWriteBytesSeverity
     )
-
-
-    private[heuristics] def severityOfDistribution(
-      distribution: Distribution,
-      ignoreMaxLessThanThreshold: Long,
-      severityThresholds: SeverityThresholds = executorsHeuristic.maxToMedianRatioSeverityThresholds
-    ): Severity = {
-      if (distribution.max < ignoreMaxLessThanThreshold) {
-        Severity.NONE
-      } else if (distribution.median == 0L) {
-        severityThresholds.of(Long.MaxValue)
-      } else {
-        severityThresholds.of(
-          BigDecimal(distribution.max) / BigDecimal(distribution.median))
-      }
-    }
   }
 
-
-  case class Distribution(min: Long, p25: Long, median: Long, p75: Long, max: Long) {
-    def formatDistribution(longFormatter: Long => String, separator: String = ", "): String = {
-      val labels = Seq(
-        s"min: ${longFormatter(min)}",
-        s"p25: ${longFormatter(p25)}",
-        s"median: ${longFormatter(median)}",
-        s"p75: ${longFormatter(p75)}",
-        s"max: ${longFormatter(max)}"
-      )
-      labels.mkString(separator)
-    }
-  }
-
-  object Distribution {
-    def apply(values: Seq[Long]): Distribution = {
-      val sortedValues = values.sorted
-      val sortedValuesAsJava = sortedValues.map(Long.box).toList
-      Distribution(
-        sortedValues.min,
-        p25 = Statistics.percentile(sortedValuesAsJava, 25),
-        Statistics.median(sortedValuesAsJava),
-        p75 = Statistics.percentile(sortedValuesAsJava, 75),
-        sortedValues.max
-      )
-    }
-  }
 }
