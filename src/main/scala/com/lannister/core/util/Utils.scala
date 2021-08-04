@@ -26,6 +26,11 @@ object Utils {
     }
   }
 
+  def failureRate(pri: Double, other: Double*): Option[Double] = {
+    val sum = pri + other.sum
+    if (sum == 0) None else Some(pri / sum)
+  }
+
   def tryFinally[U](action: => U)(fiFun: => Unit): U = {
     try {
       action
