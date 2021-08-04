@@ -60,16 +60,7 @@ class LannisterAnalyzer extends Runnable with Logging{
   }
 
   private def fetchAndRunEachRound(): Unit = {
-    def waitInterval(interval: Long) {
-      val nextRun = eachRoundStartTs + interval
-      val waitTime = nextRun - System.currentTimeMillis()
-
-      if(waitTime > 0) {
-        Thread.sleep(waitTime)
-      }
-    }
-
-    try{
+    try {
       eachRoundStartTs = System.currentTimeMillis()
       _analyticJobGenerator.fetchAnalyticJobs
         .foreach(job => {
@@ -86,6 +77,14 @@ class LannisterAnalyzer extends Runnable with Logging{
     waitInterval(Configs.FETCH_INTERVAL.getValue)
   }
 
+  private def waitInterval(interval: Long) {
+    val nextRun = eachRoundStartTs + interval
+    val waitTime = nextRun - System.currentTimeMillis()
+
+    if(waitTime > 0) {
+      Thread.sleep(waitTime)
+    }
+  }
 
   class ExecutorJob(analyticJob: AnalyticJob) extends Runnable with Logging {
     override def run(): Unit = {

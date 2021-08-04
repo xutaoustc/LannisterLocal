@@ -41,9 +41,9 @@ class ExecutorGcHeuristic(private val config: HeuristicConfiguration) extends He
 object ExecutorGcHeuristic {
 
   class Evaluator(executorGcHeuristic: ExecutorGcHeuristic, data: SparkApplicationData) {
-    var (gcTime, executorRunTimeTotal) =
-      data.store.store.executorList(false)
-        .filterNot(_.id.equals("driver"))
+    lazy val exSummaries = data.store.store.executorList(false)
+
+    var (gcTime, executorRunTimeTotal) = exSummaries.filterNot(_.id.equals("driver"))
         .foldLeft((0L, 0L))( (v, n) => (v._1 + n.totalGCTime, v._2 + n.totalDuration) )
     var ratio: Double = gcTime.toDouble / executorRunTimeTotal.toDouble
     lazy val severityTimeA = executorGcHeuristic.thresholdsGcSeverityA.of(ratio)
