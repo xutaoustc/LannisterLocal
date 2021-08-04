@@ -8,8 +8,8 @@ import com.lannister.core.domain.{HeuristicResult => HR}
 import com.lannister.core.domain.{HeuristicResultDetail => HD}
 import com.lannister.core.domain.Severity.Severity
 import com.lannister.core.engine.spark.fetchers.SparkApplicationData
-import com.lannister.core.math.Statistics._
 import com.lannister.core.util.MemoryFormatUtils._
+import com.lannister.core.util.TimeUtils._
 
 
 class ConfigurationHeuristic (val config: HeuristicConfiguration) extends Heuristic{

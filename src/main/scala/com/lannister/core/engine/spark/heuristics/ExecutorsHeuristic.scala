@@ -3,8 +3,8 @@ package com.lannister.core.engine.spark.heuristics
 import com.lannister.core.conf.heuristic.HeuristicConfiguration
 import com.lannister.core.domain.{HeuristicResult => HR, HeuristicResultDetail => HD, _}
 import com.lannister.core.engine.spark.fetchers.SparkApplicationData
-import com.lannister.core.math.Statistics
 import com.lannister.core.util.MemoryFormatUtils._
+import com.lannister.core.util.TimeUtils._
 
 
 class ExecutorsHeuristic(private val config: HeuristicConfiguration) extends Heuristic{
@@ -18,7 +18,6 @@ class ExecutorsHeuristic(private val config: HeuristicConfiguration) extends Heu
 
   override def apply(data: ApplicationData): HR = {
     import ExecutorsHeuristic.Evaluator
-    import Statistics._
     val evl = new Evaluator(this, data.asInstanceOf[SparkApplicationData])
 
     val hds = Seq(
@@ -26,8 +25,8 @@ class ExecutorsHeuristic(private val config: HeuristicConfiguration) extends Heu
       HD("Total executor storage memory used", bytes2Str(evl.totalStorageMemUsed)),
       HD("Executor storage memory utilization rate", f"${evl.storageMemoryUtilizationRate}%1.3f"),
       HD("Executor storage memory used distribution", evl.storageMemoryUsedDistr.text(bytes2Str)),
-      HD("Executor task time distribution", evl.taskTimeDistr.text(readableTimespan)),
-      HD("Executor task time sum", (evl.totalTaskTime / Statistics.SECOND_IN_MS).toString),
+      HD("Executor task time distribution", evl.taskTimeDistr.text(timeFormat)),
+      HD("Executor task time sum", (evl.totalTaskTime / SECOND_IN_MS).toString),
       HD("Executor input bytes distribution", evl.inputBytesDistr.text(bytes2Str)),
       HD("Executor shuffle read bytes distribution", evl.shuffleReadBytesDistr.text(bytes2Str)),
       HD("Executor shuffle write bytes distribution", evl.shuffleWriteBytesDistr.text(bytes2Str))

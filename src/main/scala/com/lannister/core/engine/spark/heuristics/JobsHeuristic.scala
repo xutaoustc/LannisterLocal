@@ -3,6 +3,7 @@ package com.lannister.core.engine.spark.heuristics
 import com.lannister.core.conf.heuristic.HeuristicConfiguration
 import com.lannister.core.domain.{ApplicationData, Heuristic, HeuristicResult => HR, HeuristicResultDetail => HD, Severity, SeverityThresholds}
 import com.lannister.core.engine.spark.fetchers.SparkApplicationData
+import com.lannister.core.util.Utils._
 
 import org.apache.spark.JobExecutionStatus
 import org.apache.spark.status.api.v1.JobData
@@ -71,9 +72,5 @@ object JobsHeuristic {
       (taskFailureRate, heuristic.taskFailRateSeverityThres.of(taskFailureRate))
     }
 
-    private def failureRate(pri: Double, other: Double*) = {
-      val sum = pri + other.sum
-      if (sum == 0) None else Some(pri / sum)
-    }
   }
 }

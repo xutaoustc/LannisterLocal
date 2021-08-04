@@ -1,7 +1,6 @@
 package com.lannister.core.domain
 
 import com.lannister.core.domain.Severity.Severity
-import com.lannister.core.math.Statistics
 
 case class Distribution(min: Long, p25: Long, median: Long, p75: Long, max: Long) {
   def text(formatter: Long => String, separator: String = ", "): String = {
@@ -33,10 +32,36 @@ object Distribution {
     val sortedValues = values.sorted.toList
     Distribution(
       sortedValues.min,
-      p25 = Statistics.percentile(sortedValues, 25),
-      Statistics.median(sortedValues),
-      p75 = Statistics.percentile(sortedValues, 75),
+      p25 = percentile(sortedValues, 25),
+      median(sortedValues),
+      p75 = percentile(sortedValues, 75),
       sortedValues.max
     )
+  }
+
+  def median(values: List[Long]): Long = {
+    val sorted = values.sorted
+    val middle = sorted.size / 2
+    if (sorted.size % 2 == 0) {
+      (sorted(middle - 1) + sorted(middle)) / 2
+    } else {
+      sorted(middle)
+    }
+  }
+
+  def percentile(values: List[Long], percentile: Int): Long = {
+    if (percentile == 0) {
+      return 0
+    }
+
+    val sorted = values.sorted
+
+    val position = Math.ceil(sorted.size * percentile / 100.0).toInt
+
+    if (position == 0) {
+      return sorted(position)
+    }
+
+    sorted(position-1)
   }
 }
