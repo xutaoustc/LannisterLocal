@@ -1,6 +1,7 @@
 package com.lannister.model
 
 import com.baomidou.mybatisplus.annotation.TableName
+import com.lannister.core.domain.{HeuristicResultDetail => HD}
 
 @TableName("app_heuristic_result_details")
 class AppHeuristicResultDetail extends AppBase {
@@ -12,10 +13,14 @@ class AppHeuristicResultDetail extends AppBase {
 
 
 object AppHeuristicResultDetail {
-  def apply(name: String, value: String): AppHeuristicResultDetail = {
-    val heuDetailSave = new AppHeuristicResultDetail
-    heuDetailSave.name = name
-    heuDetailSave.value = value
-    heuDetailSave
+  implicit def hd2AppHd(hd : HD) : AppHeuristicResultDetail = {
+    val appHd = new AppHeuristicResultDetail
+    appHd.name = hd.name
+    appHd.value = hd.value
+    appHd
+  }
+
+  implicit def hdList2AppHdList(hdList: List[HD]) : List[AppHeuristicResultDetail] = {
+    hdList.map(hd2AppHd)
   }
 }

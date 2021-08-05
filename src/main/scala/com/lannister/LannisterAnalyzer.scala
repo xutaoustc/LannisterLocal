@@ -19,7 +19,7 @@ class LannisterAnalyzer extends Runnable with Logging{
   private var _analyticJobGenerator: AnalyticJobGeneratorHadoop3 = _
   @Autowired
   private var _metricsController: MetricsController = _
-  private var threadPoolExecutor: ThreadPoolExecutor = _
+  private var executor: ThreadPoolExecutor = _
   private var eachRoundStartTs: Long = _
 
 
@@ -38,6 +38,7 @@ class LannisterAnalyzer extends Runnable with Logging{
       info("LannisterLogic has started")
 
       globalConfigure
+
       while(true) {
         fetchAndRunEachRound()
       }
@@ -47,12 +48,12 @@ class LannisterAnalyzer extends Runnable with Logging{
   }
 
   private def globalConfigure(): Unit = {
-    threadPoolExecutor = new ThreadPoolExecutor(
-                            Configs.EXECUTOR_NUM.getValue,
-                            Configs.EXECUTOR_NUM.getValue,
-                            0L, TimeUnit.MILLISECONDS,
-                            new LinkedBlockingQueue[Runnable](),
-                            new ThreadFactoryBuilder().setNameFormat("executor-thread-%d").build())
+    executor = new ThreadPoolExecutor(
+                      Configs.EXECUTOR_NUM.getValue,
+                      Configs.EXECUTOR_NUM.getValue,
+                      0L, TimeUnit.MILLISECONDS,
+                      new LinkedBlockingQueue[Runnable](),
+                      new ThreadFactoryBuilder().setNameFormat("executor-thread-%d").build())
     info(s"executor num is ${Configs.EXECUTOR_NUM.getValue}")
 
     _analyticJobGenerator.configure
@@ -62,9 +63,8 @@ class LannisterAnalyzer extends Runnable with Logging{
   private def fetchAndRunEachRound(): Unit = {
     try {
       eachRoundStartTs = System.currentTimeMillis()
-      _analyticJobGenerator.fetchAnalyticJobs
-        .foreach(job => {
-          threadPoolExecutor.submit( new ExecutorJob(job) )
+      _analyticJobGenerator.fetchAnalyticJobs.foreach(job => {
+          executor.submit( new ExecutorJob(job) )
         })
     } catch {
       case e: Exception => error("Error fetching job list. Try again later ...", e)
@@ -72,8 +72,8 @@ class LannisterAnalyzer extends Runnable with Logging{
         return
     }
 
-    _metricsController.setActiveProcessingThread(threadPoolExecutor.getActiveCount)
-    _metricsController.setQueueSize(threadPoolExecutor.getQueue.size)
+    _metricsController.setActiveProcessingThread(executor.getActiveCount)
+    _metricsController.setQueueSize(executor.getQueue.size)
     waitInterval(Configs.FETCH_INTERVAL.getValue)
   }
 
@@ -86,14 +86,13 @@ class LannisterAnalyzer extends Runnable with Logging{
     }
   }
 
-  class ExecutorJob(analyticJob: AnalyticJob) extends Runnable with Logging {
+  class ExecutorJob(job: AnalyticJob) extends Runnable with Logging {
     override def run(): Unit = {
-      val applicationTypeNameAndAppId = analyticJob.applicationTypeNameAndAppId
-      info(s"* * Analyzing $applicationTypeNameAndAppId")
+      info(s"* * Analyzing ${job.applicationTypeNameAndAppId}")
 
       try{
         val (time, isNoData) = Utils.executeWithRetTime {
-          analyticJob.analysis.isNoData
+          job.doAnalysis.isNoData
         }
 
         _metricsController.markProcessedJobs()
@@ -101,26 +100,26 @@ class LannisterAnalyzer extends Runnable with Logging{
         if(isNoData) {
           _metricsController.markSkippedJobs()
         }
-        info(s"^o^ TOOK $time ms to analyze $applicationTypeNameAndAppId")
+        info(s"^o^ TOOK $time ms to analyze ${job.applicationTypeNameAndAppId}")
       } catch {
         case _: InterruptedException => // TODO
         case e: TimeoutException =>
           warn(s"Time out while fetching data. Exception is ${e.getMessage}")
           jobFate()
         case e: Exception =>
-          error(s"Failed to analyze $applicationTypeNameAndAppId", e)
+          error(s"Failed to analyze ${job.applicationTypeNameAndAppId}", e)
           jobFate()
       }
     }
 
 
     private def jobFate(): Unit = {
-      if (analyticJob.tryAdd2RetryQueue()) {
-        warn(s"Add job id [${analyticJob.appId}] into the retry list.")
-        _analyticJobGenerator.addIntoRetries(analyticJob)
-      } else if (analyticJob.tryAdd2SecondRetryQueue()) {
-        warn(s"Add job id [${analyticJob.appId}] into the second retry list}")
-        _analyticJobGenerator.addIntoSecondRetryQueue(analyticJob)
+      if (job.tryAdd2RetryQueue()) {
+        warn(s"Add job id [${job.appId}] into the retry list.")
+        _analyticJobGenerator.addIntoRetries(job)
+      } else if (job.tryAdd2SecondRetryQueue()) {
+        warn(s"Add job id [${job.appId}] into the second retry list}")
+        _analyticJobGenerator.addIntoSecondRetryQueue(job)
       } else {
         _metricsController.markDroppedJobs()
         error(s"Drop the analytic job")

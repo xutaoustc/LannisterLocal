@@ -3,8 +3,9 @@ package com.lannister.core.domain
 import com.lannister.LannisterContext
 import com.lannister.analysis.Aggregator
 import com.lannister.core.conf.Configs
+import com.lannister.core.domain.{HeuristicResult => HR}
 import com.lannister.core.util.Logging
-import com.lannister.model.{AppHeuristicResult, AppHeuristicResultDetail, AppResult}
+import com.lannister.model.AppResult
 import com.lannister.service.PersistService
 
 case class AnalyticJob(
@@ -49,7 +50,7 @@ case class AnalyticJob(
   def applicationTypeNameAndAppId(): String = s"$applicationType $appId"
 
 
-  def analysis: AppResult = {
+  def doAnalysis: AppResult = {
     val (heuristicResults, aggregatedData) = _fetcher.fetchAndParse(this) match {
       case Some(data) => (_heuristics.map(_.apply(data)), _aggregator.aggregate(data).getResult)
       case None =>
@@ -60,7 +61,7 @@ case class AnalyticJob(
     save(heuristicResults)
   }
 
-  private def save(heuristicResults: List[HeuristicResult]): AppResult = {
+  private def save(hrs: List[HR]): AppResult = {
     val result = new AppResult()
     result.appId = appId
     result.trackingUrl = trackingUrl
@@ -74,23 +75,19 @@ case class AnalyticJob(
     result.resourceUsed = 0 // TODO
     result.totalDelay = 0 // TODO
     result.resourceWasted = 0 // TODO
-    heuristicResults.foreach(x => {
-      if (x == HeuristicResult.NO_DATA) {
+    hrs.foreach(hr => {
+      if (hr == HeuristicResult.NO_DATA) {
         result.isNoData = true
       }
     })
 
-    heuristicResults.foreach(x => {
-      result.heuristicResults +=
-        AppHeuristicResult(x.heuristicClass, x.heuristicName, x.severity, x.score)
-
-      result.heuristicResults.last.heuristicResultDetails =
-        x.heuristicResultDetails.map(hd => AppHeuristicResultDetail(hd.name, hd.value))
+    hrs.foreach(hr => {
+      result.heuristicResults += hr
+      result.heuristicResults.last.heuristicResultDetails = hr.heuristicResultDetails
     })
 
-    result.score = heuristicResults.foldLeft(0)((s, v) => s + v.score)
-    result.severityId =
-      heuristicResults.foldLeft(Severity.NONE)((s, v) => Severity.max(s, v.severity)).id
+    result.score = hrs.foldLeft(0)((s, v) => s + v.score)
+    result.severityId = hrs.foldLeft(Severity.NONE)((s, v) => Severity.max(s, v.severity)).id
 
     _persistService.save(result)
     result

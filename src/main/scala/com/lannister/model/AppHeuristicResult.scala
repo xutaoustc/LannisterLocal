@@ -1,8 +1,7 @@
 package com.lannister.model
 
-import scala.collection.mutable
-
 import com.baomidou.mybatisplus.annotation.{TableField, TableName}
+import com.lannister.core.domain.HeuristicResult
 import com.lannister.core.domain.Severity.Severity
 
 @TableName("app_heuristic_result")
@@ -20,17 +19,13 @@ class AppHeuristicResult extends AppBase {
 }
 
 object AppHeuristicResult{
-  def apply(heuristicClass: String,
-            heuristicName: String,
-            severity: Severity,
-            score: Int
-           ): AppHeuristicResult = {
-    val heuSave = new AppHeuristicResult
-    heuSave.heuristicClass = heuristicClass
-    heuSave.heuristicName = heuristicName
-    heuSave.severity = severity
-    heuSave.severityId = severity.id
-    heuSave.score = score
-    heuSave
+  implicit def hr2AppHr(hr : HeuristicResult) : AppHeuristicResult = {
+    val appHR = new AppHeuristicResult
+    appHR.heuristicClass = hr.heuristicClass
+    appHR.heuristicName = hr.heuristicName
+    appHR.severity = hr.severity
+    appHR.severityId = hr.severity.id
+    appHR.score = hr.score
+    appHR
   }
 }
