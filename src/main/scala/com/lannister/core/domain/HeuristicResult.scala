@@ -7,7 +7,7 @@ case class HeuristicResult(
     heuristicName: String,
     severity: Severity,
     score: Int,
-    heuristicResultDetails: List[HeuristicResultDetail]
+    hds: List[HeuristicResultDetail]
 )
 
 object HeuristicResult{

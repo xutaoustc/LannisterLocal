@@ -15,7 +15,7 @@ class AppHeuristicResult extends AppBase {
   @TableField(`exist` = false)
   var severity: Severity = _
   @TableField(`exist` = false)
-  var heuristicResultDetails : List[AppHeuristicResultDetail] = _
+  var appHDs : List[AppHeuristicResultDetail] = _
 }
 
 object AppHeuristicResult{

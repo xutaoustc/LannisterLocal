@@ -82,8 +82,8 @@ case class AnalyticJob(
     })
 
     hrs.foreach(hr => {
-      result.heuristicResults += hr
-      result.heuristicResults.last.heuristicResultDetails = hr.heuristicResultDetails
+      result.appHRs += hr
+      result.appHRs.last.appHDs = hr.hds
     })
 
     result.score = hrs.foldLeft(0)((s, v) => s + v.score)

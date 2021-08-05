@@ -2,7 +2,7 @@ package com.lannister.service
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper
 import com.lannister.dao.{AppHeuristicResultDao, AppHeuristicResultDetailDao, AppResultDao}
-import com.lannister.model.{AppBase, AppHeuristicResult, AppHeuristicResultDetail, AppResult}
+import com.lannister.model.{AppBase, AppResult}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.{Isolation, Transactional}
@@ -23,14 +23,14 @@ class PersistService {
     appHeuristicResultDao.delete( new QueryWrapper().eq("result_id", resultId) )
     appHeuristicResultDetailDao.delete(new QueryWrapper().eq("result_id", resultId) )
 
-    result.heuristicResults.foreach(heuResult => {
-      heuResult.resultId = resultId
-      appHeuristicResultDao.insert(heuResult)
+    result.appHRs.foreach(appHR => {
+      appHR.resultId = resultId
+      appHeuristicResultDao.insert(appHR)
 
-      heuResult.heuristicResultDetails.foreach{ heuResultDetail => {
-        heuResultDetail.resultId = resultId
-        heuResultDetail.heuristicId = heuResult.id
-        appHeuristicResultDetailDao.insert(heuResultDetail)
+      appHR.appHDs.foreach{ appHD => {
+        appHD.resultId = resultId
+        appHD.heuristicId = appHR.id
+        appHeuristicResultDetailDao.insert(appHD)
       }}
     })
   }
