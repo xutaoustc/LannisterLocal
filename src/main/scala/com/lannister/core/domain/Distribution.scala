@@ -14,7 +14,6 @@ case class Distribution(min: Long, p25: Long, median: Long, p75: Long, max: Long
     labels.mkString(separator)
   }
 
-
   def severityOfDistribution(implicit severityThresholds: SeverityThresholds,
                              ignoreMaxLessThanThreshold: Long): Severity = {
     if (max < ignoreMaxLessThanThreshold) {
@@ -39,7 +38,7 @@ object Distribution {
     )
   }
 
-  def median(values: List[Long]): Long = {
+  private def median(values: List[Long]): Long = {
     val sorted = values.sorted
     val middle = sorted.size / 2
     if (sorted.size % 2 == 0) {
@@ -49,7 +48,7 @@ object Distribution {
     }
   }
 
-  def percentile(values: List[Long], percentile: Int): Long = {
+  private def percentile(values: List[Long], percentile: Int): Long = {
     if (percentile == 0) {
       return 0
     }

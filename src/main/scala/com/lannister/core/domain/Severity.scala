@@ -28,27 +28,4 @@ object Severity extends Enumeration {
     severities.fold(NONE)(max)
   }
 
-
-  val SEVERITY_ASC = Array(NONE, LOW, MODERATE, SEVERE, CRITICAL)
-
-  /*
-  * When asc is true, The higher the value, the more critical, the thresholds value from low to high
-  * When asc is false, The lower the value, the more critical, the thresholds value from high to low
-  * */
-  def getSeverity(value: Number, asc: Boolean, thresholds: Number*): Severity = {
-    val check = if (asc) {
-      (a: Number, b: Number) => a.doubleValue() < b.doubleValue()
-    } else {
-      (a: Number, b: Number) => a.doubleValue() > b.doubleValue()
-    }
-
-    thresholds.zipWithIndex
-      .foreach { case (v, i) => if (check(value, v)) {
-        return SEVERITY_ASC(i)
-      }
-      }
-
-    CRITICAL
-  }
-
 }
