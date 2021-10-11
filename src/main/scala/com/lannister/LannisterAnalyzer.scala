@@ -15,35 +15,19 @@ import org.springframework.stereotype.Component
 
 @Component
 class LannisterAnalyzer extends Runnable with Logging{
-  @Autowired
-  private var _analyticJobGenerator: AnalyticJobGeneratorHadoop3 = _
-  @Autowired
-  private var _metricsController: MetricsController = _
   private var executor: ThreadPoolExecutor = _
   private var eachRoundStartTs: Long = _
+  @Autowired private var _analyticJobGenerator: AnalyticJobGeneratorHadoop3 = _
+  @Autowired private var _metricsController: MetricsController = _
 
 
-  /*
-  *   Core logic of LannisterAnalysis:
-  *     * Global configure
-  *     * Loop
-  *       * Fetch AnalyticJob
-  *       * Encapsulate AnalyticJob to ExecutorJob, and submit ExecutorJob to ThreadPool
-  *         * AnalyticJob.getAnalysis, Persist
-  *         * Retry, add AnalyticJob back to AnalyticJobGenerator
-  *         * Log and metric
-  * */
   override def run(): Unit = {
     HadoopSecurity().doAs {
-      info("LannisterLogic has started")
-
       globalConfigure
 
       while(true) {
-        fetchAndRunEachRound()
+        fetchAndRun()
       }
-
-      error("LannisterLogic stopped")
     }
   }
 
@@ -54,18 +38,24 @@ class LannisterAnalyzer extends Runnable with Logging{
                       0L, TimeUnit.MILLISECONDS,
                       new LinkedBlockingQueue[Runnable](),
                       new ThreadFactoryBuilder().setNameFormat("executor-thread-%d").build())
-    info(s"executor num is ${Configs.EXECUTOR_NUM.getValue}")
-
     _analyticJobGenerator.configure
     _metricsController.init()
   }
 
-  private def fetchAndRunEachRound(): Unit = {
+  private def waitInterval(interval: Long) {
+    val waitTime = eachRoundStartTs + interval - System.currentTimeMillis()
+
+    if(waitTime > 0) {
+      Thread.sleep(waitTime)
+    }
+  }
+
+  private def fetchAndRun(): Unit = {
     try {
       eachRoundStartTs = System.currentTimeMillis()
-      _analyticJobGenerator.fetchAnalyticJobs.foreach(job => {
-          executor.submit( new ExecutorJob(job) )
-        })
+      _analyticJobGenerator.fetchAnalyticJobs.foreach { job =>
+        executor.submit( ExecutorJob(job) )
+      }
     } catch {
       case e: Exception => error("Error fetching job list. Try again later ...", e)
         waitInterval(Configs.RETRY_INTERVAL.getValue)
@@ -77,16 +67,8 @@ class LannisterAnalyzer extends Runnable with Logging{
     waitInterval(Configs.FETCH_INTERVAL.getValue)
   }
 
-  private def waitInterval(interval: Long) {
-    val nextRun = eachRoundStartTs + interval
-    val waitTime = nextRun - System.currentTimeMillis()
 
-    if(waitTime > 0) {
-      Thread.sleep(waitTime)
-    }
-  }
-
-  class ExecutorJob(job: AnalyticJob) extends Runnable with Logging {
+  case class ExecutorJob(job: AnalyticJob) extends Runnable with Logging {
     override def run(): Unit = {
       info(s"* * Analyzing ${job.applicationTypeNameAndAppId}")
 
