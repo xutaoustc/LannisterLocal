@@ -9,6 +9,7 @@ import com.lannister.core.hadoop.HadoopSecurity
 import com.lannister.core.jobGenerator.AnalyticJobGeneratorHadoop3
 import com.lannister.core.metric.MetricsController
 import com.lannister.core.util.{Logging, Utils}
+import com.lannister.service.PersistService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
@@ -18,7 +19,8 @@ class LannisterAnalyzer extends Runnable with Logging{
   private var executor: ThreadPoolExecutor = _
   @Autowired private var _analyticJobGenerator: AnalyticJobGeneratorHadoop3 = _
   @Autowired private var _metricsController: MetricsController = _
-
+  @Autowired private var _context: LannisterContext = _
+  @Autowired private var _persistService: PersistService = _
 
   override def run(): Unit = {
     HadoopSecurity().doAs {
@@ -43,9 +45,11 @@ class LannisterAnalyzer extends Runnable with Logging{
 
   private def fetchAndRun(): Unit = {
     try {
-      _analyticJobGenerator.fetchAnalyticJobs.foreach { job =>
-        executor.submit( ExecutorJob(job) )
-      }
+      _analyticJobGenerator.fetchAnalyticJobs
+        .map(_.setLannisterComponent(_context))
+        .map(_.setPersistService(_persistService))
+        .map(ExecutorJob(_))
+        .foreach { executor.submit }
     } catch {
       case e: Exception => error("Error fetching job list. Try again later ...", e)
         Thread.sleep(Configs.RETRY_INTERVAL.getValue)
@@ -57,29 +61,28 @@ class LannisterAnalyzer extends Runnable with Logging{
     Thread.sleep(Configs.FETCH_INTERVAL.getValue)
   }
 
-
   case class ExecutorJob(job: AnalyticJob) extends Runnable with Logging {
     override def run(): Unit = {
-      info(s"* * Analyzing ${job.applicationTypeNameAndAppId}")
-
-      try{
+      try {
+        info(s"Start analyzing ${job.typeAndAppId}")
         val (time, isNoData) = Utils.executeWithRetTime {
-          job.doAnalysis.isNoData
+          val appResult = job.analysisAndPersist
+          appResult.isNoData
         }
 
-        _metricsController.markProcessedJobs()
-        _metricsController.setJobProcessingTime(time)
         if(isNoData) {
           _metricsController.markSkippedJobs()
         }
-        info(s"^o^ TOOK $time ms to analyze ${job.applicationTypeNameAndAppId}")
+        _metricsController.markProcessedJobs()
+        _metricsController.setJobProcessingTime(time)
+        info(s"^o^ TOOK $time ms to analyze ${job.typeAndAppId}")
       } catch {
         case _: InterruptedException => // TODO
         case e: TimeoutException =>
           warn(s"Time out while fetching data. Exception is ${e.getMessage}")
           jobFate()
         case e: Exception =>
-          error(s"Failed to analyze ${job.applicationTypeNameAndAppId}", e)
+          error(s"Failed to analyze ${job.typeAndAppId}", e)
           jobFate()
       }
     }

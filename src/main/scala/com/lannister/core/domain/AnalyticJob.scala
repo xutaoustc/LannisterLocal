@@ -47,10 +47,10 @@ case class AnalyticJob(
     this
   }
 
-  def applicationTypeNameAndAppId(): String = s"$applicationType $appId"
+  def typeAndAppId(): String = s"$applicationType $appId"
 
 
-  def doAnalysis: AppResult = {
+  def analysisAndPersist: AppResult = {
     val (heuristicResults, aggregatedData) = _fetcher.fetchAndParse(this) match {
       case Some(data) => (_heuristics.map(_.apply(data)), _aggregator.aggregate(data).getResult)
       case None =>

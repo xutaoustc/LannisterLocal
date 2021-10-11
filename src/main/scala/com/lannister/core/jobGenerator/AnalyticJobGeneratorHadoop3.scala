@@ -13,7 +13,6 @@ import com.lannister.core.domain.AnalyticJob
 import com.lannister.core.hadoop.HadoopConf
 import com.lannister.core.metric.MetricsController
 import com.lannister.core.util.{Logging, Utils}
-import com.lannister.service.PersistService
 import org.codehaus.jackson.JsonNode
 import org.codehaus.jackson.map.ObjectMapper
 import org.springframework.beans.factory.annotation.Autowired
@@ -26,8 +25,6 @@ class AnalyticJobGeneratorHadoop3 extends AnalyticJobGenerator with Logging {
   private var _context: LannisterContext = _
   @Autowired
   private var _metricsController : MetricsController = _
-  @Autowired
-  private var _persistService: PersistService = _
 
   // If we do not have a lag, we may have apps queried here, but the log file are not ready for read
   private val QUERY_DELAY = 60000
@@ -97,8 +94,6 @@ class AnalyticJobGeneratorHadoop3 extends AnalyticJobGenerator with Logging {
       s"${succeededApps.size} succeed, ${failedApps.size} failed, " +
       s"$firstRetryQueueFetchCount first retry, $secondRetryQueueFetchCount second retry")
     appList.toList
-      .map(_.setLannisterComponent(_context))
-      .map(_.setPersistService(_persistService))
   }
 
   override def addIntoRetries(job: AnalyticJob): Unit = {
