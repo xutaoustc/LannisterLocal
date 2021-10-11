@@ -1,7 +1,7 @@
 package com.lannister.core.engine.spark.aggregator
 
 import com.lannister.analysis.{AggregatedData, Aggregator}
-import com.lannister.core.conf.aggregator.AggregatorConfiguration
+import com.lannister.core.conf.AggregatorConfiguration
 import com.lannister.core.domain.ApplicationData
 import com.lannister.core.util.Logging
 

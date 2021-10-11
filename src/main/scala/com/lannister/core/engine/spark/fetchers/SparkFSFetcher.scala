@@ -2,7 +2,7 @@ package com.lannister.core.engine.spark.fetchers
 
 import scala.collection.JavaConverters._
 
-import com.lannister.core.conf.fetcher.FetcherConfiguration
+import com.lannister.core.conf.FetcherConfiguration
 import com.lannister.core.domain.{AnalyticJob, Fetcher}
 import com.lannister.core.hadoop.{HadoopConf, HadoopSecurity}
 import com.lannister.core.util.Utils

@@ -1,6 +1,6 @@
 package com.lannister.core.engine.spark.heuristics
 
-import com.lannister.core.conf.heuristic.HeuristicConfiguration
+import com.lannister.core.conf.HeuristicConfiguration
 import com.lannister.core.domain.{HeuristicResult => HR, HeuristicResultDetail => HD, _}
 import com.lannister.core.engine.spark.fetchers.SparkApplicationData
 import com.lannister.core.util.MemoryFormatUtils._

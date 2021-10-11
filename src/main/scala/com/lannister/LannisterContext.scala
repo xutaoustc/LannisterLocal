@@ -4,10 +4,7 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 import com.lannister.analysis.Aggregator
-import com.lannister.core.conf.Configs
-import com.lannister.core.conf.aggregator.{AggregatorConfiguration, AggregatorConfigurations}
-import com.lannister.core.conf.fetcher.{FetcherConfiguration, FetcherConfigurations}
-import com.lannister.core.conf.heuristic.{HeuristicConfiguration, HeuristicConfigurations}
+import com.lannister.core.conf.{AggregatorConfiguration, AggregatorConfigurations, Configs, FetcherConfiguration, FetcherConfigurations, HeuristicConfiguration, HeuristicConfigurations}
 import com.lannister.core.domain.{ApplicationData, Fetcher, Heuristic}
 import com.lannister.core.util.{Logging, Utils}
 import org.springframework.stereotype.Component

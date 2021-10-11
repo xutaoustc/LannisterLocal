@@ -2,7 +2,7 @@ package com.lannister.core.engine.spark.heuristics
 
 import scala.concurrent.duration.Duration
 
-import com.lannister.core.conf.heuristic.HeuristicConfiguration
+import com.lannister.core.conf.HeuristicConfiguration
 import com.lannister.core.domain.{ApplicationData, Heuristic, HeuristicResult => HR, HeuristicResultDetail => HD, Severity, SeverityThresholds}
 import com.lannister.core.domain.Severity.{bigger, Severity}
 import com.lannister.core.engine.spark.fetchers.SparkApplicationData

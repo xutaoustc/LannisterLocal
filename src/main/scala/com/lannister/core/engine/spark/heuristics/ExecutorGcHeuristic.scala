@@ -2,7 +2,7 @@ package com.lannister.core.engine.spark.heuristics
 
 import scala.collection.mutable.ListBuffer
 
-import com.lannister.core.conf.heuristic.HeuristicConfiguration
+import com.lannister.core.conf.HeuristicConfiguration
 import com.lannister.core.domain._
 import com.lannister.core.domain.{HeuristicResult => HR}
 import com.lannister.core.domain.{HeuristicResultDetail => HD}
