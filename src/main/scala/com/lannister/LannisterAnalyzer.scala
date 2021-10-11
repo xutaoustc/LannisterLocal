@@ -16,7 +16,6 @@ import org.springframework.stereotype.Component
 @Component
 class LannisterAnalyzer extends Runnable with Logging{
   private var executor: ThreadPoolExecutor = _
-  private var eachRoundStartTs: Long = _
   @Autowired private var _analyticJobGenerator: AnalyticJobGeneratorHadoop3 = _
   @Autowired private var _metricsController: MetricsController = _
 
@@ -42,29 +41,20 @@ class LannisterAnalyzer extends Runnable with Logging{
     _metricsController.init()
   }
 
-  private def waitInterval(interval: Long) {
-    val waitTime = eachRoundStartTs + interval - System.currentTimeMillis()
-
-    if(waitTime > 0) {
-      Thread.sleep(waitTime)
-    }
-  }
-
   private def fetchAndRun(): Unit = {
     try {
-      eachRoundStartTs = System.currentTimeMillis()
       _analyticJobGenerator.fetchAnalyticJobs.foreach { job =>
         executor.submit( ExecutorJob(job) )
       }
     } catch {
       case e: Exception => error("Error fetching job list. Try again later ...", e)
-        waitInterval(Configs.RETRY_INTERVAL.getValue)
+        Thread.sleep(Configs.RETRY_INTERVAL.getValue)
         return
     }
 
     _metricsController.setActiveProcessingThread(executor.getActiveCount)
     _metricsController.setQueueSize(executor.getQueue.size)
-    waitInterval(Configs.FETCH_INTERVAL.getValue)
+    Thread.sleep(Configs.FETCH_INTERVAL.getValue)
   }
 
 
