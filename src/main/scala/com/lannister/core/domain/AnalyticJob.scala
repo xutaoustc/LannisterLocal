@@ -69,7 +69,7 @@ case class AnalyticJob(
   def typeAndAppId(): String = s"$applicationType $appId"
 
   def analysisAndPersist: Unit = {
-    val heuristicResults = _fetcher.fetchAndParse(this) match {
+    val heuristicResults = _fetcher.fetch(this) match {
       case Some(data) =>
         _heuristics.map(_.apply(data))
       case None =>
