@@ -89,10 +89,10 @@ class LannisterAnalyzer extends Runnable with Logging{
 
 
     private def jobFate(): Unit = {
-      if (job.tryAdd2RetryQueue()) {
+      if (job.timeForRetryQueue()) {
         warn(s"Add job id [${job.appId}] into the retry list.")
         _analyticJobGenerator.addIntoRetries(job)
-      } else if (job.tryAdd2SecondRetryQueue()) {
+      } else if (job.timeForSecondRetryQueue()) {
         warn(s"Add job id [${job.appId}] into the second retry list}")
         _analyticJobGenerator.addIntoSecondRetryQueue(job)
       } else {

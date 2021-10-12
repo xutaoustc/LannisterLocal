@@ -132,10 +132,10 @@ class AnalyticJobGeneratorHadoop3 extends AnalyticJobGenerator with Logging {
 
     private def readApps(url: URL): Iterator[AnalyticJob] = {
       readJsonNode(url).path("apps").path("app").iterator().asScala
-        .filter(app => {
+        .filter { app =>
           _context.applicationTypeSupported(app.get("applicationType").asText())
-        })
-        .map(app => {
+        }
+        .map { app =>
           val appId = app.get("id").asText()
           val user = app.get("user").asText()
           val name = app.get("name").asText()
@@ -146,7 +146,7 @@ class AnalyticJobGeneratorHadoop3 extends AnalyticJobGenerator with Logging {
           val applicationType = app.get("applicationType").asText()
 
           AnalyticJob(appId, applicationType, user, name, queue, url, startTime, finishTime)
-        })
+        }
     }
 
     private def readJsonNode(url: URL) = _objectMapper.readTree(url.openStream)

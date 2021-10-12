@@ -13,7 +13,6 @@ mvn clean package
 ├── boot
 │   └── Lannister-1.0-SNAPSHOT.jar
 ├── conf
-│   ├── AggregatorConf.yml
 │   ├── application.yml
 │   ├── FetcherConf.yml
 │   ├── HeuristicConf.yml

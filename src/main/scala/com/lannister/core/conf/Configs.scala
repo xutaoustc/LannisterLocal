@@ -12,8 +12,7 @@ object Configs {
   // HADOOP
   val hadoopConfDir = CommonVars("hadoop.config.dir", CommonVars("HADOOP_CONF_DIR", "").getValue)
 
-  // Global aggregator, fetcher, heuristic configuration
-  val AGGREGATORS_CONF = CommonVars("lannister.aggregators.conf", "AggregatorConf.yml")
+  // Global fetcher, heuristic configuration
   val FETCHERS_CONF = CommonVars("lannister.fetchers.conf", "FetcherConf.yml")
   val HEURISTICS_CONF = CommonVars("lannister.heuristic.conf", "HeuristicConf.yml")
 
