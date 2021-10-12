@@ -5,7 +5,7 @@
     <insert id="upsert" parameterType="com.lannister.model.AppResult" useGeneratedKeys="true" keyProperty="id">
         insert into
            app_result(app_id, tracking_url, queue_name, username,
-                      start_time,finish_time, name, successful_job, job_type, resource_used, total_delay, resource_wasted, severity_Id, score)
+                      start_time,finish_time, name, successful_job, job_type, severity_Id, score)
         values(#{appId},#{trackingUrl},#{queueName},#{username},
                #{startTime},#{finishTime},#{name},#{successfulJob},#{jobType},#{severityId},#{score})
         on duplicate key update
