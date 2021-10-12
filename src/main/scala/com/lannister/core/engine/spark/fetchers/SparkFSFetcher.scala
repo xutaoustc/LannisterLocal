@@ -14,7 +14,7 @@ import org.apache.spark.deploy.history.ReplayListenerBusWrapper
 class SparkFSFetcher(config: FetcherConfiguration) extends Fetcher[SparkApplicationData]{
   private val rootPath: String = config.params.asScala("rootPath")
 
-  override def fetchAndParse(job: AnalyticJob): Option[SparkApplicationData] = {
+  override def fetch(job: AnalyticJob): Option[SparkApplicationData] = {
     HadoopSecurity().doAs {
       val fs = FileSystem.get(HadoopConf.conf)
 
