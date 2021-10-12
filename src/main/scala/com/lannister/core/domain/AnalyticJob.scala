@@ -87,24 +87,18 @@ case class AnalyticJob(
     result.startTime = startTime
     result.finishTime = finishTime
     result.name = name
-    result.successfulJob = successfulJob
     result.jobType = applicationType
+    result.successfulJob = successfulJob
     result.resourceUsed = 0 // TODO
     result.totalDelay = 0 // TODO
     result.resourceWasted = 0 // TODO
-    hrs.foreach(hr => {
-      if (hr == HeuristicResult.NO_DATA) {
-        result.isNoData = true
-      }
-    })
-
-    hrs.foreach(hr => {
+    hrs.foreach { hr =>
+      Option(hr).map(_ == HeuristicResult.NO_DATA).foreach { _ => result.isNoData = true}
       result.appHRs += hr
-      result.appHRs.last.appHDs = hr.hds
-    })
-
-    result.score = hrs.foldLeft(0)((s, v) => s + v.score)
-    result.severityId = hrs.foldLeft(Severity.NONE)((s, v) => Severity.max(s, v.severity)).id
+      result.score = result.score + hr.score
+      result.severity = Severity.max(result.severity, hr.severity)
+      result.severityId = result.severity.id
+    }
 
     _persistService.save(result)
     result

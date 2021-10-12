@@ -26,6 +26,7 @@ object AppHeuristicResult{
     appHR.severity = hr.severity
     appHR.severityId = hr.severity.id
     appHR.score = hr.score
+    appHR.appHDs = hr.hds
     appHR
   }
 }
