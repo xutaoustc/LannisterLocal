@@ -65,12 +65,11 @@ class LannisterAnalyzer extends Runnable with Logging{
     override def run(): Unit = {
       try {
         info(s"Start analyzing ${job.typeAndAppId}")
-        val (time, isNoData) = Utils.executeWithRetTime {
-          val appResult = job.analysisAndPersist
-          appResult.isNoData
+        val (time, _) = Utils.executeWithRetTime {
+          job.analysisAndPersist
         }
 
-        if(isNoData) {
+        if(job.noData) {
           _metricsController.markSkippedJobs()
         }
         _metricsController.markProcessedJobs()

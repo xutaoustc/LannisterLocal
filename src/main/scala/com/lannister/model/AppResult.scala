@@ -15,17 +15,12 @@ class AppResult extends AppBase {
   var startTime: Long = _
   var finishTime: Long = _
   var name: String = _
-  var successfulJob: Boolean = _
   var jobType: String = _
-  var resourceUsed: Long = _
-  var totalDelay: Long = _
-  var resourceWasted: Long = _
+  var successfulJob: Boolean = _
   var severityId: Int = _
   var score: Int = _
   @TableField(`exist` = false)
   var severity: Severity = Severity.NONE
   @TableField(`exist` = false)
   var appHRs = mutable.ListBuffer[AppHeuristicResult]()
-  @TableField(`exist` = false)
-  var isNoData: Boolean = _
 }

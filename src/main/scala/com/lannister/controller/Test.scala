@@ -42,9 +42,6 @@ class Test {
     appResult.finishTime = 2L
     appResult.name = "zhangsan1"
     appResult.jobType = "sparksql"
-    appResult.resourceUsed = 100L
-    appResult.totalDelay = 200L
-    appResult.resourceWasted = 100L
     appResult.severityId = 0
     appResult.score = 100
     appResultDao.upsert(appResult)

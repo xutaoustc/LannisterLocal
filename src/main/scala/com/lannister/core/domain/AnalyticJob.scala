@@ -24,8 +24,9 @@ case class AnalyticJob(
   private var _secondRetries = 0
   private var _secondRetriesDequeueGap = 0
 
-  private var successfulJob = false
+  private var _successfulJob = false
   private var _persistService: PersistService = _
+  var noData = false
 
   def setLannisterComponent(context: LannisterContext): AnalyticJob = {
     _fetcher = context.getFetcherForApplicationType(applicationType)
@@ -34,7 +35,7 @@ case class AnalyticJob(
   }
 
   def setSuccessfulJob: AnalyticJob = {
-    this.successfulJob = true
+    this._successfulJob = true
     this
   }
 
@@ -67,10 +68,12 @@ case class AnalyticJob(
 
   def typeAndAppId(): String = s"$applicationType $appId"
 
-  def analysisAndPersist: AppResult = {
+  def analysisAndPersist: Unit = {
     val heuristicResults = _fetcher.fetchAndParse(this) match {
-      case Some(data) => _heuristics.map(_.apply(data))
+      case Some(data) =>
+        _heuristics.map(_.apply(data))
       case None =>
+        noData = true
         warn(s"No Data Received for analytic job: $appId")
         HeuristicResult.NO_DATA :: Nil
     }
@@ -78,7 +81,7 @@ case class AnalyticJob(
     persist(heuristicResults)
   }
 
-  private def persist(hrs: List[HR]): AppResult = {
+  private def persist(hrs: List[HR]): Unit = {
     val result = new AppResult()
     result.appId = appId
     result.trackingUrl = trackingUrl
@@ -88,19 +91,15 @@ case class AnalyticJob(
     result.finishTime = finishTime
     result.name = name
     result.jobType = applicationType
-    result.successfulJob = successfulJob
-    result.resourceUsed = 0 // TODO
-    result.totalDelay = 0 // TODO
-    result.resourceWasted = 0 // TODO
+    result.successfulJob = _successfulJob
+
     hrs.foreach { hr =>
-      Option(hr).map(_ == HeuristicResult.NO_DATA).foreach { _ => result.isNoData = true}
-      result.appHRs += hr
       result.score = result.score + hr.score
       result.severity = Severity.max(result.severity, hr.severity)
       result.severityId = result.severity.id
+      result.appHRs += hr
     }
 
     _persistService.save(result)
-    result
   }
 }
