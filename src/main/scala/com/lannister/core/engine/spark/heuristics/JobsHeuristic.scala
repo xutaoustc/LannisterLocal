@@ -27,7 +27,6 @@ class JobsHeuristic(private val config: HeuristicConfiguration) extends Heuristi
       HD("Spark failed jobs count", evaluator.numFailedJobs.toString),
       HD("Spark job failure rate", evaluator.jobFailRate.toString),
       HD("Spark failed jobs list", evaluator.failedJobsList),
-      HD("Spark completed tasks count", evaluator.numCompletedTasks.toString),
       HD("Spark jobs with high task failure rates", evaluator.jobWithHighTaskFailureRates)
     )
 
@@ -43,9 +42,8 @@ object JobsHeuristic {
     lazy val numCompletedJobs = jobData.count { _.status == JobExecutionStatus.SUCCEEDED }
     lazy val numFailedJobs = jobData.count { _.status == JobExecutionStatus.FAILED }
     lazy val jobFailRate = failureRate(numFailedJobs, numCompletedJobs).getOrElse(0.0D)
-    lazy val failedJobs = jobData.filter { _.status == JobExecutionStatus.FAILED }
-    lazy val failedJobsList = failedJobs.map(job => s"job ${job.jobId}, ${job.name}").mkString("\n")
-    lazy val numCompletedTasks = jobData.map(_.numCompletedTasks).sum
+    lazy val failedJobsList = jobData.filter { _.status == JobExecutionStatus.FAILED }
+                                     .map(job => s"job ${job.jobId}, ${job.name}").mkString("\n")
 
     private lazy val jobTaskFailRateSeverity =
       for {
