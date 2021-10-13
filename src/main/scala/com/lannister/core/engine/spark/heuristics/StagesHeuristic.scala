@@ -11,8 +11,7 @@ import com.lannister.core.util.Utils.failureRate
 
 import org.apache.spark.status.api.v1.{StageData, StageStatus}
 
-class StagesHeuristic(private val config: HeuristicConfiguration)
-  extends Heuristic{
+class StagesHeuristic(private val config: HeuristicConfiguration) extends Heuristic{
 
   import StagesHeuristic._
   import SeverityThresholds._
@@ -22,8 +21,8 @@ class StagesHeuristic(private val config: HeuristicConfiguration)
   val STAGE_RUNTIME_MINUTES_SEVERITY_THRES = "stage_runtime_minutes_severity_thresholds"
   val stageFailRateSeverityThres = parse(params.get(STAGE_FAILURE_RATE_SEVERITY_THRES) )
   val taskFailRateSeverityThres = parse(params.get(TASK_FAILURE_RATE_SEVERITY_THRES) )
-  val stageRuntimeMillisSeverityThres =
-    parse(params.get(STAGE_RUNTIME_MINUTES_SEVERITY_THRES), true, Duration(_).toMillis)
+  val stageRuntimeMillisSeverityThres = parse(params.get(STAGE_RUNTIME_MINUTES_SEVERITY_THRES),
+                                          true, Duration(_).toMillis)
 
   override def apply(data: ApplicationData): HR = {
     val evaluator = new Evaluator(this, data.asInstanceOf[SparkApplicationData])
@@ -32,18 +31,12 @@ class StagesHeuristic(private val config: HeuristicConfiguration)
       HD("Spark completed stages count", evaluator.numCompletedStages.toString),
       HD("Spark failed stages count", evaluator.numFailedStages.toString),
       HD("Spark stage failure rate", s"${evaluator.stageFailRate}"),
-      HD("Spark stages with high task failure rates",
-        evaluator.stagesWithHighTaskFailRates.map { case (stg, taskFailRate) =>
-          s"stage${stg.stageId}.${stg.attemptId} (task fail rate: $taskFailRate)" }.mkString("\n")
-      ),
-      HD("Spark stages with long average executor runtimes",
-        evaluator.stagesWithLongAverageExecutorTime.map { case (stg, time) =>
-          s"stage${stg.stageId}.${stg.attemptId} (runtime: ${timeFormat(time)})" }.mkString(", ")
-      ),
       HD("Total input bytes", evaluator.inputBytesTotal.toString),
       HD("Total output bytes", evaluator.outputBytesTotal.toString),
       HD("Total shuffle read bytes", evaluator.shuffleReadBytesTotal.toString),
-      HD("Total shuffle write bytes", evaluator.shuffleWriteBytesTotal.toString)
+      HD("Total shuffle write bytes", evaluator.shuffleWriteBytesTotal.toString),
+      HD("Spark stages with high task failure rates", evaluator.stagesWithHighTaskFailRates),
+      HD("Spark stages with long avg executor runtime", evaluator.stagesWithLongAverageExecutorTime)
     )
 
     HR(config.classname, config.name, evaluator.severity, 0, hds.toList)
@@ -65,20 +58,28 @@ object StagesHeuristic {
     lazy val outputBytesTotal = stageData.map(_.outputBytes).sum
     lazy val shuffleReadBytesTotal = stageData.map(_.shuffleReadBytes).sum
     lazy val shuffleWriteBytesTotal = stageData.map(_.shuffleWriteBytes).sum
+
     private lazy val stageTaskFailRateSeverity = for {
       stage <- stageData
       (taskFailureRate, severity) = taskFailureRateAndSeverity(stage)
     } yield (stage, taskFailureRate, severity)
+    lazy val stagesWithHighTaskFailRates = stageTaskFailRateSeverity
+      .filter { case (_, _, severity) => bigger(severity, Severity.MODERATE) }
+      .map { case (stage, taskFailRate, _) =>
+        s"stage${stage.stageId}.${stage.attemptId} (task fail rate: $taskFailRate)"}.mkString("\n")
+
+
     private lazy val stageAvgExecutorTimeSeverity = for {
       stage <- stageData
       (avgRuntime, severity) = averageExecutorRuntimeAndSeverityOf(stage)
     } yield (stage, avgRuntime, severity)
 
-    lazy val stagesWithHighTaskFailRates = stageTaskFailRateSeverity
-      .filter { case (_, _, severity) => bigger(severity, Severity.MODERATE) }
-      .map { case (stageData, taskFailureRate, _) => (stageData, taskFailureRate) }
+
     lazy val stagesWithLongAverageExecutorTime = stageAvgExecutorTimeSeverity.collect {
-      case (stage, time, severity) if bigger(severity, Severity.MODERATE) => (stage, time) }
+      case (stage, time, severity) if bigger(severity, Severity.MODERATE) => (stage, time)
+    }.map { case (stg, time) =>
+        s"stage${stg.stageId}.${stg.attemptId} (runtime: ${timeFormat(time)})"
+    }.mkString(", ")
 
 
     private lazy val stageFailRateSeverity = heuristic.stageFailRateSeverityThres.of(stageFailRate)
