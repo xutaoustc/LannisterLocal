@@ -23,6 +23,12 @@ heuristics:
       stage_failure_rate_severity_thresholds: 0.2, 0.4, 0.6, 0.8
       stage_task_failure_rate_severity_thresholds: 0.2, 0.4, 0.6, 0.8
   -
+    name: Spark Tasks
+    applicationType: spark
+    classname: com.lannister.core.engine.spark.heuristics.TasksHeuristic
+    params:
+      tasks_count_severity_thresholds: 30000, 60000, 100000, 200000
+  -
     name: Spark Executors
     applicationType: spark
     classname: com.lannister.core.engine.spark.heuristics.ExecutorsHeuristic
