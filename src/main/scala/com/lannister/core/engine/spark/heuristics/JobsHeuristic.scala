@@ -26,13 +26,9 @@ class JobsHeuristic(private val config: HeuristicConfiguration) extends Heuristi
       HD("Spark completed jobs count", evaluator.numCompletedJobs.toString),
       HD("Spark failed jobs count", evaluator.numFailedJobs.toString),
       HD("Spark job failure rate", evaluator.jobFailRate.toString),
-      HD("Spark failed jobs list",
-        evaluator.failedJobs.map(job => s"job ${job.jobId}, ${job.name}").mkString("\n")),
-      HD("Spark jobs with high task failure rates",
-        evaluator.jobWithHighTaskFailureRates.map { case (job, taskFailureRate) =>
-          s"job ${job.jobId}, ${job.name} (task fail rate: $taskFailureRate)" }.mkString("\n")
-      ),
-      HD("Spark completed tasks count", evaluator.numCompletedTasks.toString)
+      HD("Spark failed jobs list", evaluator.failedJobsList),
+      HD("Spark completed tasks count", evaluator.numCompletedTasks.toString),
+      HD("Spark jobs with high task failure rates", evaluator.jobWithHighTaskFailureRates)
     )
 
     HR(config.getClassname, config.getName, evaluator.severity, 0, hds.toList)
@@ -44,11 +40,13 @@ object JobsHeuristic {
   class Evaluator(heuristic: JobsHeuristic, data: SparkApplicationData) {
     lazy val jobData = data.store.store.jobsList(null)
 
-    lazy val numCompletedTasks = jobData.map(_.numCompletedTasks).sum
-    lazy val failedJobs = jobData.filter { _.status == JobExecutionStatus.FAILED }
     lazy val numCompletedJobs = jobData.count { _.status == JobExecutionStatus.SUCCEEDED }
     lazy val numFailedJobs = jobData.count { _.status == JobExecutionStatus.FAILED }
     lazy val jobFailRate = failureRate(numFailedJobs, numCompletedJobs).getOrElse(0.0D)
+    lazy val failedJobs = jobData.filter { _.status == JobExecutionStatus.FAILED }
+    lazy val failedJobsList = failedJobs.map(job => s"job ${job.jobId}, ${job.name}").mkString("\n")
+    lazy val numCompletedTasks = jobData.map(_.numCompletedTasks).sum
+
     private lazy val jobTaskFailRateSeverity =
       for {
         job <- jobData
@@ -57,20 +55,18 @@ object JobsHeuristic {
 
     lazy val jobWithHighTaskFailureRates = jobTaskFailRateSeverity
       .filter { case (_, _, severity) => Severity.bigger(severity, Severity.MODERATE) }
-      .map { case (jobData, taskFailureRate, _) => (jobData, taskFailureRate) }
-
-
+      .map { case (job, taskFailureRate, _) =>
+        s"job ${job.jobId}, ${job.name} (task fail rate: $taskFailureRate)" }
+      .mkString("\n")
 
     private lazy val wholeJobFailRateSeverity = heuristic.jobFailRateSeverityThres.of(jobFailRate)
     private lazy val jobSeverity = jobTaskFailRateSeverity.map { case (_, _, severity) => severity }
     lazy val severity = Severity.max(wholeJobFailRateSeverity +: jobSeverity: _*)
 
 
-
     private def taskFailureRateAndSeverity(job: JobData) = {
       val taskFailureRate = failureRate(job.numFailedTasks, job.numCompletedTasks).getOrElse(0.0D)
       (taskFailureRate, heuristic.taskFailRateSeverityThres.of(taskFailureRate))
     }
-
   }
 }
