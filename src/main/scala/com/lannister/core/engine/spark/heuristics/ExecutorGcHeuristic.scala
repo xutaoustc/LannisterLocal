@@ -9,7 +9,7 @@ import com.lannister.core.domain.{HeuristicResultDetail => HD}
 import com.lannister.core.engine.spark.fetchers.SparkApplicationData
 
 /*
-* Pass in class and data to Evaluator(Evaluator need the class instance, because the class instance has config info),
+* Pass class and data to Evaluator(because the class instance has config info),
 * and Evaluator provide the following output:
 *   1. Provide info for HD
 *   2. Provide total severity level for HR
