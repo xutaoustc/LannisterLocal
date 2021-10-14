@@ -47,6 +47,7 @@ object StagesHeuristic {
     lazy val numFailedStages = stageData.count { _.status == StageStatus.FAILED }
     lazy val stageFailRate = failureRate(numFailedStages, numCompletedStages).getOrElse(0.0D)
     lazy val inputBytesTotal = stageData.map(_.inputBytes).sum
+    // tasks field in StageData is None, we can not use it to compute sum value
     lazy val outputBytesTotal = stageData.map(_.outputBytes).sum
     lazy val shuffleReadBytesTotal = stageData.map(_.shuffleReadBytes).sum
     lazy val shuffleWriteBytesTotal = stageData.map(_.shuffleWriteBytes).sum

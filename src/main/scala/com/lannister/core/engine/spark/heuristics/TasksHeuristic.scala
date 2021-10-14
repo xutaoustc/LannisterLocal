@@ -16,9 +16,7 @@ class TasksHeuristic (private val config: HeuristicConfiguration) extends Heuris
 
     val hds = Seq(
       HD("Spark completed tasks count", evaluator.totalTasksCount.toString),
-      HD("Spark result tasks count", evaluator.totalResultTasksCount.toString),
-      HD("Total output bytes", evaluator.totalBytesWritten.toString),
-      HD("Total output records", evaluator.totalRecordsWritten.toString)
+      HD("Spark result tasks count", evaluator.totalResultTasksCount.toString)
     )
 
     HR(config.classname, config.name, evaluator.severity, 0, hds.toList)
@@ -36,20 +34,7 @@ object TasksHeuristic {
     }.toSet
     private lazy val resultStages = allStages.filter { stg => resultStageIDs.contains(stg.stageId) }
     lazy val totalResultTasksCount = resultStages.map { stg => stg.numCompleteTasks }.sum
-
-    private lazy val allTasks = allStages.flatMap { _.tasks }.flatMap(x => x)
-      .map { case (_, task) => task }
-    lazy val totalTasksCount = allTasks.size
-    lazy val (totalBytesWritten, totalRecordsWritten) = allTasks.foldLeft(0L, 0L) { (s, t) =>
-      val taskMetrics = t.taskMetrics
-      if (taskMetrics.isEmpty) {
-        s
-      } else {
-        ( s._1 + taskMetrics.get.outputMetrics.bytesWritten,
-          s._2 + taskMetrics.get.outputMetrics.recordsWritten)
-      }
-    }
-
+    lazy val totalTasksCount = allStages.map{ stg => stg.numCompleteTasks }.sum
 
 
     private lazy val tasksCountSeverity = heuristic.tasksCountSeverityThres.of(totalTasksCount)
