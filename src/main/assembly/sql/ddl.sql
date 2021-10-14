@@ -12,7 +12,7 @@ CREATE TABLE `app_result` (
                               `username` varchar(100) DEFAULT NULL,
                               `start_time` bigint(20) DEFAULT NULL,
                               `finish_time` bigint(20) DEFAULT NULL,
-                              `name` varchar(100) DEFAULT NULL,
+                              `name` varchar(1000) DEFAULT NULL,
                               `successful_job` BOOLEAN ,
                               `job_type` varchar(100) DEFAULT NULL,
                               `resource_used` bigint(20) DEFAULT NULL,
