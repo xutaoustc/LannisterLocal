@@ -26,10 +26,6 @@ class StagesHeuristic(private val config: HeuristicConfiguration) extends Heuris
       HD("Spark completed stages count", evaluator.numCompletedStages.toString),
       HD("Spark failed stages count", evaluator.numFailedStages.toString),
       HD("Spark stage failure rate", s"${evaluator.stageFailRate}"),
-      HD("Total input bytes", evaluator.inputBytesTotal.toString),
-      HD("Total output bytes", evaluator.outputBytesTotal.toString),
-      HD("Total shuffle read bytes", evaluator.shuffleReadBytesTotal.toString),
-      HD("Total shuffle write bytes", evaluator.shuffleWriteBytesTotal.toString),
       HD("Spark stages with high task failure rates", evaluator.stagesWithHighTaskFailRates)
     )
 
@@ -46,11 +42,6 @@ object StagesHeuristic {
     lazy val numCompletedStages = stageData.count { _.status == StageStatus.COMPLETE }
     lazy val numFailedStages = stageData.count { _.status == StageStatus.FAILED }
     lazy val stageFailRate = failureRate(numFailedStages, numCompletedStages).getOrElse(0.0D)
-    lazy val inputBytesTotal = stageData.map(_.inputBytes).sum
-    // tasks field in StageData is None, we can not use it to compute sum value
-    lazy val outputBytesTotal = stageData.map(_.outputBytes).sum
-    lazy val shuffleReadBytesTotal = stageData.map(_.shuffleReadBytes).sum
-    lazy val shuffleWriteBytesTotal = stageData.map(_.shuffleWriteBytes).sum
 
     private lazy val stageTaskFailRateSeverity = for {
       stage <- stageData
