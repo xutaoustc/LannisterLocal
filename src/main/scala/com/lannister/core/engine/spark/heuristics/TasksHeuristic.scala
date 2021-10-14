@@ -27,15 +27,20 @@ object TasksHeuristic {
 
   class Evaluator(heuristic: TasksHeuristic, data: SparkApplicationData) {
     private lazy val resultStageIDs = data.store.store.jobsList(null)
-      .map(job => job.stageIds.max).toSet
+      .flatMap { job =>
+        if (job.stageIds == None) { // not all job has stages
+          None
+        } else {
+          Option(job.stageIds.max)
+        }
+      }.toSet
     private lazy val resultStages = data.store.store.stageList(null)
       .filter(stage => resultStageIDs.contains(stage.stageId))
     lazy val totalResultTasksCount = resultStages.map(stage => stage.numCompleteTasks).sum
 
-    private lazy val tasksData = data.store.store.stageList(null)
-      .map(stage => stage.tasks)
-      .filter(!_.isEmpty).map(_.get)
-    lazy val totalTasksCount = tasksData.map(x => x.size).sum
+    private lazy val stageTasksData = data.store.store.stageList(null)
+      .flatMap(stage => stage.tasks)
+    lazy val totalTasksCount = stageTasksData.map(x => x.size).sum
 
 
     private lazy val tasksCountSeverity = heuristic.tasksCountSeverityThres.of(totalTasksCount)
