@@ -9,6 +9,12 @@ heuristics:
       spark_core_thresholds_key: 4, 6, 8, 10
       serializer_if_non_null_recommendation: org.apache.spark.serializer.KryoSerializer
   -
+    name: Spark Apps
+    applicationType: spark
+    classname: com.lannister.core.engine.spark.heuristics.AppHeuristic
+    params:
+      tasks_count_severity_thresholds: 30000, 60000, 100000, 200000
+  -
     name: Spark Job
     applicationType: spark
     classname: com.lannister.core.engine.spark.heuristics.JobsHeuristic
@@ -22,12 +28,6 @@ heuristics:
     params:
       stage_failure_rate_severity_thresholds: 0.2, 0.4, 0.6, 0.8
       stage_task_failure_rate_severity_thresholds: 0.2, 0.4, 0.6, 0.8
-  -
-    name: Spark Tasks
-    applicationType: spark
-    classname: com.lannister.core.engine.spark.heuristics.TasksHeuristic
-    params:
-      tasks_count_severity_thresholds: 30000, 60000, 100000, 200000
   -
     name: Spark Executors
     applicationType: spark
