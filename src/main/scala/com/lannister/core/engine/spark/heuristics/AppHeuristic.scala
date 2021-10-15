@@ -15,7 +15,8 @@ class AppHeuristic (private val config: HeuristicConfiguration) extends Heuristi
     val evaluator = new Evaluator(this, data.asInstanceOf[SparkApplicationData])
 
     val hds = Seq(
-      HD("Spark completed tasks count", evaluator.totalTasksCount.toString),
+      HD("Spark completed tasks count", evaluator.totalCompleteTasksCount.toString),
+      HD("Spark failed tasks count", evaluator.totalFailedTasksCount.toString),
       HD("Spark result tasks count", evaluator.totalResultTasksCount.toString),
       HD("Total input bytes", evaluator.inputBytesTotal.toString),
       HD("Total output bytes", evaluator.outputBytesTotal.toString),
@@ -39,14 +40,16 @@ object AppHeuristic {
     private lazy val resultStages = allStages.filter { stg => resultStageIDs.contains(stg.stageId) }
 
     lazy val totalResultTasksCount = resultStages.map { _.numCompleteTasks }.sum
-    lazy val totalTasksCount = allStages.map { _.numCompleteTasks }.sum
+    lazy val totalCompleteTasksCount = allStages.map { _.numCompleteTasks }.sum
+    lazy val totalFailedTasksCount = allStages.map{ _.numFailedTasks }.sum
     lazy val inputBytesTotal = allStages.map(_.inputBytes).sum
     // tasks field in StageData is None, we can not use it to compute sum value
     lazy val outputBytesTotal = allStages.map(_.outputBytes).sum
     lazy val shuffleReadBytesTotal = allStages.map(_.shuffleReadBytes).sum
     lazy val shuffleWriteBytesTotal = allStages.map(_.shuffleWriteBytes).sum
 
-    private lazy val tasksCountSeverity = heuristic.tasksCountSeverityThres.of(totalTasksCount)
-    lazy val severity: Severity = Severity.max(tasksCountSeverity)
+    private lazy val completeTasksCountSeverity =
+      heuristic.tasksCountSeverityThres.of(totalCompleteTasksCount)
+    lazy val severity: Severity = Severity.max(completeTasksCountSeverity)
   }
 }
