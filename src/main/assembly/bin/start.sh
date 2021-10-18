@@ -40,5 +40,4 @@ if [[ -z "${pid}" ]]; then
 else
     echo "server $SERVER_NAME start succeeded! full log in $SERVER_LOG_PATH/lannister.out"
     echo $pid > $SERVER_PID
-    sleep 1
 fi
