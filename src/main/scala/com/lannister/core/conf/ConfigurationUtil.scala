@@ -45,6 +45,8 @@ private[conf] object ConfigurationUtil extends Logging {
   }
 
   def getOption(key: String): Option[String] = {
+    debug(s"Get $key, environment value ${env.get(key)}")
+
     val value = config.getProperty(key)
     if(StringUtils.isNotEmpty(value)) {
       return Some(value)
