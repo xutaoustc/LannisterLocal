@@ -22,8 +22,7 @@ object AppHeuristicResult{
     appHR.heuristicName = hr.heuristicName
     appHR.severityId = hr.severity.id
     appHR.score = hr.score
-    import scala.collection.JavaConverters.asJavaIterableConverter
-    appHR.details = Utils.toJson(hr.hds.asJava)
+    appHR.details = Utils.toJson(hr.hds.map(hd => hd.name -> hd.value).toMap)
     appHR
   }
 }
