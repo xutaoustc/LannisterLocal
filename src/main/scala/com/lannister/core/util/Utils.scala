@@ -1,6 +1,5 @@
 package com.lannister.core.util
 
-import com.google.gson.Gson
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.Constructor
 
@@ -48,9 +47,12 @@ object Utils {
     // scalastyle:on classforname
   }
 
-  private val gson = new Gson
+  import org.json4s._
+  import org.json4s.native.Serialization
+  import org.json4s.native.Serialization._
+  implicit val formats = Serialization.formats(NoTypeHints)
   def toJson(obj: Any): String = {
-    gson.toJson(obj)
+    write(obj)
   }
 }
 
