@@ -1,8 +1,9 @@
 package com.lannister.model
 
-import com.baomidou.mybatisplus.annotation.{TableField, TableName}
+import com.baomidou.mybatisplus.annotation.TableName
 import com.lannister.core.domain.HeuristicResult
-import com.lannister.core.domain.Severity.Severity
+import com.lannister.core.util.Utils
+
 
 @TableName("app_heuristic_result")
 class AppHeuristicResult extends AppBase {
@@ -10,12 +11,8 @@ class AppHeuristicResult extends AppBase {
   var heuristicName: String = _
   var severityId: Int = _
   var score: Int = _
+  var details: String = _
   var resultId: Long = _
-
-  @TableField(`exist` = false)
-  var severity: Severity = _
-  @TableField(`exist` = false)
-  var appHDs : List[AppHeuristicResultDetail] = _
 }
 
 object AppHeuristicResult{
@@ -23,10 +20,10 @@ object AppHeuristicResult{
     val appHR = new AppHeuristicResult
     appHR.heuristicClass = hr.heuristicClass
     appHR.heuristicName = hr.heuristicName
-    appHR.severity = hr.severity
     appHR.severityId = hr.severity.id
     appHR.score = hr.score
-    appHR.appHDs = hr.hds
+    import scala.collection.JavaConverters.asJavaIterableConverter
+    appHR.details = Utils.toJson(hr.hds.asJava)
     appHR
   }
 }

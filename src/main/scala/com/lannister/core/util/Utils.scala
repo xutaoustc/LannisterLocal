@@ -1,5 +1,6 @@
 package com.lannister.core.util
 
+import com.google.gson.Gson
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.Constructor
 
@@ -45,6 +46,11 @@ object Utils {
     Class.forName(className, initialize, Thread.currentThread().getContextClassLoader).
       asInstanceOf[Class[C]]
     // scalastyle:on classforname
+  }
+
+  private val gson = new Gson
+  def toJson(obj: Any): String = {
+    gson.toJson(obj)
   }
 }
 
