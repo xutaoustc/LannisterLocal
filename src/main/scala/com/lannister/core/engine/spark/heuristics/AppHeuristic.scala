@@ -7,6 +7,9 @@ import com.lannister.core.domain.SeverityThresholds.parse
 import com.lannister.core.engine.spark.fetchers.SparkApplicationData
 import com.lannister.core.engine.spark.heuristics.AppHeuristic.Evaluator
 
+import org.apache.spark.status.api.v1.TaskSorting._
+import org.apache.spark.status.api.v1.TaskStatus._
+
 class AppHeuristic (private val config: HeuristicConfiguration) extends Heuristic{
   val TASKS_COUNT_SEVERITY_THRES = "tasks_count_severity_thresholds"
   val tasksCountSeverityThres = parse(config.params.get(TASKS_COUNT_SEVERITY_THRES) )
@@ -21,7 +24,9 @@ class AppHeuristic (private val config: HeuristicConfiguration) extends Heuristi
       HD("Total input bytes", evaluator.inputBytesTotal.toString),
       HD("Total output bytes", evaluator.outputBytesTotal.toString),
       HD("Total shuffle read bytes", evaluator.shuffleReadBytesTotal.toString),
-      HD("Total shuffle write bytes", evaluator.shuffleWriteBytesTotal.toString)
+      HD("Total shuffle write bytes", evaluator.shuffleWriteBytesTotal.toString),
+      HD("Spark failed hosts count", evaluator.hostsCount),
+      HD("Spark failed error message count", evaluator.errorMessagesCount)
     )
 
     HR(config.classname, config.name, evaluator.severity, 0, hds.toList)
@@ -47,6 +52,20 @@ object AppHeuristic {
     lazy val outputBytesTotal = allStages.map(_.outputBytes).sum
     lazy val shuffleReadBytesTotal = allStages.map(_.shuffleReadBytes).sum
     lazy val shuffleWriteBytesTotal = allStages.map(_.shuffleWriteBytes).sum
+
+    import scala.collection.JavaConverters._
+    private lazy val failedTasksHostAndMessage = allStages.filter { _.numFailedTasks != 0 }
+      .flatMap {stg =>
+        data.store.store.taskList(
+          stg.stageId, stg.attemptId, 0, Int.MaxValue, ID, (FAILED:: Nil).asJava
+        ).map { task => (task.host, task.errorMessage) }
+      }
+    val hostsCount = failedTasksHostAndMessage.map { case (h, _) => (h, 1) }
+      .groupBy(_._1).map(t => (t._1, t._2.size)).map(_.productIterator.mkString(":")).mkString(",")
+    val errorMessagesCount = failedTasksHostAndMessage.map { case (_, m) => (m, 1) }
+      .groupBy(_._1).map(t => (t._1, t._2.size)).map(_.productIterator.mkString(":")).mkString(",")
+
+
 
     private lazy val completeTasksCountSeverity =
       heuristic.tasksCountSeverityThres.of(totalCompleteTasksCount)
