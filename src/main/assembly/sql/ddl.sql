@@ -29,7 +29,7 @@ CREATE TABLE `app_heuristic_result` (
                                         `id` bigint(20) NOT NULL AUTO_INCREMENT,
                                         `heuristic_class` varchar(100) NOT NULL,
                                         `heuristic_name` varchar(100) NOT NULL,
-                                        `severity_id` int(11) NOT NULL,
+                                        `severity_id` tinyint(100) NOT NULL,
                                         `score` int(11) NOT NULL,
                                         `details` JSON NOT NULL,
                                         `result_id` bigint(100) NOT NULL,
