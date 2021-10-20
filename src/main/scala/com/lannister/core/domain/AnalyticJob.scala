@@ -95,7 +95,7 @@ case class AnalyticJob(
 
     hrs.foreach { hr =>
       result.score = result.score + hr.score
-      result.severity = Severity.max(result.severity, hr.severity)
+      result.severity = Severity.max(result.severity, hr.heuristicSeverity)
       result.severityId = result.severity.id
       result.appHRs += hr
     }

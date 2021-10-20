@@ -9,7 +9,7 @@ import com.lannister.core.util.Utils
 class AppHeuristicResult extends AppBase {
   var heuristicClass: String = _
   var heuristicName: String = _
-  var severityId: Int = _
+  var heuristicSeverityId: Int = _
   var score: Int = _
   var details: String = _
   var resultId: Long = _
@@ -20,7 +20,7 @@ object AppHeuristicResult{
     val appHR = new AppHeuristicResult
     appHR.heuristicClass = hr.heuristicClass
     appHR.heuristicName = hr.heuristicName
-    appHR.severityId = hr.severity.id
+    appHR.heuristicSeverityId = hr.heuristicSeverity.id
     appHR.score = hr.score
     appHR.details = Utils.toJson(hr.hds.map(hd => hd.name -> hd.value).toMap)
     appHR

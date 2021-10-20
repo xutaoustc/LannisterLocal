@@ -5,7 +5,7 @@ import Severity.Severity
 case class HeuristicResult(
     heuristicClass: String,
     heuristicName: String,
-    severity: Severity,
+    heuristicSeverity: Severity,
     score: Int,
     hds: List[HeuristicResultDetail]
 )
