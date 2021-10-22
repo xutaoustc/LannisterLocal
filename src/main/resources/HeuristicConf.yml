@@ -14,6 +14,7 @@ heuristics:
     classname: com.lannister.core.engine.spark.heuristics.AppHeuristic
     params:
       tasks_count_severity_thresholds: 30000, 60000, 100000, 200000
+      tasks_output_small_file_thresholds: 1000000
   -
     name: Spark Job
     applicationType: spark

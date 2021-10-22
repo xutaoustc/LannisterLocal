@@ -16,15 +16,18 @@ import org.apache.spark.status.api.v1.TaskStatus._
 
 class AppHeuristic (private val config: HeuristicConfiguration) extends Heuristic{
   val TASKS_COUNT_SEVERITY_THRES = "tasks_count_severity_thresholds"
+  val TASKS_OUTPUT_SMALL_FILE_THRES = "tasks_output_small_file_thresholds"
   val tasksCountSeverityThres = parse(config.params.get(TASKS_COUNT_SEVERITY_THRES) )
+  val tasksOutputSmallFileThres = config.params.get(TASKS_OUTPUT_SMALL_FILE_THRES).toLong
 
   override def apply(data: ApplicationData): HR = {
     val evaluator = new Evaluator(this, data.asInstanceOf[SparkApplicationData])
 
     var hds = ListBuffer(
-      HD("Spark completed tasks count", evaluator.totalCompleteTasksCount.toString),
-      HD("Spark failed tasks count", evaluator.totalFailedTasksCount.toString),
-      HD("Spark result tasks count", evaluator.totalResultTasksCount.toString),
+      HD("Spark result tasks count", evaluator.resultTasksCount.toString),
+      HD("Spark small file result tasks count", evaluator.smallOutputResultTasksCount.toString),
+      HD("Spark completed tasks count", evaluator.completeTasksCount.toString),
+      HD("Spark failed tasks count", evaluator.failedTasksCount.toString),
       HD("Total input bytes", evaluator.inputBytesTotal.toString),
       HD("Total output bytes", evaluator.outputBytesTotal.toString),
       HD("Total shuffle read bytes", evaluator.shuffleReadBytesTotal.toString),
@@ -52,10 +55,16 @@ object AppHeuristic {
     private lazy val resultStageIDs = allJobs.flatMap {
       job => if (job.stageIds.isEmpty) None else Option(job.stageIds.max) }.toSet
     private lazy val resultStages = allStages.filter { stg => resultStageIDs.contains(stg.stageId) }
+    lazy val resultTasksCount = resultStages.map { _.numCompleteTasks }.sum
+    lazy val smallOutputResultTasksCount = resultStages.map { stg =>
+      data.store.store.taskList(stg.stageId, stg.attemptId, Int.MaxValue)
+        .flatMap { task => task.taskMetrics }.map { _.outputMetrics.bytesWritten }
+        .filter { _ < heuristic.tasksOutputSmallFileThres }.size
+    }.sum
 
-    lazy val totalResultTasksCount = resultStages.map { _.numCompleteTasks }.sum
-    lazy val totalCompleteTasksCount = allStages.map { _.numCompleteTasks }.sum
-    lazy val totalFailedTasksCount = allStages.map{ _.numFailedTasks }.sum
+
+    lazy val completeTasksCount = allStages.map { _.numCompleteTasks }.sum
+    lazy val failedTasksCount = allStages.map{ _.numFailedTasks }.sum
     lazy val inputBytesTotal = allStages.map(_.inputBytes).sum
     // tasks field in StageData is None, we can not use it to compute sum value
     lazy val outputBytesTotal = allStages.map(_.outputBytes).sum
@@ -77,7 +86,7 @@ object AppHeuristic {
 
 
     private lazy val completeTasksCountSeverity =
-      heuristic.tasksCountSeverityThres.of(totalCompleteTasksCount)
+      heuristic.tasksCountSeverityThres.of(completeTasksCount)
     lazy val severity: Severity = Severity.max(completeTasksCountSeverity)
   }
 }
