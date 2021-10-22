@@ -67,7 +67,7 @@ object AppHeuristic {
       .flatMap {stg =>
         data.store.store.taskList(
           stg.stageId, stg.attemptId, 0, Int.MaxValue, ID, (FAILED:: Nil).asJava
-        ).map { task => (task.host, task.errorMessage) }
+        ).map { task => (task.host, task.errorMessage.getOrElse("None")) }
       }
     lazy val hostsCount = failedTasksHostAndMessage.map { case (h, _) => (h, 1) }
       .groupBy(_._1).map(t => (t._1, t._2.size)).map(_.productIterator.mkString(":")).mkString(",")
