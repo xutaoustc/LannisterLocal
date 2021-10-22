@@ -24,6 +24,7 @@ class AppHeuristic (private val config: HeuristicConfiguration) extends Heuristi
     val evaluator = new Evaluator(this, data.asInstanceOf[SparkApplicationData])
 
     var hds = ListBuffer(
+      HD("Spark app Duration", evaluator.duration.toString),
       HD("Spark result tasks count", evaluator.resultTasksCount.toString),
       HD("Spark small file result tasks count", evaluator.smallOutputResultTasksCount.toString),
       HD("Spark completed tasks count", evaluator.completeTasksCount.toString),
@@ -48,8 +49,11 @@ class AppHeuristic (private val config: HeuristicConfiguration) extends Heuristi
 object AppHeuristic {
 
   class Evaluator(heuristic: AppHeuristic, data: SparkApplicationData) {
+    private lazy val app = data.store.store.applicationInfo()
     private lazy val allJobs = data.store.store.jobsList(null)
     private lazy val allStages = data.store.store.stageList(null)
+
+    lazy val duration = app.attempts.map { attempt => attempt.duration }.max
 
     // Not all jobs have stages
     private lazy val resultStageIDs = allJobs.flatMap {
